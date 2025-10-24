@@ -1,0 +1,28 @@
+﻿@typeparam TItem
+
+<div class="rz-cell-actions" style="display: flex; gap: 6px;">
+    <RadzenButton Icon="visibility"
+                  ButtonStyle="ButtonStyle.Light"
+                  Size="ButtonSize.Small"
+                  Text="Ver"
+                  Click="@(() => OnViewClick.InvokeAsync(Item))" />
+
+    <RadzenButton Icon="edit"
+                  ButtonStyle="ButtonStyle.Primary"
+                  Size="ButtonSize.Small"
+                  Text="Editar"
+                  Click="@(() => OnEditClick.InvokeAsync(Item))" />
+
+    <RadzenButton Icon="delete"
+                  ButtonStyle="ButtonStyle.Danger"
+                  Size="ButtonSize.Small"
+                  Text="Eliminar"
+                  Click="@((item) => OnDeleteClick.InvokeAsync(Item))" />
+</div>
+
+@code{
+    [Parameter] public TItem Item { get; set; } = default!;
+    [Parameter] public EventCallback<TItem> OnViewClick { get; set; }
+    [Parameter] public EventCallback<TItem> OnEditClick { get; set; }
+    [Parameter] public EventCallback<TItem> OnDeleteClick { get; set; }
+}

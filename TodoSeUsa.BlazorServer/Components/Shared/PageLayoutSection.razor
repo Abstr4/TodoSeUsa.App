@@ -1,0 +1,21 @@
+﻿@using Microsoft.AspNetCore.Components
+
+<div class="d-flex align-items-center justify-content-center position-relative py-2 flex-wrap">
+    <a href="/" class="rz-button rz-button-md rz-variant-filled rz-primary rz-shade-default position-absolute start-0 d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left fs-4"></i>
+        <span>Volver</span>
+    </a>
+    <h2 class="m-0 text-center flex-grow-1">@Title</h2>
+</div>
+
+<hr />
+    <div class="d-flex align-items-center justify-content-center py-2">
+        @ChildContent
+    </div>
+<hr />
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

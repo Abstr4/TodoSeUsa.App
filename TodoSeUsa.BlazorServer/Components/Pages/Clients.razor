@@ -1,0 +1,138 @@
+﻿@page "/clientes"
+
+@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.Clients.DTOs
+@using TodoSeUsa.Application.Features.Clients.Interfaces
+@using TodoSeUsa.Application.Features.Clients.Services
+@using TodoSeUsa.BlazorServer.Helpers
+
+@inject IClientService clientService;
+
+<PageLayoutSection Title="Clientes">
+    <RadzenCard Style="max-width: 100%">
+        <RadzenStack Gap="1rem">
+            <RadzenCard Variant="Variant.Outlined">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1.5rem" Wrap="FlexWrap.Wrap">
+                    <RadzenButton Text="Resetear filtros" Click="@ResetAsync" Icon="refresh" />
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenLabel Text="Filtro lógico:" Component="operator" />
+                        <RadzenDropDown @bind-Value="@logicalFilterOperator" TextProperty="Text" ValueProperty="Value" Name="operator" Change="@(args => grid.Reload())" Data="@RadzenFilteringHelpers.LogicalOperators" />
+                    </RadzenStack>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenLabel Text="Filtro de mayúsculas/minúsculas:" Component="caseSensitivity" />
+                        <RadzenDropDown @bind-Value="@filterCaseSensitivity" TextProperty="Text" ValueProperty="Value" Name="caseSensitivity" Change="@(args => grid.Reload())" Data="@RadzenFilteringHelpers.CaseSensitivities" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+            <RadzenDataGrid style="height: 400px"
+                            @ref="grid"
+                            IsLoading="@isLoading"
+                            TItem="ClientDto"
+                            Data="@clients"
+                            Count="@count"
+                            LoadData="@LoadData"
+                            AllowSorting="true"
+                            AllowFiltering="true"
+                            AllowPaging="true"
+                            AllowColumnResize="true"
+                            FilterMode="FilterMode.Simple"
+                            FilterCaseSensitivity="@filterCaseSensitivity"
+                            LogicalFilterOperator="@logicalFilterOperator"
+                            GridLines="@gridLines"
+                            PageSize="5"
+                            PagerHorizontalAlign="HorizontalAlign.Center"
+                            EmptyText="@GridMessage"
+                            ClearFilterText="Limpiar"
+                            ApplyFilterText="Aplicar"
+                            FilterText="Filtro"
+                            ContainsText="Contiene"
+                            EqualsText="Equivale"
+                            AndOperatorText="Y"
+                            OrOperatorText="O">
+
+                <Columns>
+                    <RadzenDataGridColumn Frozen="true" Property="@nameof(ClientDto.Id)" Title="ID" Width="80px" MinWidth="80px" TextAlign="TextAlign.Center" />
+
+                    <RadzenDataGridColumn Frozen="true" Property="@nameof(ClientDto.FirstName)" Title="Nombre" Width="120px" />
+
+                    <RadzenDataGridColumn Frozen="true" Property="@nameof(ClientDto.LastName)" Title="Apellido" Width="120px" />
+
+                    <RadzenDataGridColumn Property="@nameof(ClientDto.EmailAddress)" Title="Email" Width="160px" />
+
+                    <RadzenDataGridColumn Property="@nameof(ClientDto.Address)" Title="Dirección" Width="160px" />
+
+                    <RadzenDataGridColumn Property="@nameof(ClientDto.PhoneNumber)" Title="Número de teléfono" Width="120px" />
+
+                    <RadzenDataGridColumn Property="@nameof(ClientDto.CreatedAt)" Title="Creado el" Width="120px" />
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenStack>
+    </RadzenCard>
+</PageLayoutSection>
+
+@code {
+    private RadzenDataGrid<ClientDto> grid;
+    private IEnumerable<ClientDto> clients;
+    private int count;
+    private bool isLoading = false;
+    private string GridMessage = "No hay clientes para mostrar.";
+    private CancellationTokenSource? cts;
+
+    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
+    private FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
+    private Radzen.DataGridGridLines gridLines = Radzen.DataGridGridLines.Both;
+
+    async Task ResetAsync()
+    {
+        cts?.Cancel();
+
+        grid.Reset(true);
+        await grid.FirstPage(true);
+    }
+
+    async Task LoadData(LoadDataArgs args)
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+        try
+        {
+            QueryItem query = new(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? 5);
+
+            var result = await clientService.GetClientsWithPagination(query, cts.Token);
+            if (result.IsSuccess)
+            {
+                clients = result.Value.Items;
+                count = result.Value.Count;
+            }
+            else
+            {
+                clients = [];
+                count = 0;
+                GridMessage = result.Error.Description;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await grid.Reload();
+        }
+    }
+}

@@ -1,0 +1,132 @@
+﻿@page "/notas-de-prestamo"
+
+@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.LoanNotes.DTOs
+@using TodoSeUsa.Application.Features.LoanNotes.Interfaces
+@using TodoSeUsa.BlazorServer.Helpers
+
+@inject ILoanNoteService loanNoteService;
+
+
+<PageLayoutSection Title="Consignaciones">
+    <RadzenCard Style="max-width: 100%">
+        <RadzenStack Gap="1rem">
+            <RadzenCard Variant="Variant.Outlined">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1.5rem" Wrap="FlexWrap.Wrap">
+                    <RadzenButton Text="Resetear filtros" Click="@ResetAsync" Icon="refresh" />
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenLabel Text="Filtro lógico:" Component="operator" />
+                        <RadzenDropDown @bind-Value="@logicalFilterOperator" TextProperty="Text" ValueProperty="Value" Name="operator" Change="@(args => grid.Reload())" Data="@RadzenFilteringHelpers.LogicalOperators" />
+                    </RadzenStack>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenLabel Text="Filtro de mayúsculas/minúsculas:" Component="caseSensitivity" />
+                        <RadzenDropDown @bind-Value="@filterCaseSensitivity" TextProperty="Text" ValueProperty="Value" Name="caseSensitivity" Change="@(args => grid.Reload())" Data="@RadzenFilteringHelpers.CaseSensitivities" />
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+
+            <RadzenDataGrid style="height: 400px"
+                            @ref="grid"
+                            IsLoading="@isLoading"
+                            TItem="LoanNoteDto"
+                            Data="@loanNotes"
+                            Count="@count"
+                            LoadData="@LoadData"
+                            AllowSorting="true"
+                            AllowFiltering="true"
+                            AllowPaging="true"
+                            AllowColumnResize="true"
+                            FilterMode="FilterMode.Simple"
+                            FilterCaseSensitivity="@filterCaseSensitivity"
+                            LogicalFilterOperator="@logicalFilterOperator"
+                            GridLines="@gridLines"
+                            PageSize="5"
+                            PagerHorizontalAlign="HorizontalAlign.Center"
+                            EmptyText="No hay ventas para mostrar."
+                            ClearFilterText="Limpiar"
+                            ApplyFilterText="Aplicar"
+                            FilterText="Filtro"
+                            ContainsText="Contiene"
+                            EqualsText="Equivale"
+                            AndOperatorText="Y"
+                            OrOperatorText="O">
+
+                <Columns>
+                    <RadzenDataGridColumn Frozen="true" Property="@nameof(LoanNoteDto.Id)" Title="ID" Width="80px" MinWidth="80px" TextAlign="TextAlign.Center" />
+
+                    <RadzenDataGridColumn Property="@nameof(LoanNoteDto.Status)" Title="Estado" Width="120px" MinWidth="120px" />
+
+                    <RadzenDataGridColumn Property="@nameof(LoanNoteDto.TotalLoanedProducts)" Title="Cant. Productos prestados" Width="120px" MinWidth="120px" />
+
+                    <RadzenDataGridColumn Property="@nameof(LoanNoteDto.LoanDate)" Title="Prestados el" Width="120px" MinWidth="120px" />
+
+                    <RadzenDataGridColumn Property="@nameof(LoanNoteDto.ExpectedReturnDate)" Title="A devolver el" Width="120px" MinWidth="120px" />
+
+                    <RadzenDataGridColumn Property="@nameof(LoanNoteDto.ClientId)" Title="ID del cliente" Width="120px" MinWidth="120px" />
+
+                    <RadzenDataGridColumn Property="@nameof(LoanNoteDto.CreatedAt)" Title="Creada el" Width="120px" />
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenStack>
+    </RadzenCard>
+</PageLayoutSection>
+
+
+@code {
+    private RadzenDataGrid<LoanNoteDto> grid;
+    private IEnumerable<LoanNoteDto> loanNotes;
+    private int count;
+    private bool isLoading = false;
+    private string GridMessage = "No hay notas de préstamo para mostrar.";
+    private CancellationTokenSource? cts;
+
+    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
+    private FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
+    private Radzen.DataGridGridLines gridLines = Radzen.DataGridGridLines.Both;
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+        try
+        {
+            QueryItem query = new(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? 5);
+
+            var result = await loanNoteService.GetLoanNotesWithPagination(query, cts.Token);
+            if (result.IsSuccess)
+            {
+                loanNotes = result.Value.Items;
+                count = result.Value.Count;
+            }
+            else
+            {
+                loanNotes = [];
+                count = 0;
+                GridMessage = result.Error.Description;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+
+        }
+        finally
+        {
+            isLoading = false;
+        }
+
+    }
+
+    private async Task ResetAsync()
+    {
+        cts?.Cancel();
+
+        grid.Reset(true);
+        await grid.FirstPage(true);
+    }
+}

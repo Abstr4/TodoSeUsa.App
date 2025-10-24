@@ -1,0 +1,141 @@
+﻿@page "/productos"
+
+@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.BlazorServer.Helpers
+@using TodoSeUsa.Domain.Enums
+
+@inject IProductService productService;
+
+<PageLayoutSection Title="Productos">
+    <RadzenCard Style="max-width: 100%;">
+   <RadzenStack Gap="1rem" >
+        <RadzenCard Variant="Variant.Outlined">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1.5rem" Wrap="FlexWrap.Wrap">
+                <RadzenButton Text="Resetear filtros" Click="@ResetAsync" Icon="refresh" />
+
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                    <RadzenLabel Text="Filtro lógico:" Component="operator" />
+                    <RadzenDropDown @bind-Value="@logicalFilterOperator" TextProperty="Text" ValueProperty="Value" Name="operator" Change="@(args => grid.Reload())" Data="@RadzenFilteringHelpers.LogicalOperators" />
+                </RadzenStack>
+
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                    <RadzenLabel Text="Filtro de mayúsculas/minúsculas:" Component="caseSensitivity" />
+                    <RadzenDropDown @bind-Value="@filterCaseSensitivity" TextProperty="Text" ValueProperty="Value" Name="caseSensitivity" Change="@(args => grid.Reload())" Data="@RadzenFilteringHelpers.CaseSensitivities" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+        <RadzenDataGrid @ref="grid"
+                        style="height: 400px"
+                        IsLoading="@isLoading"
+                        TItem="ProductDto"
+                        Data="@products"
+                        Count="@count"
+                        LoadData="@LoadData"
+                        FilterMode="FilterMode.Simple"
+                        AllowSorting="true"
+                        AllowFiltering="true"
+                        AllowPaging="true"
+                        AllowColumnResize="true"
+                        FilterCaseSensitivity="@filterCaseSensitivity"
+                        LogicalFilterOperator="@logicalFilterOperator"
+                        GridLines="@gridLines"
+                        PageSize="5"
+                        PagerHorizontalAlign="HorizontalAlign.Center"
+
+                        EmptyText="@GridMessage"
+                        ClearFilterText="Limpiar"
+                        ApplyFilterText="Aplicar"
+                        FilterText="Filtro"
+                        ContainsText="Contiene"
+                        EqualsText="Equivale"
+                        AndOperatorText="Y"
+                        OrOperatorText="O">
+
+            <Columns>
+                <RadzenDataGridColumn Frozen="true" Property="@nameof(ProductDto.Id)" Title="ID" Width="80px" MinWidth="80px" TextAlign="TextAlign.Center" />
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.Price)" Title="Precio" Width="128px"/>
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.Status)" Title="Estado" Width="128px"/>
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.Quality)" Title="Calidad" Width="128px"/>
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.Category)" Title="Categoría" Width="256px"/>
+
+                <RadzenDataGridColumn Frozen="true" Property="@nameof(ProductDto.Description)" Title="Descripción" Width="256px" />
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.RefurbishmentCost)" Title="Costo de reacondicionamiento" Width="256px"/>
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.Season)" Title="Temporada" Width="128px"/>
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.ConsignmentId)" Title="Id de la consignación" Width="180px"/>
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.SaleId)" Title="Id de la venta" Width="128px"/>
+
+                <RadzenDataGridColumn Property="@nameof(ProductDto.CreatedAt)" Title="Creado el" Width="128px"/>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+</RadzenCard>
+</PageLayoutSection>
+
+
+@code {
+    private RadzenDataGrid<ProductDto> grid;
+    private IEnumerable<ProductDto> products;
+    private int count;
+    private bool isLoading = false;
+    private string GridMessage = "No hay productos para mostrar.";
+    private CancellationTokenSource? cts;
+
+    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
+    private FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
+    private Radzen.DataGridGridLines gridLines = Radzen.DataGridGridLines.Both;
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        if (isLoading) return;
+         
+        isLoading = true;
+
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+        try
+        {
+            QueryItem query = new(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? 5);
+
+            var result = await productService.GetProductsWithPagination(query, cts.Token);
+            if (result.IsSuccess)
+            {
+                products = result.Value.Items;
+                count = result.Value.Count;
+            }
+            else
+            {
+                products = [];
+                count = 0;
+                GridMessage = result.Error.Description;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ResetAsync()
+    {
+        cts?.Cancel();
+
+        grid.Reset(true);
+        await grid.FirstPage(true);
+    }
+}
+

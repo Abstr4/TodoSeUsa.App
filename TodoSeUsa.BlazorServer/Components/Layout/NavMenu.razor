@@ -1,0 +1,74 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">TodoSeUsa.BlazorServer</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house nav-icon" aria-hidden="true"></span> Inicio
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="cajas">
+                <span class="bi bi-box-seam nav-icon" aria-hidden="true"></span> Cajas
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="clientes">
+                <span class="bi bi-person-circle nav-icon" aria-hidden="true"></span> Clientes
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="consignaciones">
+                <span class="bi bi-journal-text nav-icon" aria-hidden="true"></span> Consignaciones
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="notas-de-prestamo">
+                <span class="bi bi-file-ppt nav-icon" aria-hidden="true"></span> Notas de Préstamo
+            </NavLink>
+        </div>
+
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="reservas">
+                <span class="bi bi-journal-bookmark nav-icon" aria-hidden="true"></span> Reservas
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="pagos">
+                <span class="bi fs-2 bi-credit-card nav-icon" aria-hidden="true"></span> Pagos
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="productos">
+                <span class="bi bi-boxes nav-icon" aria-hidden="true"></span> Productos
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="proveedores">
+                <span class="bi bi-person-lines-fill nav-icon" aria-hidden="true"></span> Proveedores
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="ventas">
+                <span class="bi bi-receipt nav-icon" aria-hidden="true"></span> Ventas
+            </NavLink>
+        </div>
+    </nav>
+</div>
+

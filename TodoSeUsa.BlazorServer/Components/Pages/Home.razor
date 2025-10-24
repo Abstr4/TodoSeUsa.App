@@ -1,0 +1,39 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Inicio</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<RadzenDropDown TValue="string"
+                Data="@items"
+                @bind-Value="selected"
+                Placeholder="Select a value"
+                Style="width:200px" />
+
+<p><strong>Selected:</strong> @selected</p>
+
+
+Welcome to your new app.
+
+<i class="bi bi-alarm"></i>
+<i class="bi bi-check-circle-fill"></i>
+
+<hr /> 
+
+<RadzenButton Click="@ButtonClicked" Text="Hi"></RadzenButton>
+
+<RadzenButton Click="@ButtonClicked" Text="Hi" IconColor="--rz-primary"></RadzenButton>
+
+<a class="rz-button rz-button-md rz-variant-filled rz-primary rz-shade-default" href="/">radzen button with classes</a>
+
+@code {
+    private string[] items = new[] { "A", "B", "C" };
+    private string? selected;
+
+    void ButtonClicked()
+    {
+        // Handle the Click event of RadzenButton
+        // selected variable contains the currently selected dropdown value
+    }
+}
