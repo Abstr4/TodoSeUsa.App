@@ -1,4 +1,4 @@
-﻿@page "/cajas"
+﻿@page "/test"
 
 @using TodoSeUsa.Application.Common.Models
 @using TodoSeUsa.Application.Features.Boxes.DTOs
@@ -9,13 +9,8 @@
 @inject DialogService DialogService;
 @inject NavigationManager Navigation;
 
-<PageLayoutSection Title="Cajas">
-    <RadzenCard Style="max-width: 100%">
-        <RadzenStack Gap="1rem">
-            <RadzenCard Variant="Variant.Outlined">
-                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@(async () => await grid.Reload())" ResetButtonClicked="@ResetAsync" />
-            </RadzenCard>
-            <RadzenDataGrid @ref="grid"
+
+<RadzenDataGrid @ref="grid"
                             ColumnWidth="200px"
                             style="height: 400px"
                             IsLoading="@isLoading"
@@ -27,7 +22,6 @@
                             AllowFiltering="true"
                             AllowPaging="true"
                             FilterMode="FilterMode.Simple"
-                            FilterCaseSensitivity="@filterCaseSensitivity"
                             LogicalFilterOperator="@logicalFilterOperator"
                             GridLines="DataGridGridLines.Both"
                             PageSize="5"
@@ -69,16 +63,13 @@
                     </RadzenDataGridColumn>
                 </Columns>
             </RadzenDataGrid>
-        </RadzenStack>
-    </RadzenCard>
-</PageLayoutSection>
 
 @code {
     private RadzenDataGrid<BoxDto> grid = null!;
     private IEnumerable<BoxDto> boxes = null!;
     private int count;
     private bool isLoading = false;
-    private string GridMessage = "No hay cajas para mostrar.";
+    private string GridMessage = "No hay tests para mostrar.";
     private CancellationTokenSource? cts;
 
     private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;

@@ -11,21 +11,9 @@
 <PageLayoutSection Title="Pagos">
     <RadzenCard Style="max-width: 100%">
         <RadzenStack Gap="1rem">
-        <RadzenCard Variant="Variant.Outlined">
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1.5rem" Wrap="FlexWrap.Wrap">
-                <RadzenButton Text="Resetear filtros" Click="@ResetAsync" Icon="refresh" />
-
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-                    <RadzenLabel Text="Filtro lógico:" Component="operator" />
-                    <RadzenDropDown @bind-Value="@logicalFilterOperator" TextProperty="Text" ValueProperty="Value" Name="operator" Change="@(args => grid.Reload())" Data="@RadzenFilteringHelpers.LogicalOperators" />
-                </RadzenStack>
-
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-                    <RadzenLabel Text="Filtro de mayúsculas/minúsculas:" Component="caseSensitivity" />
-                    <RadzenDropDown @bind-Value="@filterCaseSensitivity" TextProperty="Text" ValueProperty="Value" Name="caseSensitivity" Change="@(args => grid.Reload())" Data="@RadzenFilteringHelpers.CaseSensitivities" />
-                </RadzenStack>
-            </RadzenStack>
-        </RadzenCard>
+            <RadzenCard Variant="Variant.Outlined">
+                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@(async () => await grid.Reload())" ResetButtonClicked="@ResetAsync" />
+            </RadzenCard>
         <RadzenDataGrid style="height: 400px"
                         @ref="grid"
                         IsLoading="@isLoading"
