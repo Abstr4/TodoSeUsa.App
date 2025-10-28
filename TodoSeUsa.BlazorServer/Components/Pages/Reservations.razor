@@ -25,7 +25,6 @@
                         AllowSorting="true"
                         AllowFiltering="true"
                         AllowPaging="true"
-                        AllowColumnResize="true"
                         FilterMode="FilterMode.Simple"
                         FilterCaseSensitivity="@filterCaseSensitivity"
                         LogicalFilterOperator="@logicalFilterOperator"
@@ -40,7 +39,6 @@
                         EqualsText="Equivale"
                         AndOperatorText="Y"
                         OrOperatorText="O">
-
             <Columns>
                 <RadzenDataGridColumn Frozen="true" Property="@nameof(ReservationDto.Id)" Title="ID" Width="80px" MinWidth="80px" TextAlign="TextAlign.Center" />
 
@@ -68,8 +66,8 @@
 
 
 @code {
-    private RadzenDataGrid<ReservationDto> grid;
-    private IEnumerable<ReservationDto> reservations;
+    private RadzenDataGrid<ReservationDto> grid = null!;
+    private IEnumerable<ReservationDto>? reservations;
     private int count;
     private bool isLoading = false;
     private string GridMessage = "No hay reservas para mostrar."; 

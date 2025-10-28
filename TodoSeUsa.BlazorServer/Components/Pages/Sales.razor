@@ -25,7 +25,6 @@
                             AllowSorting="true"
                             AllowFiltering="true"
                             AllowPaging="true"
-                            AllowColumnResize="true"
                             FilterMode="FilterMode.Simple"
                             FilterCaseSensitivity="@filterCaseSensitivity"
                             LogicalFilterOperator="@logicalFilterOperator"
@@ -40,7 +39,6 @@
                             EqualsText="Equivale"
                             AndOperatorText="Y"
                             OrOperatorText="O">
-
                 <Columns>
                     <RadzenDataGridColumn Frozen="true" Property="@nameof(SaleDto.Id)" Title="ID" Width="80px" MinWidth="80px" TextAlign="TextAlign.Center" />
 
@@ -67,8 +65,8 @@
 
 
 @code {
-    private RadzenDataGrid<SaleDto> grid;
-    private IEnumerable<SaleDto> sales;
+    private RadzenDataGrid<SaleDto> grid = null!;
+    private IEnumerable<SaleDto>? sales;
     private int count;
     private bool isLoading = false;
     private string GridMessage = "No hay ventas para mostrar.";

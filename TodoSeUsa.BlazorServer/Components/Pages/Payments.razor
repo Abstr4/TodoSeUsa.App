@@ -28,7 +28,6 @@
                         FilterCaseSensitivity="@filterCaseSensitivity"
                         LogicalFilterOperator="@logicalFilterOperator"
                         GridLines="@gridLines"
-                        AllowColumnResize="true"
                         PageSize="5"
                         PagerHorizontalAlign="HorizontalAlign.Center"
                         EmptyText="@GridMessage"
@@ -39,7 +38,6 @@
                         EqualsText="Equivale"
                         AndOperatorText="Y"
                         OrOperatorText="O">
-
             <Columns>
                 <RadzenDataGridColumn Frozen="true" Property="@nameof(PaymentDto.Id)" Title="ID" Width="80px" MinWidth="80px" TextAlign="TextAlign.Center" />
 
@@ -59,8 +57,8 @@
 </PageLayoutSection>
 
 @code {
-    private RadzenDataGrid<PaymentDto> grid;
-    private IEnumerable<PaymentDto> payments;
+    private RadzenDataGrid<PaymentDto> grid = null!;
+    private IEnumerable<PaymentDto>? payments;
     private int count;
     private bool isLoading = false;
     private string GridMessage = "No hay pagos para mostrar.";
