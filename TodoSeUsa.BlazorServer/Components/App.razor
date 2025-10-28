@@ -10,16 +10,14 @@
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["TodoSeUsa.BlazorServer.styles.css"]" />
     <link rel="stylesheet" href="@Assets["lib/bootstrap-icons/bootstrap-icons.css"]" />
-    @* <link rel="stylesheet" href="_content/Radzen.Blazor/css/standard-dark.css" /> *@
-    @* <link rel="stylesheet" href="_content/Radzen.Blazor/css/standard-wcag.css" />  *@
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    <HeadOutlet @rendermode="InteractiveServer" />
     <RadzenTheme Theme="standard" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer"/>
+    <Routes @rendermode="InteractiveServer" />
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
 </body>

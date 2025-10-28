@@ -1,28 +1,14 @@
-﻿@typeparam TItem
-
-<div class="rz-cell-actions" style="display: flex; gap: 6px;">
-    <RadzenButton Icon="visibility"
-                  ButtonStyle="ButtonStyle.Light"
-                  Size="ButtonSize.Small"
-                  Text="Ver"
-                  Click="@(() => OnViewClick.InvokeAsync(Item))" />
-
-    <RadzenButton Icon="edit"
-                  ButtonStyle="ButtonStyle.Primary"
-                  Size="ButtonSize.Small"
-                  Text="Editar"
-                  Click="@(() => OnEditClick.InvokeAsync(Item))" />
-
-    <RadzenButton Icon="delete"
-                  ButtonStyle="ButtonStyle.Danger"
-                  Size="ButtonSize.Small"
-                  Text="Eliminar"
-                  Click="@((item) => OnDeleteClick.InvokeAsync(Item))" />
+﻿@typeparam TItem 
+<div class="rz-cell-actions" style="display: flex; gap: 6px;"> 
+    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => OnView.InvokeAsync(Item))" />
+    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => OnEdit.InvokeAsync(Item))" />
+    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@((item) => OnDelete.InvokeAsync(Item))" />
 </div>
+
 
 @code{
     [Parameter] public TItem Item { get; set; } = default!;
-    [Parameter] public EventCallback<TItem> OnViewClick { get; set; }
-    [Parameter] public EventCallback<TItem> OnEditClick { get; set; }
-    [Parameter] public EventCallback<TItem> OnDeleteClick { get; set; }
+    [Parameter] public EventCallback<TItem> OnView { get; set; }
+    [Parameter] public EventCallback<TItem> OnEdit { get; set; }
+    [Parameter] public EventCallback<TItem> OnDelete { get; set; }
 }

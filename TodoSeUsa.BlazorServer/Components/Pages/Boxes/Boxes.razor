@@ -3,6 +3,7 @@
 @using TodoSeUsa.Application.Common.Models
 @using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
+@using TodoSeUsa.BlazorServer.Components.Pages.Tests
 @using TodoSeUsa.BlazorServer.Helpers
 
 @inject IBoxService boxService;
@@ -16,23 +17,24 @@
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@(async () => await grid.Reload())" ResetButtonClicked="@ResetAsync" />
             </RadzenCard>
             <RadzenDataGrid @ref="grid"
-                            ColumnWidth="200px"
                             style="height: 400px"
                             IsLoading="@isLoading"
                             TItem="BoxDto"
                             Data="@boxes"
                             Count="@count"
+                            EmptyText="@GridMessage"
+                            LogicalFilterOperator="@logicalFilterOperator"
+                            @bind-Value="@selectedBoxes"
                             LoadData="@LoadData"
+                            SelectionMode="DataGridSelectionMode.Single"
+                            PageSize="5"
                             AllowSorting="true"
                             AllowFiltering="true"
                             AllowPaging="true"
                             FilterMode="FilterMode.Simple"
-                            FilterCaseSensitivity="@filterCaseSensitivity"
-                            LogicalFilterOperator="@logicalFilterOperator"
+                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                             GridLines="DataGridGridLines.Both"
-                            PageSize="5"
                             PagerHorizontalAlign="HorizontalAlign.Center"
-                            EmptyText="@GridMessage"
                             ClearFilterText="Limpiar"
                             ApplyFilterText="Aplicar"
                             FilterText="Filtro"
@@ -44,27 +46,26 @@
                             LessThanText="Menor que"
                             GreaterThanOrEqualsText="Mayor o igual que"
                             GreaterThanText="Mayor que"
-                            NotEqualsText="No es igual a">
+                            NotEqualsText="No es igual a"
+                            IsNullText="Es nulo"
+                            IsNotNullText="No es nulo">
+                <HeaderTemplate>
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una caja nueva" Click="@OpenCreateBoxDialog" />
+                </HeaderTemplate>
                 <Columns>
-                    <RadzenDataGridColumn TItem="BoxDto" Title="" Filterable="false" Sortable="false" Resizable="false" Width="80px" MinWidth="80px">
+                    <RadzenDataGridColumn Frozen="true" Property="@nameof(BoxDto.Id)" Title="ID" TextAlign="TextAlign.Center" />
+
+                    <RadzenDataGridColumn Property="@nameof(BoxDto.BoxCode)" Title="Código" />
+
+                    <RadzenDataGridColumn Property="@nameof(BoxDto.TotalProducts)" Title="Cant. productos" />
+
+                    <RadzenDataGridColumn Property="@nameof(BoxDto.Location)" Title="Ubicación" />
+
+                    <RadzenDataGridColumn Property="@nameof(BoxDto.CreatedAt)" Title="Creada el"/>
+
+                    <RadzenDataGridColumn Frozen="true" Sortable="false" TItem="BoxDto" Title="Acciones">
                         <Template Context="item">
-                            <GridSplitActionsColumn TItem="BoxDto" Item="item" OnActionClick="OnActionClick" />
-                        </Template>
-                    </RadzenDataGridColumn>
-
-                    <RadzenDataGridColumn Frozen="true" Property="@nameof(BoxDto.Id)" Title="ID" Width="80px" TextAlign="TextAlign.Center" />
-
-                    <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.BoxCode)" Title="Código" Width="80px" />
-
-                    <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.TotalProducts)" Title="Cant. productos" Width="120px" />
-
-                    <RadzenDataGridColumn Property="@nameof(BoxDto.Location)" Title="Ubicación" Width="160px" />
-
-                    <RadzenDataGridColumn Property="@nameof(BoxDto.CreatedAt)" Title="Creada el" Width="160px" />
-
-                    <RadzenDataGridColumn Frozen="true" TItem="BoxDto" Title="Acciones" Filterable="false" Sortable="false" Width="300px" MinWidth="300px">
-                        <Template Context="item">
-                            <GridRowActionsColumn TItem="BoxDto" Item="item" OnViewClick="@(box => ViewBox(box))" OnEditClick="@(box => EditBox(box))" OnDeleteClick="@(box => DeleteBox(box))" />
+                            <GridRowActionsColumn TItem="BoxDto" Item="item" OnView="@(box => ViewBox(box))" OnEdit="@(box => EditBox(box))" OnDelete="@(box => DeleteBox(box))" />
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -75,22 +76,25 @@
 
 @code {
     private RadzenDataGrid<BoxDto> grid = null!;
-    private IEnumerable<BoxDto> boxes = null!;
+    private IEnumerable<BoxDto>? boxes;
+    private IList<BoxDto>? selectedBoxes;
     private int count;
     private bool isLoading = false;
     private string GridMessage = "No hay cajas para mostrar.";
     private CancellationTokenSource? cts;
 
-    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
-    private FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    void ClearSelection()
     {
-        if (firstRender)
-        {
-            await grid.Reload();
-        }
+        selectedBoxes = null;
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadData(new LoadDataArgs());
+    }
+
+    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
 
     async Task LoadData(LoadDataArgs args)
     {
@@ -109,10 +113,12 @@
             {
                 boxes = result.Value.Items;
                 count = result.Value.Count;
+                selectedBoxes = boxes.Take(1).ToList();
             }
             else
             {
                 boxes = [];
+                selectedBoxes = [];
                 count = 0;
                 GridMessage = result.Error.Description;
             }
@@ -156,30 +162,15 @@
         }
     }
 
-    private void OnActionClick((RadzenSplitButtonItem button, BoxDto item) args)
+    public async Task OpenCreateBoxDialog()
     {
-        if (args.button != null && !string.IsNullOrWhiteSpace(args.button.Value))
-        {
-            switch (args.button.Value.ToString())
-            {
-                case "view":
-                    ViewBox(args.item);
-                    break;
-                case "edit":
-                    EditBox(args.item);
-                    break;
-                case "delete":
-                    _ = DeleteBox(args.item);
-                    break;
-                default:
-                    ViewBox(args.item);
-                    break;
-            }
-        }
-        else
-        {
-            ViewBox(args.item);
-        }
+        await DialogService.OpenAsync<CreateBox>("Crear una nueva caja",
+               new Dictionary<string, object>(),
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               });
     }
 
     async Task ResetAsync()

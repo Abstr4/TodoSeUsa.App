@@ -1,0 +1,101 @@
+﻿@page "/test"
+
+@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.Boxes.DTOs
+@using TodoSeUsa.Application.Features.Boxes.Interfaces
+
+@inject IBoxService boxService;
+@inject DialogService DialogService;
+@inject NavigationManager Navigation;
+
+<PageLayoutSection Title="Cajas">
+    <GenericDataGrid TItem="BoxDto"
+                     Data="@boxes"
+                     Count="@count"
+                     LoadData="@LoadData"
+                     OnView="@HandleViewBoxAsync"
+                     OnEdit="@HandleEditBoxAsync"
+                     OnDelete="@HandleDeleteBoxAsync">
+        <ChildColumns>
+            <RadzenDataGridColumn TItem="BoxDto" Property="Id" Title="ID" Width="80px" />
+            <RadzenDataGridColumn TItem="BoxDto" Property="BoxCode" Title="Código" Width="100px" />
+            <RadzenDataGridColumn TItem="BoxDto" Property="Location" Title="Ubicación" Width="200px" />
+            <RadzenDataGridColumn TItem="BoxDto" Property="CreatedAt" Title="Creada el" Width="200px" />
+        </ChildColumns>
+    </GenericDataGrid>
+</PageLayoutSection>
+
+@code 
+{
+    private IEnumerable<BoxDto>? boxes;
+    private int count;
+    private bool isLoading;
+    private CancellationTokenSource? cts;
+    private string GridEmptyText { get; set; } = string.Empty;
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+
+        try
+        {
+            var query = new QueryItem(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? 5);
+
+            var result = await boxService.GetBoxesWithPaginationAsync(query, cts.Token);
+            if (result.IsSuccess)
+            {
+                boxes = result.Value.Items;
+                count = result.Value.Count;
+            }
+            else
+            {
+                boxes = [];
+                count = 0;
+                GridEmptyText = "No hay cajas para mostrar";
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // ignore cancelled loads
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    // private void OnGridReady(RadzenDataGrid<BoxDto> instance)
+    // {
+    //     grid = instance;
+    // }
+
+    private void HandleViewBoxAsync(BoxDto box)
+    {
+        Navigation.NavigateTo($"/cajas/{box.Id}");
+    }
+
+    private void HandleEditBoxAsync(BoxDto box)
+    {
+
+        Navigation.NavigateTo($"/cajas/editar/{box.Id}");
+    }
+
+    private async void HandleDeleteBoxAsync(BoxDto box)
+    {
+        var confirmed = await DialogService.Confirm(
+            $"¿Eliminar la caja {box.BoxCode}?",
+            "Confirmar eliminación",
+            new ConfirmOptions { OkButtonText = "Sí", CancelButtonText = "No" });
+
+        if (confirmed == true)
+        {
+            Console.WriteLine($"Deleting box {box.Id}");
+
+            // await grid.Reload();
+        }
+    }
+}

@@ -1,0 +1,50 @@
+﻿@typeparam TItem 
+
+<RadzenSplitButton Icon="more_vert"
+                   Size="ButtonSize.Small"
+                   Click="@(args => OnClick(args))">
+    <ChildContent>
+        <RadzenSplitButtonItem Text="Ver" Value="view" Icon="visibility" />
+        <RadzenSplitButtonItem Text="Editar" Value="edit" Icon="edit" />
+        <RadzenSplitButtonItem Text="Eliminar" Value="delete" Icon="delete" />
+    </ChildContent>
+</RadzenSplitButton>
+
+@code
+{
+    [Parameter] public TItem Item { get; set; } = default!;
+
+    [Parameter] public EventCallback<TItem> OnView { get; set; }
+    [Parameter] public EventCallback<TItem> OnEdit { get; set; }
+    [Parameter] public EventCallback<TItem> OnDelete { get; set; }
+
+    private async Task OnClick(RadzenSplitButtonItem item)
+    {
+        if (item is not null)
+        {
+            switch (item.Value)
+            {
+                case "view":
+                    if (OnView.HasDelegate)
+                        await OnView.InvokeAsync(Item);
+                    break;
+
+                case "edit":
+                    if (OnEdit.HasDelegate)
+                        await OnEdit.InvokeAsync(Item);
+                    break;
+
+                case "delete":
+                    if (OnDelete.HasDelegate)
+                        await OnDelete.InvokeAsync(Item);
+                    break;
+            }
+        }
+        else
+        {
+            if (OnView.HasDelegate)
+                await OnView.InvokeAsync(Item);
+        }
+
+    }
+}

@@ -1,0 +1,107 @@
+﻿@typeparam TItem
+@using Radzen
+@using TodoSeUsa.BlazorServer.Helpers
+
+<RadzenCard Style="max-width: 100%">
+    <RadzenStack Gap="1rem">
+        <RadzenCard Variant="Variant.Outlined">
+            <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@(async () => await _grid.Reload())" ResetButtonClicked="@ReloadAsync" />
+        </RadzenCard>
+        <RadzenDataGrid @ref="_grid"
+                        TItem="TItem"
+                        Data="@Data"
+                        Count="@Count"
+                        LoadData="@LoadData"
+                        IsLoading="@IsLoading"
+                        AllowSorting="true"
+                        AllowFiltering="true"
+                        AllowPaging="true"
+                        FilterMode="FilterMode.Simple"
+                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        LogicalFilterOperator="@logicalFilterOperator"
+                        GridLines="Radzen.DataGridGridLines.Both"
+                        PageSize="5"
+                        PagerHorizontalAlign="HorizontalAlign.Center"
+                        EmptyText="@EmptyText"
+                        ClearFilterText="Limpiar"
+                        ApplyFilterText="Aplicar"
+                        FilterText="Filtro"
+                        ContainsText="Contiene"
+                        EqualsText="Equivale"
+                        AndOperatorText="Y"
+                        OrOperatorText="O"
+                        LessThanOrEqualsText="Menor o igual que"
+                        LessThanText="Menor que"
+                        GreaterThanOrEqualsText="Mayor o igual que"
+                        GreaterThanText="Mayor que"
+                        IsNullText="-"
+                        style="height: 400px">
+
+            <Columns>
+                <RadzenDataGridColumn TItem="TItem" Width="80px" MinWidth="80px" Resizable="false">
+                    <Template Context="item">
+                        <GridSplitActions TItem="TItem"
+                              Item="item"
+                              OnView="@HandleViewItemAsync"
+                              OnEdit="@HandleEditItemAsync"
+                              OnDelete="@HandleDeleteItemAsync" />
+                    </Template>
+                </RadzenDataGridColumn>
+                @ChildColumns
+                <RadzenDataGridColumn TItem="TItem" Title="Acciones" Width="200px" MinWidth="200">
+                    <Template Context="item">
+                        <GridRowActions TItem="TItem"
+                                        Item="item"
+                                        OnView="@HandleViewItemAsync"
+                                        OnEdit="@HandleEditItemAsync"
+                                        OnDelete="@HandleDeleteItemAsync" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private RadzenDataGrid<TItem> _grid = null!;
+
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+    [Parameter] public int Count { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public EventCallback<LoadDataArgs> LoadData { get; set; }
+    [Parameter] public EventCallback<RadzenDataGrid<TItem>> RefChanged { get; set; }
+
+    [Parameter] public RenderFragment ChildColumns { get; set; } = default!;
+    [Parameter] public string EmptyText { get; set; } = string.Empty;
+
+    [Parameter] public EventCallback<TItem> OnView { get; set; }
+    [Parameter] public EventCallback<TItem> OnEdit { get; set; }
+    [Parameter] public EventCallback<TItem> OnDelete { get; set; }
+
+    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
+
+    private async Task HandleViewItemAsync(TItem item)
+    {
+        if (OnView.HasDelegate)
+            await OnView.InvokeAsync(item);
+    }
+
+    private async Task HandleEditItemAsync(TItem item)
+    {
+        if (OnEdit.HasDelegate)
+            await OnEdit.InvokeAsync(item);
+    }
+
+    private async Task HandleDeleteItemAsync(TItem item)
+    {
+        if (OnDelete.HasDelegate)
+            await OnDelete.InvokeAsync(item);
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _grid.Reset(true);
+        await _grid.FirstPage(true);
+    }
+}

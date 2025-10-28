@@ -49,7 +49,7 @@ public class ProductService : IProductService
     }
 
 
-    public async Task<Result<PagedItems<ProductDto>>> GetProductsWithPagination(QueryItem request, CancellationToken cancellationToken)
+    public async Task<Result<PagedItems<ProductDto>>> GetProductsWithPaginationAsync(QueryItem request, CancellationToken cancellationToken)
     {
         try
         {
