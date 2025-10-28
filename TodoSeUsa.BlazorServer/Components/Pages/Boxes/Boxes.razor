@@ -65,7 +65,7 @@
 
                     <RadzenDataGridColumn Frozen="true" Sortable="false" TItem="BoxDto" Title="Acciones">
                         <Template Context="item">
-                            <GridRowActionsColumn TItem="BoxDto" Item="item" OnView="@(box => ViewBox(box))" OnEdit="@(box => EditBox(box))" OnDelete="@(box => DeleteBox(box))" />
+                            <GridRowActionsColumn TItem="BoxDto" Item="item" OnView="@(() => ViewBox(item))" OnEdit="@(() => EditBox(item))" OnDelete="@(() => DeleteBox(item))" />
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
