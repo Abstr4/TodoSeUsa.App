@@ -13,6 +13,35 @@ public class BoxService : IBoxService
         _logger = logger;
         _context = context;
     }
+    
+    public async Task<Result<bool>> CreateBoxAsync(CreateBoxDto boxDto, CancellationToken ct)
+    {
+        var validator = new CreateBoxDtoValidator();
+        var validationResult = await validator.ValidateAsync(boxDto, ct);
+
+        if (!validationResult.IsValid)
+            return Result.Failure<bool>(BoxErrors.Failure(validationResult.ToString()));
+
+        Box box = new() 
+        {
+            Location = boxDto.Location
+        };
+
+        try
+        {
+            await _context.Boxes.AddAsync(box, ct);
+            await _context.SaveChangesAsync(ct);
+            return Result.Success(true);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while trying to create the box.");
+            return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar crear la caja."));
+        }
+
+    }
+
     public async Task<Result<PagedItems<BoxDto>>> GetBoxesWithPaginationAsync(QueryItem request, CancellationToken cancellationToken)
     {
         try
