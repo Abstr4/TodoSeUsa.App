@@ -151,10 +151,16 @@ public class BoxService : IBoxService
         }
     }
 
-    public async Task<Result<bool>> EditBoxById(int boxId, EditBoxDto boxDto, CancellationToken cancellationToken)
+    public async Task<Result<bool>> EditBoxById(int boxId, EditBoxDto editBoxDto, CancellationToken cancellationToken)
     {
         if (boxId <= 0)
             return Result.Failure<bool>(BoxErrors.Failure("El Id debe ser mayor que cero."));
+
+        var validator = new EditBoxDtoValidator();
+        var validationResult = await validator.ValidateAsync(editBoxDto, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return Result.Failure<bool>(BoxErrors.Failure(validationResult.ToString()));
 
         try
         {
@@ -162,10 +168,6 @@ public class BoxService : IBoxService
             if (box == null)
             {
                 return Result.Failure<bool>(BoxErrors.NotFound(boxId));
-            }
-            if (!string.IsNullOrWhiteSpace(boxDto.Location))
-            {
-                box.Location = boxDto.Location;
             }
             await _context.SaveChangesAsync(cancellationToken);
             return Result.Success(true);
