@@ -169,6 +169,10 @@ public class BoxService : IBoxService
             {
                 return Result.Failure<bool>(BoxErrors.NotFound(boxId));
             }
+            if (!string.IsNullOrWhiteSpace(editBoxDto.Location))
+            {
+                box.Location = editBoxDto.Location;
+            }
             await _context.SaveChangesAsync(cancellationToken);
             return Result.Success(true);
         }
