@@ -1,4 +1,5 @@
-﻿using TodoSeUsa.Application.Features.Products.DTOs;
+﻿using TodoSeUsa.Application.Features.Boxes.DTOs;
+using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Products.Interfaces;
 
 namespace TodoSeUsa.Application.Features.Products.Services;
@@ -14,12 +15,22 @@ public class ProductService : IProductService
         _context = context;
     }
 
-    public async Task<Result<List<ProductDto>>> GetProductsByBoxIdAsync(int boxId, CancellationToken cancellationToken)
+    public async Task<Result<PagedItems<ProductDto>>> GetProductsByBoxIdWithPaginationAsync(QueryItem request, int boxId, CancellationToken cancellationToken)
     {
         try
         {
-            var products = await _context.Products
-                .Where(p => p.BoxId == boxId)
+            IQueryable<Product> query = _context.Products
+                .AsNoTracking()
+                .AsQueryable();
+
+            query = query.ApplyFilter(request.Filter);
+            query = query.ApplySorting(request.OrderBy);
+
+            var count = await query.CountAsync(cancellationToken);
+
+            var productsDtos = await query
+                .Skip(request.Skip)
+                .Take(request.Take)
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
@@ -39,12 +50,15 @@ public class ProductService : IProductService
                 })
                 .ToListAsync(cancellationToken);
 
-            return Result.Success(products);
+            var pagedItems = new PagedItems<ProductDto>() { Items = productsDtos, Count = count };
+
+
+            return Result.Success(pagedItems);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while retrieving paged products.");
-            return Result.Failure<List<ProductDto>>(ProductErrors.Failure());
+            _logger.LogError(ex, $"An error occurred while retrieving paged products with boxId: {boxId}.");
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure());
         }
     }
 

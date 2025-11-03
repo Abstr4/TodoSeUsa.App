@@ -6,5 +6,5 @@ public interface IProductService
 {
     Task<Result<PagedItems<ProductDto>>> GetProductsWithPaginationAsync(QueryItem request, CancellationToken cancellationToken);
 
-    Task<Result<List<ProductDto>>> GetProductsByBoxIdAsync(int boxId, CancellationToken cancellationToken);
+    Task<Result<PagedItems<ProductDto>>> GetProductsByBoxIdWithPaginationAsync(QueryItem request, int boxId, CancellationToken cancellationToken);
 }

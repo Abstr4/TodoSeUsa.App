@@ -68,6 +68,8 @@
 
                 <RadzenDataGridColumn Property="@nameof(ProductDto.Season)" Title="Temporada" Width="128px"/>
 
+                <RadzenDataGridColumn Property="@nameof(ProductDto.BoxId)" Title="Id de la caja" Width="180px"/>
+
                 <RadzenDataGridColumn Property="@nameof(ProductDto.ConsignmentId)" Title="Id de la consignación" Width="180px"/>
 
                 <RadzenDataGridColumn Property="@nameof(ProductDto.SaleId)" Title="Id de la venta" Width="128px"/>
@@ -83,7 +85,7 @@
 
 @code {
     private RadzenDataGrid<ProductDto> grid;
-    private IEnumerable<ProductDto> products;
+    private IEnumerable<ProductDto>? products;
     private int count;
     private bool isLoading = false;
     private string GridMessage = "No hay productos para mostrar.";
