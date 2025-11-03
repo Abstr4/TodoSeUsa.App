@@ -108,6 +108,26 @@ public class BoxService : IBoxService
         {
             _logger.LogError(ex, "An error occurred while retrieving the box with ID {BoxId}.", boxId);
             return Result.Failure<BoxDto>(BoxErrors.Failure());
+    public async Task<Result<bool>> EditBoxById(int boxId, EditBoxDto boxDto, CancellationToken cancellationToken)
+    {
+        try
+        {
+            Box? box = await _context.Boxes.FirstOrDefaultAsync(b => b.Id == boxId, cancellationToken);
+            if (box == null)
+            {
+                return Result.Failure<bool>(BoxErrors.NotFound(boxId));
+            }
+            if (!string.IsNullOrWhiteSpace(boxDto.Location))
+            {
+                box.Location = boxDto.Location;
+            }
+            await _context.SaveChangesAsync(cancellationToken);
+            return Result.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while trying to edit the box with ID {boxId}.", boxId);
+            return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar editar la caja."));
         }
     }
 

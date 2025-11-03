@@ -1,0 +1,39 @@
+﻿@using System.Text.Json
+@using TodoSeUsa.Application.Features.Boxes.DTOs
+
+@inject Radzen.DialogService dialogService
+
+
+<RadzenTemplateForm TItem="EditBoxDto" Data=@editBoxDto Submit=@OnSubmit>
+    <RadzenStack Gap="1rem">
+        <RadzenFormField Text="Ubicación" Variant="@variant">
+            <ChildContent>
+                <RadzenTextBox Name="Location" @bind-Value=@editBoxDto.Location Style="border: 1px solid;"/>
+            </ChildContent>
+            <Helper>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <RadzenLengthValidator Component="Location" Max="250" Text="La ubicación no puede tener más de 250 carácteres"></RadzenLengthValidator>
+                </div>
+            </Helper>
+        </RadzenFormField>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+
+@code {
+
+    [Parameter] public int BoxId { get; set; }
+
+    Variant variant = Variant.Filled;
+
+    EditBoxDto editBoxDto = new();
+
+    void OnSubmit(EditBoxDto editBoxDto)
+    {
+        Console.WriteLine($"Submit: {JsonSerializer.Serialize(editBoxDto, new JsonSerializerOptions() { WriteIndented = true })}");
+    }
+}
