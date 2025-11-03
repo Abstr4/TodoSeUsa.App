@@ -11,4 +11,6 @@ public record BoxDto
     public string Location { get; init; } = string.Empty;
 
     public DateTime CreatedAt { get; init; }
+
+    public DateTime UpdatedAt { get; init; }
 }

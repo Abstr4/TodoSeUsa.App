@@ -95,7 +95,12 @@ public static class DbSeeder
         {
             new() { Price = 100, Category = "Electronics", Description = "Wireless Mouse", Quality = Quality.New, ConsignmentId = consignment.Id, BoxId = box.Id },
             new() { Price = 250, Category = "Home", Description = "Blender", Quality = Quality.Good, ConsignmentId = consignment.Id, BoxId = box.Id },
-            new() { Price = 80, Category = "Clothing", Description = "Jacket", Quality = Quality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id }
+            new() { Price = 800, Category = "Clothing", Description = "Jacket", Quality = Quality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id },
+            new() { Price = 2000, Category = "CategoryTest1", Description = "DescriptionTest1", Quality = Quality.New, ConsignmentId = consignment.Id, BoxId = box.Id },
+            new() { Price = 4030, Category = "CategoryTest2", Description = "DescriptionTest2", Quality = Quality.Poor, ConsignmentId = consignment.Id, BoxId = box.Id },
+            new() { Price = 6050, Category = "CategoryTest3", Description = "DescriptionTest3", Quality = Quality.LikeNew, ConsignmentId = consignment.Id, BoxId = box.Id },
+            new() { Price = 12980, Category = "CategoryTest4", Description = "DescriptionTest4", Quality = Quality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id },
+            new() { Price = 8130, Category = "CategoryTest5", Description = "DescriptionTest5", Quality = Quality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id }
         };
 
         await context.Products.AddRangeAsync(products);

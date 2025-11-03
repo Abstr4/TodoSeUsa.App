@@ -9,6 +9,8 @@
 @inject IBoxService boxService;
 @inject DialogService DialogService;
 @inject NavigationManager Navigation;
+@inject NotificationService NotificationService;
+@inject SimpleNotifications SimpleNotifications;
 
 <PageLayoutSection Title="Cajas">
     <RadzenCard Style="max-width: 100%">
@@ -50,22 +52,35 @@
                             IsNullText="Es nulo"
                             IsNotNullText="No es nulo">
                 <HeaderTemplate>
-                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una caja nueva" Click="@OpenCreateBoxDialog" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una caja nueva" Click="@HandleCreateBox" />
                 </HeaderTemplate>
                 <Columns>
                     <RadzenDataGridColumn Frozen="true" Property="@nameof(BoxDto.Id)" Title="ID" TextAlign="TextAlign.Center" />
 
-                    <RadzenDataGridColumn Property="@nameof(BoxDto.BoxCode)" Title="Código" />
+                    <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.BoxCode)" Title="Código" />
 
-                    <RadzenDataGridColumn Property="@nameof(BoxDto.TotalProducts)" Title="Cant. productos" />
+                    <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.TotalProducts)" Title="Cant. productos" >
+                        <Template Context="box">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                                <RadzenText>@box.TotalProducts</RadzenText>
+                                @if (box.TotalProducts > 0)
+                                {
+                                    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ShowBoxProducts(box.Id, box.BoxCode))" />
+                                }
+                            </RadzenStack>
+                        </Template>
+                    </RadzenDataGridColumn>
 
                     <RadzenDataGridColumn Property="@nameof(BoxDto.Location)" Title="Ubicación" />
 
                     <RadzenDataGridColumn Property="@nameof(BoxDto.CreatedAt)" Title="Creada el"/>
 
+                    <RadzenDataGridColumn Property="@nameof(BoxDto.UpdatedAt)" Title="Última actualización"/>
+
                     <RadzenDataGridColumn Frozen="true" Sortable="false" TItem="BoxDto" Title="Acciones">
-                        <Template Context="item">
-                            <GridRowActionsColumn TItem="BoxDto" Item="item" OnView="@(() => ViewBox(item))" OnEdit="@(() => EditBox(item))" OnDelete="@(() => DeleteBox(item))" />
+                        <Template Context="box">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() =>HandleEditBox(box.Id, box.BoxCode))" />
+                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(() => HandleDeleteBox(box.Id, box.BoxCode))" />
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -83,17 +98,6 @@
     private string GridMessage = "No hay cajas para mostrar.";
     private CancellationTokenSource? cts;
 
-    void ClearSelection()
-    {
-        selectedBoxes = null;
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        await LoadData(new LoadDataArgs());
-    }
-
     private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
 
     async Task LoadData(LoadDataArgs args)
@@ -104,73 +108,103 @@
 
         cts?.Cancel();
         cts = new CancellationTokenSource();
-        try
-        {
-            QueryItem query = new(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? 5);
 
-            var result = await boxService.GetBoxesWithPaginationAsync(query, cts.Token);
-            if (result.IsSuccess)
-            {
-                boxes = result.Value.Items;
-                count = result.Value.Count;
-                selectedBoxes = boxes.Take(1).ToList();
-            }
-            else
-            {
-                boxes = [];
-                selectedBoxes = [];
-                count = 0;
-                GridMessage = result.Error.Description;
-            }
-        }
-        catch (OperationCanceledException)
-        {
+        QueryItem query = new(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? 5);
 
-        }
-        finally
+        var result = await boxService.GetBoxesWithPaginationAsync(query, cts.Token);
+        if (result.IsSuccess)
         {
-            isLoading = false;
+            boxes = result.Value.Items;
+            count = result.Value.Count;
+            selectedBoxes = boxes.Take(1).ToList();
         }
+        else
+        {
+            boxes = [];
+            selectedBoxes = [];
+            count = 0;
+            GridMessage = result.Error.Description;
+        }
+
+        isLoading = false;
     }
 
-    void ViewBox(BoxDto box)
+    public async Task HandleEditBox(int boxId, string boxCode)
     {
-        // Example 1: navigate to a details page
-        Navigation.NavigateTo($"/cajas/{box.Id}");
+        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxCode}'",
+               new Dictionary<string, object>() { { "BoxId", boxId } },
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
 
-        // Example 2 (optional): open a dialog instead
-        // await DialogService.OpenAsync<YourBoxDetailsComponent>("Detalles de Caja", new Dictionary<string, object> { ["Box"] = box });
-    }
-
-    void EditBox(BoxDto box)
-    {
-        Navigation.NavigateTo($"/cajas/editar/{box.Id}");
-    }
-
-    async Task DeleteBox(BoxDto box)
-    {
-        var confirmed = await DialogService.Confirm(
-            $"¿Eliminar la caja {box.BoxCode}?",
-            "Confirmar eliminación",
-            new ConfirmOptions { OkButtonText = "Sí", CancelButtonText = "No" });
-
-        if (confirmed == true)
+        if (result is bool success && success)
         {
-            Console.WriteLine($"Deleting box {box.Id}");
-
             await grid.Reload();
         }
     }
 
-    public async Task OpenCreateBoxDialog()
+    private async Task HandleDeleteBox(int boxId, string boxCode)
     {
-        await DialogService.OpenAsync<CreateBox>("Crear una nueva caja",
+        var result = await DialogService.OpenAsync<DeleteBoxConfirmation>($"Confirmar eliminación",
+        new Dictionary<string, object>() { { "BoxId", boxId }, { "BoxCode", boxCode } },
+        new DialogOptions()
+            {
+                CloseDialogOnOverlayClick = true
+            }
+        );
+        if (result is Result<bool> deleteResult)
+        {
+            if (deleteResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Caja '{boxCode}' eliminada con éxito.");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleCreateBox()
+    {
+        var result = await DialogService.OpenAsync<CreateBoxForm>("Crear una nueva caja",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
                    Width = "50%",
                    CloseDialogOnOverlayClick = true
-               });
+               }
+        );
+        if (result is Result<bool> createResult)
+        {
+            if (createResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Caja creada con éxito!");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
+            }
+        }
+    }
+
+    public async Task ShowBoxProducts(int boxId, string boxCode)
+    {
+        await DialogService.OpenAsync<BoxProducts>($"Productos en la caja código '{boxCode}'",
+               new Dictionary<string, object>() { { "BoxId", boxId } },
+               new DialogOptions()
+               {
+                   Width = "75%",
+                   Height = "65%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
     }
 
     async Task ResetAsync()

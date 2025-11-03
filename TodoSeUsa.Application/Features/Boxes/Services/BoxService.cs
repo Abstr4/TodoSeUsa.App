@@ -65,7 +65,8 @@ public class BoxService : IBoxService
                     TotalProducts = b.Products.Count,
                     Location = b.Location,
                     BoxCode = $"BOX-{b.Id:D5}",
-                    CreatedAt = b.CreatedAt
+                    CreatedAt = b.CreatedAt,
+                    UpdatedAt = b.UpdatedAt,
                 })
                 .ToListAsync(cancellationToken);
 
