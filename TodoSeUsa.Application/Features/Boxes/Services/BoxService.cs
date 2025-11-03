@@ -2,6 +2,7 @@
 using TodoSeUsa.Application.Common.Validators;
 using TodoSeUsa.Application.Features.Boxes.DTOs;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
+using TodoSeUsa.Application.Features.Boxes.Validators;
 
 namespace TodoSeUsa.Application.Features.Boxes.Services;
 public class BoxService : IBoxService
@@ -45,6 +46,12 @@ public class BoxService : IBoxService
 
     public async Task<Result<PagedItems<BoxDto>>> GetBoxesWithPaginationAsync(QueryItem request, CancellationToken cancellationToken)
     {
+        var validator = new QueryItemValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return Result.Failure<PagedItems<BoxDto>>(BoxErrors.Failure(validationResult.ToString()));
+
         try
         {
             IQueryable<Box> query = _context.Boxes
@@ -85,6 +92,9 @@ public class BoxService : IBoxService
 
     public async Task<Result<BoxDto>> GetByIdAsync(int boxId, CancellationToken cancellationToken)
     {
+        if (boxId <= 0)
+            return Result.Failure<BoxDto>(BoxErrors.Failure("El Id debe ser mayor que cero."));
+
         try
         {
             var box = await _context.Boxes
@@ -114,6 +124,9 @@ public class BoxService : IBoxService
 
     public async Task<Result<bool>> DeleteBoxById(int boxId, CancellationToken cancellationToken)
     {
+        if (boxId <= 0)
+            return Result.Failure<bool>(BoxErrors.Failure("El Id debe ser mayor que cero."));
+
         try
         {
             var box = await _context.Boxes.Include(b => b.Products)
@@ -140,6 +153,9 @@ public class BoxService : IBoxService
 
     public async Task<Result<bool>> EditBoxById(int boxId, EditBoxDto boxDto, CancellationToken cancellationToken)
     {
+        if (boxId <= 0)
+            return Result.Failure<bool>(BoxErrors.Failure("El Id debe ser mayor que cero."));
+
         try
         {
             Box? box = await _context.Boxes.FirstOrDefaultAsync(b => b.Id == boxId, cancellationToken);

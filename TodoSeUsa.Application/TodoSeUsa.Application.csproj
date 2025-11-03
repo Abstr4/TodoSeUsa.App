@@ -13,8 +13,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Common\Validators\PersonalInformationDtoValidator.cs" />
-	  <Compile Remove="Common\Validators\ValidationExtensions.cs" />
+	  <Compile Remove="Features\Boxes\Validators\PersonalInformationDtoValidator.cs" />
+	  <Compile Remove="Features\Boxes\Validators\ValidationExtensions.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

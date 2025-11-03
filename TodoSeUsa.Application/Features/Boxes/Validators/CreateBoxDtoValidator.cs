@@ -1,6 +1,6 @@
 ﻿using TodoSeUsa.Application.Features.Boxes.DTOs;
 
-namespace TodoSeUsa.Application.Common.Validators;
+namespace TodoSeUsa.Application.Features.Boxes.Validators;
 
 public class CreateBoxDtoValidator : AbstractValidator<CreateBoxDto>
 {
