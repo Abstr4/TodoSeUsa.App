@@ -1,6 +1,8 @@
+using CurrieTechnologies.Razor.SweetAlert2;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using TodoSeUsa.Application;
+using TodoSeUsa.BlazorServer;
 using TodoSeUsa.BlazorServer.Components;
 using TodoSeUsa.Infrastructure;
 using TodoSeUsa.Infrastructure.Data;
@@ -8,20 +10,9 @@ using TodoSeUsa.Infrastructure.Persistance.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-builder.Services.AddRadzenComponents();
-
-builder.Services.AddRadzenCookieThemeService(options =>
-{
-    options.Name = "TodoSeUsaApplicationTheme";
-    options.Duration = TimeSpan.FromDays(365);
-});
-
 builder.AddApplicationServices();
 builder.AddInfrastructureServices();
+builder.AddWebServices();
 
 var app = builder.Build();
 
