@@ -1,4 +1,5 @@
 ﻿using System.Linq.Dynamic.Core;
+using TodoSeUsa.Application.Common.Validators;
 using TodoSeUsa.Application.Features.Boxes.DTOs;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
 
@@ -106,8 +107,37 @@ public class BoxService : IBoxService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while retrieving the box with ID {BoxId}.", boxId);
-            return Result.Failure<BoxDto>(BoxErrors.Failure());
+            _logger.LogError(ex, "An error occurred while trying to retrieve the box with ID {boxId}.", boxId);
+            return Result.Failure<BoxDto>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar recuperar la caja."));
+        }
+    }
+
+    public async Task<Result<bool>> DeleteBoxById(int boxId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var box = await _context.Boxes.Include(b => b.Products)
+                .FirstOrDefaultAsync(b => b.Id == boxId, cancellationToken);
+
+            if (box is null)
+                return Result.Failure<bool>(BoxErrors.NotFound(boxId));
+
+            if(box.Products.Count > 0)
+            {
+                return Result.Failure<bool>(BoxErrors.Failure("No se puede borrar una caja que contiene productos."));
+            }
+
+            _context.Boxes.Remove(box);
+            await _context.SaveChangesAsync(cancellationToken);
+            return Result.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while trying to delete the box with ID {boxId}", boxId);
+            return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar borrar la caja."));
+        }
+    }
+
     public async Task<Result<bool>> EditBoxById(int boxId, EditBoxDto boxDto, CancellationToken cancellationToken)
     {
         try

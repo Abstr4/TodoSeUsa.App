@@ -9,4 +9,8 @@ public static class BoxErrors
     public static Error Failure() => Error.Failure(
     "Boxes.Failure",
     "Ocurrió un error inesperado.");
+
+    public static Error Failure(string message) => Error.Failure(
+    "Boxes.Failure",
+    message);
 }
