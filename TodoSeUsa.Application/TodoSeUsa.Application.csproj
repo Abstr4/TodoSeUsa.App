@@ -7,9 +7,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Remove="Common\Profiles\PersonProfile.cs" />
-		<Compile Remove="Common\Validators\PersonalInformationDtoValidator.cs" />
-		<Compile Remove="Common\Validators\ValidationExtensions.cs" />
+	  <Compile Remove="Common\Profiles\**" />
+	  <EmbeddedResource Remove="Common\Profiles\**" />
+	  <None Remove="Common\Profiles\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Common\Validators\PersonalInformationDtoValidator.cs" />
+	  <Compile Remove="Common\Validators\ValidationExtensions.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

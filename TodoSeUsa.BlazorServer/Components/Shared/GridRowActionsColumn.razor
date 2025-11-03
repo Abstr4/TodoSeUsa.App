@@ -1,6 +1,6 @@
 ﻿@typeparam TItem 
 <div class="rz-cell-actions" style="display: flex; gap: 6px;"> 
-    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => OnView.InvokeAsync(Item))" />
+    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => OnView.InvokeAsync(Item))" />
     <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => OnEdit.InvokeAsync(Item))" />
     <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@((item) => OnDelete.InvokeAsync(Item))" />
 </div>
