@@ -140,9 +140,17 @@
                }
         );
 
-        if (result is bool success && success)
+        if (result is Result<bool> editResult)
         {
-            await grid.Reload();
+            if (editResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Caja '{boxCode}' editada con éxito.");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+            }
         }
     }
 
