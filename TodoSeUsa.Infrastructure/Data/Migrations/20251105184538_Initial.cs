@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -260,7 +261,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     Quality = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RefurbishmentCost = table.Column<int>(type: "int", nullable: true),
-                    Season = table.Column<int>(type: "int", nullable: true),
+                    Season = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConsignmentId = table.Column<int>(type: "int", nullable: false),
                     SaleId = table.Column<int>(type: "int", nullable: true),
                     BoxId = table.Column<int>(type: "int", nullable: true),

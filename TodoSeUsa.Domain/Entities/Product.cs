@@ -8,7 +8,7 @@ public class Product : BaseAuditableEntity
 
     public string Description { get; set; } = string.Empty;
 
-    public Quality Quality { get; set; }
+    public ProductQuality Quality { get; set; }
 
     public ProductStatus Status { get; private set; } = ProductStatus.Available;
 

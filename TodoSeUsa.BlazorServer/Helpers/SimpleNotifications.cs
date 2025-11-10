@@ -15,10 +15,14 @@ public class SimpleNotifications
     {
         _notificationService.Notify(new NotificationMessage
         {
+            Style = "position: relative; transform: translateY(-100px);",
             Severity = NotificationSeverity.Success,
             Summary = "Operación exitosa",
             Detail = detail,
-            Duration = 5000
+            Duration = 5000,
+            ShowProgress = true,
+            CloseOnClick = true,
+            Payload = DateTime.Now
         });
     }
 
@@ -29,7 +33,10 @@ public class SimpleNotifications
             Severity = NotificationSeverity.Error,
             Summary = "Operación fallida",
             Detail = detail,
-            Duration = 5000
+            Duration = 5000,
+            ShowProgress = true,
+            CloseOnClick = true,
+            Payload = DateTime.Now
         });
     }
 
@@ -40,7 +47,10 @@ public class SimpleNotifications
             Severity = NotificationSeverity.Warning,
             Summary = "Cuidado!",
             Detail = detail,
-            Duration = 5000
+            Duration = 5000,
+            ShowProgress = true,
+            CloseOnClick = true,
+            Payload = DateTime.Now
         });
     }
 
@@ -51,7 +61,10 @@ public class SimpleNotifications
             Severity = NotificationSeverity.Info,
             Summary = "Info:",
             Detail = detail,
-            Duration = 5000
+            Duration = 5000,
+            ShowProgress = true,
+            CloseOnClick = true,
+            Payload = DateTime.Now
         });
     }
 }

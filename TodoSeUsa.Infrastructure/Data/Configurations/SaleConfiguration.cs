@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TodoSeUsa.Domain.Enums;
 
 namespace TodoSeUsa.Infrastructure.Data.Configurations;
 
@@ -8,11 +9,23 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
     {
         builder.UseTpcMappingStrategy();
 
-        builder.HasKey(c => c.Id);
+        builder.HasKey(s => s.Id);
 
-        builder.Property(c => c.Notes).HasMaxLength(250);
+        builder.Property(s => s.Method)
+        .HasConversion(
+            v => v.ToString(),
+            v => Enum.Parse<PaymentMethod>(v)
+        );
+
+        builder.Property(s => s.Status)
+    .HasConversion(
+        v => v.ToString(),
+        v => Enum.Parse<PaymentStatus>(v)
+    );
+
+        builder.Property(s => s.Notes).HasMaxLength(250);
 
         builder.ToTable("Sales")
-            .HasQueryFilter(b => !b.DeletedAt.HasValue);
+            .HasQueryFilter(s => !s.DeletedAt.HasValue);
     }
 }

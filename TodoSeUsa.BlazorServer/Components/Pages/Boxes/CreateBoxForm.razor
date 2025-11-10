@@ -8,29 +8,24 @@
 
 <RadzenTemplateForm TItem="CreateBoxDto" Data=@createBoxDto Submit=@OnSubmit >
     <RadzenStack Gap="1rem">
-        <RadzenFormField Text="Ubicación" Variant="@variant">
-            <ChildContent>
-                <RadzenTextBox Name="Location" @bind-Value=@createBoxDto.Location Style="border: 1px solid;"/>
-            </ChildContent>
-            <Helper>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <RadzenText TextStyle="TextStyle.Caption">* campo requerido</RadzenText>
-                    <RadzenRequiredValidator Component="Location" Text="La ubicacion es obligatoria." />
-                </div>
-            </Helper>
-        </RadzenFormField>
-
+        <RadzenFieldset Text="Info. de la caja">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+                <RadzenLabel Component="Location">
+                    Ubicación Física <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                </RadzenLabel>
+                <RadzenTextBox Name="Location" @bind-Value=@createBoxDto.Location Style="width: 100%; max-width: 400px;" Change=@OnFieldChanged />
+                <RadzenRequiredValidator Component="Location" Text="- La ubicación física es requerida." />
+                <RadzenLengthValidator Min="1" Max="250" Component="Location" Text="- La ubicación física debe entre 1 y 250 carácteres."></RadzenLengthValidator>
+            </RadzenStack>
+        </RadzenFieldset>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" />
+            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@isSaveDisabled />
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
 
-
-
 @code {
-
-    private Variant variant = Variant.Filled;
+    bool isSaveDisabled = true;
 
     private CreateBoxDto createBoxDto = new();
 
@@ -38,5 +33,11 @@
     {
         var result = await BoxService.CreateBoxAsync(createBoxDto, CancellationToken.None);
         DialogService.Close(result);
+    }
+
+    private void OnFieldChanged()
+    {
+        isSaveDisabled = createBoxDto.Location == string.Empty;
+        StateHasChanged();
     }
 }

@@ -111,7 +111,8 @@ public class BoxService : IBoxService
                 TotalProducts = box.Products.Count,
                 Location = box.Location,
                 BoxCode = $"BOX-{box.Id:D5}",
-                CreatedAt = box.CreatedAt
+                CreatedAt = box.CreatedAt,
+                UpdatedAt = box.UpdatedAt
             };
             return Result.Success(boxDto);
         }

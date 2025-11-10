@@ -1,12 +1,20 @@
 ﻿@using Microsoft.AspNetCore.Components
 
-<div class="d-flex align-items-center justify-content-center position-relative py-2 flex-wrap">
-    <a href="/" class="rz-button rz-button-md rz-variant-filled rz-primary rz-shade-default position-absolute start-0 d-flex align-items-center gap-2">
-        <i class="bi bi-arrow-left fs-4"></i>
-        <span>Volver</span>
-    </a>
-    <h2 class="m-0 text-center flex-grow-1">@Title</h2>
-</div>
+@inject NavigationManager NavigationManager;
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Style="width: 100%; padding: 0.5rem 0;">
+    <div style="flex: 0 0 auto;">
+        <RadzenButton Click="@GoBack" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+    </div>
+
+    <div style="flex: 1; text-align: center;">
+        <h2 class="m-0">@Title</h2>
+    </div>
+
+    <div style="flex: 0 0 auto; visibility: hidden;">
+        <RadzenButton Icon="arrow_back" Text="Volver" Size="ButtonSize.Medium" />
+    </div>
+</RadzenStack>
 
 <hr />
     <div class="d-flex align-items-center justify-content-center py-2">
@@ -18,4 +26,9 @@
     [Parameter] public string Title { get; set; } = string.Empty;
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    void GoBack()
+    {
+        NavigationManager.NavigateTo("/");
+    }
 }

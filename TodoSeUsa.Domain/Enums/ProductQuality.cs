@@ -1,6 +1,6 @@
 ﻿namespace TodoSeUsa.Domain.Enums;
 
-public enum Quality
+public enum ProductQuality
 {
     New,
     LikeNew,

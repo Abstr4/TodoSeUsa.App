@@ -12,7 +12,7 @@ using TodoSeUsa.Infrastructure.Data;
 namespace TodoSeUsa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251022153710_Initial")]
+    [Migration("20251105184538_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -390,8 +390,8 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<int?>("SaleId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Season")
-                        .HasColumnType("int");
+                    b.Property<string>("Season")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .IsRequired()

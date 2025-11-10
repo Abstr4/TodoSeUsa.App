@@ -8,8 +8,7 @@
 
 @inject IBoxService boxService;
 @inject DialogService DialogService;
-@inject NavigationManager Navigation;
-@inject NotificationService NotificationService;
+@inject NavigationManager NavigationManager;
 @inject SimpleNotifications SimpleNotifications;
 
 <PageLayoutSection Title="Cajas">
@@ -81,6 +80,7 @@
                         <Template Context="box">
                             <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() =>HandleEditBox(box.Id, box.BoxCode))" />
                             <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(() => HandleDeleteBox(box.Id, box.BoxCode))" />
+                            <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewBox(box.Id))" />
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -96,7 +96,6 @@
     private int count;
     private bool isLoading = false;
     private string GridMessage = "No hay cajas para mostrar.";
-    private CancellationTokenSource? cts;
 
     private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
 
@@ -106,12 +105,9 @@
 
         isLoading = true;
 
-        cts?.Cancel();
-        cts = new CancellationTokenSource();
-
         QueryItem query = new(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? 5);
 
-        var result = await boxService.GetBoxesWithPaginationAsync(query, cts.Token);
+        var result = await boxService.GetBoxesWithPaginationAsync(query, CancellationToken.None);
         if (result.IsSuccess)
         {
             boxes = result.Value.Items;
@@ -129,7 +125,12 @@
         isLoading = false;
     }
 
-    public async Task HandleEditBox(int boxId, string boxCode)
+    private void ViewBox(int boxId)
+    {
+        NavigationManager.NavigateTo($"/cajas/{boxId}");
+    }
+
+    private async Task HandleEditBox(int boxId, string boxCode)
     {
         var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxCode}'",
                new Dictionary<string, object>() { { "BoxId", boxId } },
@@ -217,8 +218,6 @@
 
     async Task ResetAsync()
     {
-        cts?.Cancel();
-
         grid.Reset(true);
         await grid.FirstPage(true);
     }

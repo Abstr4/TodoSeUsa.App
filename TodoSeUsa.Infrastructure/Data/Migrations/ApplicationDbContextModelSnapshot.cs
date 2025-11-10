@@ -387,8 +387,8 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<int?>("SaleId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Season")
-                        .HasColumnType("int");
+                    b.Property<string>("Season")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .IsRequired()

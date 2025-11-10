@@ -14,7 +14,7 @@ public record ProductDto
 
     public ProductStatus Status { get; init; }
 
-    public Quality Quality { get; init; }
+    public ProductQuality Quality { get; init; }
 
     public Season? Season { get; init; }
 
