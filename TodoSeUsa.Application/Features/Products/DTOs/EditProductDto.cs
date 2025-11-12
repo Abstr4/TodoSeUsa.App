@@ -1,22 +1,24 @@
-﻿namespace TodoSeUsa.Domain.Entities;
+﻿using TodoSeUsa.Domain.Enums;
 
-public class Product : BaseAuditableEntity
+namespace TodoSeUsa.Application.Features.Products.DTOs;
+
+public record EditProductDto
 {
     public decimal Price { get; set; }
 
     public int Quantity { get; set; }
 
-    public string Size { get; set; } = string.Empty;
-
     public string Category { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
 
-    public ProductQuality Quality { get; set; }
+    public Body Body { get; set; }
+
+    public string Size { get; set; } = string.Empty;
 
     public ProductStatus Status { get; set; }
 
-    public Body Body { get; set; }
+    public ProductQuality Quality { get; set; }
 
     public Season? Season { get; set; }
 
@@ -24,13 +26,7 @@ public class Product : BaseAuditableEntity
 
     public int ConsignmentId { get; set; }
 
-    public virtual Consignment Consignment { get; set; } = null!;
-
     public int? SaleId { get; set; }
 
-    public virtual Sale? Sale { get; set; }
-
     public int? BoxId { get; set; }
-
-    public Box? Box { get; set; }
 }

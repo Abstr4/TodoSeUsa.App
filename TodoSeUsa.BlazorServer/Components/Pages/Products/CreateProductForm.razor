@@ -1,0 +1,279 @@
+﻿@using System.Text.Json
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.BlazorServer.Helpers
+@using TodoSeUsa.Domain.Enums
+
+@inject DialogService DialogService;
+@inject IProductService ProductService;
+
+
+<RadzenTemplateForm TItem="CreateProductDto" Data=@createProductDto Submit=@OnSubmit>
+    <RadzenStack Gap="1rem">
+        <RadzenFieldset Text="Info. del producto">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+                <RadzenRow>
+                    <RadzenColumn Size="6">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="price-stack">
+                            <RadzenLabel Component="Category">
+                                Precio <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenNumeric Name="Price" @bind-Value=@createProductDto.Price Style="width: 100%;" TValue="decimal" Min="1" Change="@OnPriceChanged" />
+                            <RadzenRequiredValidator Component="Price" Text="- El precio es requerido." />
+                            <RadzenNumericRangeValidator Component="Price" Min="1" Text="El precio debe ser mayor a cero."></RadzenNumericRangeValidator>
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="quality-stack">
+                            <RadzenLabel Component="Quality">
+                                Calidad <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenDropDown @bind-Value="@createProductDto.Quality"
+                                            Placeholder="Seleccionar calidad..."
+                                            Data="@qualities"
+                                            TextProperty="Text"
+                                            ValueProperty="Value"
+                                            Style="width:100%;"
+                                            Change="@OnQualityChanged"
+                                            Name="Quality">
+                            </RadzenDropDown>
+                            <RadzenRequiredValidator Component="Quality" Text="- La calidad es requerida." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="category-stack">
+                            <RadzenLabel Component="Category">
+                                Categoría <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenTextBox Name="Category" @bind-Value=@createProductDto.Category Style="width: 100%;" Change="@OnCategoryChanged" Placeholder="Categoría..." />
+                            <RadzenRequiredValidator Component="Category" Text="- La categoría es requerida." />
+                            <RadzenRegexValidator Component="Category"
+                                                  Pattern="^(?=.*[\p{L}\p{N}]).{1,100}$"
+                                                  Text="- La categoría debe tener entre 1 y 100 caracteres válidos (no solo espacios o símbolos).">
+                            </RadzenRegexValidator>
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="consignmentId-stack">
+                            <RadzenLabel Component="ConsignmentId">
+                                Id de la consignación<RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenNumeric Name="ConsignmentId" @bind-Value=@createProductDto.ConsignmentId Style="width: 100%;" TValue="int" Min="1" Change="@OnConsignmentIdChanged" />
+                            <RadzenRequiredValidator Component="ConsignmentId" Text="El Id de la consignación es obligatorio."></RadzenRequiredValidator>
+                            <RadzenNumericRangeValidator Component="ConsignmentId" Min="1" Text="El Id de la consignación debe ser mayor a cero."></RadzenNumericRangeValidator>
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="description-stack">
+                    <RadzenLabel Component="Description">
+                        Descripción <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                    </RadzenLabel>
+                    <RadzenTextBox Name="Description" @bind-Value=@createProductDto.Description Style="width: 100%;" Change="@OnDescriptionChanged" Placeholder="Descripción..." />
+                    <RadzenRequiredValidator Component="Description" Text="- La descripción es requerida." />
+                    <RadzenRegexValidator Component="Description"
+                                          Pattern="^(?=.*[\p{L}\p{N}]).{1,250}$"
+                                          Text="- La descripción debe tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos).">
+                    </RadzenRegexValidator>
+                </RadzenStack>
+                <RadzenRow>
+                    <RadzenColumn Size="6">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="season-stack">
+                            <RadzenLabel Component="Season">
+                                Temporada <RadzenBadge BadgeStyle="BadgeStyle.Info" Variant="Variant.Outlined" Text="Opcional" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <RadzenDropDown @bind-Value="@createProductDto.Season" Placeholder="Sin temporada asignada..." Data="@seasons" TextProperty="Text" ValueProperty="Value" Style="width:100%;" Change="@OnSeasonChanged"></RadzenDropDown>
+
+                                @if (createProductDto.Season.HasValue)
+                                {
+                                    <i class="notranslate rzi rz-cell-filter-clear"
+                                       style="position:absolute; inset-inline-end:25px; cursor:pointer;"
+                                       @onclick="ClearSeason"
+                                       onmouseover="this.style.backgroundColor='rgba(0,0,0,0.1)'"
+                                       onmouseout="this.style.backgroundColor='transparent'">close</i>
+                                }
+                            </div>
+                            
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="refurbishmentCost-stack">
+                            <RadzenLabel Component="RefurbishmentCost">
+                                Costo del reacondicionamiento<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <RadzenNumeric @bind-Value="@createProductDto.RefurbishmentCost"
+                                               Name="RefurbishmentCost"
+                                               Style="width: 100%;"
+                                               Min="1"
+                                               Placeholder="Sin costo asignado..."
+                                               TValue="decimal?"
+                                               Change="@OnRefurbishmentCostChanged" />
+
+                                @if (createProductDto.RefurbishmentCost.HasValue)
+                                {
+                                    <i class="notranslate rzi rz-cell-filter-clear"
+                                       style="position:absolute; inset-inline-end:15px; cursor:pointer;"
+                                       @onclick="ClearRefurbishmentCost"
+                                       onmouseover="this.style.backgroundColor='rgba(0,0,0,0.1)'"
+                                       onmouseout="this.style.backgroundColor='transparent'">close</i>
+                                }
+                            </div>
+                            <RadzenNumericRangeValidator Component="RefurbishmentCost" Min="1" Text="- El costo del reacondicionamiento debe ser mayor a cero" Visible="@createProductDto.RefurbishmentCost.HasValue"></RadzenNumericRangeValidator>
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="boxId-stack">
+                            <RadzenLabel Component="BoxId">
+                                Id de la caja<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <RadzenNumeric @bind-Value="@createProductDto.BoxId"
+                                               Name="BoxId"
+                                               Style="width: 100%;"
+                                               Min="1"
+                                               Placeholder="Sin caja asignada..."
+                                               TValue="int?"
+                                               Change="@OnBoxIdChanged" />
+
+                                @if (createProductDto.BoxId.HasValue)
+                                {
+                                    <i class="notranslate rzi rz-cell-filter-clear"
+                                       style="position:absolute; inset-inline-end:15px; cursor:pointer;"
+                                       @onclick="ClearBoxId"
+                                       onmouseover="this.style.backgroundColor='rgba(0,0,0,0.1)'"
+                                       onmouseout="this.style.backgroundColor='transparent'">close</i>
+                                }
+                            </div>
+                        </RadzenStack>
+                        <RadzenCustomValidator Component="BoxId" Text="- El Id de caja debe ser mayor a cero." Validator="@(() => IsBoxIdValid)" />
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenFieldset>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@IsSaveDisabled />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code
+{
+    private bool IsSaveDisabled => !(IsPriceValid && IsCategoryValid && IsQualityValid &&
+                                 IsConsignmentValid && IsDescriptionValid &&
+                                 IsSeasonValid && IsRefurbishmentCostValid && IsBoxIdValid);
+
+    private bool IsPriceValid => createProductDto.Price > 0;
+    private bool IsCategoryValid => !string.IsNullOrWhiteSpace(createProductDto.Category);
+    private bool IsQualityValid => Enum.IsDefined(typeof(ProductQuality), createProductDto.Quality);
+    private bool IsConsignmentValid => createProductDto.ConsignmentId > 0;
+    private bool IsDescriptionValid => !string.IsNullOrWhiteSpace(createProductDto.Description);
+    private bool IsSeasonValid => createProductDto.Season == null || Enum.IsDefined(typeof(Season), createProductDto.Season);
+    private bool IsRefurbishmentCostValid => createProductDto.RefurbishmentCost == null || createProductDto.RefurbishmentCost > 0;
+    private bool IsBoxIdValid => createProductDto.BoxId == null || createProductDto.BoxId > 0;
+
+
+    private IEnumerable<FilterOption<ProductQuality?>> qualities =
+        Enum.GetValues(typeof(ProductQuality))
+            .Cast<ProductQuality>()
+            .Select(q => new FilterOption<ProductQuality?>
+            {
+                Value = q,
+                Text = EnumTranslate.TranslateQuality(q)
+            })
+            .ToList();
+
+    private IEnumerable<FilterOption<Season?>> seasons =
+        Enum.GetValues(typeof(Season))
+        .Cast<Season>()
+        .Select(s => new FilterOption<Season?>
+        {
+            Value = s,
+            Text = EnumTranslate.TranslateSeason(s)
+        })
+        .ToList();
+
+    private CreateProductDto createProductDto = new()
+    {
+        Price = 1,
+        ConsignmentId = 1,
+        Quality = ProductQuality.New
+    };
+
+    async Task OnSubmit(CreateProductDto createProductDto)
+    {
+        var result = await ProductService.CreateAsync(createProductDto, CancellationToken.None);
+        DialogService.Close(result);
+    }
+
+
+    private void OnPriceChanged(decimal value)
+    {
+        createProductDto.Price = value;
+        StateHasChanged();
+    }
+
+    private void OnCategoryChanged(string value)
+    {
+        createProductDto.Category = value;
+        StateHasChanged();
+    }
+
+    private void OnQualityChanged(object value)
+    {
+        createProductDto.Quality = (ProductQuality)value;
+        StateHasChanged();
+    }
+
+    private void OnConsignmentIdChanged(int value)
+    {
+        createProductDto.ConsignmentId = value;
+        StateHasChanged();
+    }
+
+    private void OnDescriptionChanged(string value)
+    {
+        createProductDto.Description = value;
+        StateHasChanged();
+    }
+
+    private void OnRefurbishmentCostChanged(decimal? value)
+    {
+        createProductDto.RefurbishmentCost = value;
+        StateHasChanged();
+    }
+
+    private void OnSeasonChanged(object? value)
+    {
+        createProductDto.Season = (Season?)value;
+        StateHasChanged();
+    }
+
+    private void OnBoxIdChanged(int? value)
+    {
+        createProductDto.BoxId = value;
+        StateHasChanged();
+    }
+
+    private void ClearBoxId()
+    {
+        createProductDto.BoxId = null;
+        OnBoxIdChanged(null);
+        StateHasChanged();
+    }
+
+    private void ClearRefurbishmentCost()
+    {
+        createProductDto.RefurbishmentCost = null;
+        OnRefurbishmentCostChanged(null);
+        StateHasChanged();
+    }
+
+    private void ClearSeason()
+    {
+        createProductDto.Season = null;
+        OnSeasonChanged(null);
+        StateHasChanged();
+    }
+}
+

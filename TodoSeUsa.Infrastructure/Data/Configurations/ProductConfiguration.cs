@@ -11,6 +11,16 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.HasKey(c => c.Id);
 
+        builder.Property(p => p.RefurbishmentCost)
+        .HasPrecision(18, 2);
+
+        builder.Property(p => p.Price)
+         .IsRequired()
+        .HasPrecision(18, 2);
+
+        builder.Property(x => x.Size)
+            .HasMaxLength(50);
+
         builder.Property(x => x.Status)
         .HasConversion(
             v => v.ToString(),
@@ -21,6 +31,12 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         .HasConversion(
             v => v.ToString(),
             v => Enum.Parse<ProductQuality>(v)
+        );
+
+        builder.Property(x => x.Body)
+        .HasConversion(
+            v => v.ToString(),
+            v => Enum.Parse<Body>(v)
         );
 
         builder.Property(v => v.Season)

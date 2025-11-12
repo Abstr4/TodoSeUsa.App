@@ -6,11 +6,17 @@ public record ProductDto
 {
     public int Id { get; init; }
 
-    public int Price { get; init; }
+    public decimal Price { get; init; }
+
+    public int Quantity { get; init; }
 
     public string Category { get; init; } = string.Empty;
 
     public string Description { get; init; } = string.Empty;
+
+    public Body Body { get; init; }
+
+    public string Size { get; init; } = string.Empty;
 
     public ProductStatus Status { get; init; }
 
@@ -18,7 +24,7 @@ public record ProductDto
 
     public Season? Season { get; init; }
 
-    public int? RefurbishmentCost { get; init; }
+    public decimal? RefurbishmentCost { get; init; }
 
     public int ConsignmentId { get; init; }
 

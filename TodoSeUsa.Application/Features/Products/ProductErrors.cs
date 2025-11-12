@@ -9,4 +9,8 @@ public static class ProductErrors
     public static Error Failure() => Error.Failure(
     "Products.Failure",
     "Ocurrió un error inesperado.");
+
+    public static Error Failure(string message) => Error.Failure(
+    "Products.Failure",
+    message);
 }
