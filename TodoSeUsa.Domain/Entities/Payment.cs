@@ -2,7 +2,7 @@
 
 public class Payment : BaseAuditableEntity
 {
-    public int Amount { get; set; }
+    public decimal Amount { get; set; }
 
     public DateTime Date { get; set; } = DateTime.Now;
 

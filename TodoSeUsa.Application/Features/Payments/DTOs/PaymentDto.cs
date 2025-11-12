@@ -6,7 +6,7 @@ public record PaymentDto
 {
     public int Id { get; init; }
 
-    public int Amount { get; init; }
+    public decimal Amount { get; init; }
 
     public DateTime Date { get; init; }
 
