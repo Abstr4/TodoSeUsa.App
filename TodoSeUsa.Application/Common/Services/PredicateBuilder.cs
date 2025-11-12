@@ -38,8 +38,14 @@ public static class PredicateBuilder
                 }
                 else
                 {
-                    if (filterValue != null && filterValue.GetType() != underlyingType)
-                        filterValue = Convert.ChangeType(filterValue, underlyingType);
+                    if (filterValue != null)
+                    {
+                        if (underlyingType.IsEnum && filterValue is int intValue)
+                            filterValue = Enum.ToObject(underlyingType, intValue);
+
+                        else if (filterValue.GetType() != underlyingType)
+                            filterValue = Convert.ChangeType(filterValue, underlyingType);
+                    }
 
                     var constant = Expression.Constant(filterValue, memberType);
                     filterExpr = BuildFilterExpression(member, constant, f.FilterOperator);
@@ -47,7 +53,7 @@ public static class PredicateBuilder
 
                 finalExpr = finalExpr == null
                     ? filterExpr
-                    : f.LogicalFilterOperator == LogicalFilterOperator.And
+                    : request.LogicalFilterOperator == LogicalFilterOperator.And
                         ? Expression.AndAlso(finalExpr, filterExpr)
                         : Expression.OrElse(finalExpr, filterExpr);
             }
