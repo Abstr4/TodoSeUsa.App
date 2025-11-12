@@ -2,11 +2,21 @@
 @using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 @using TodoSeUsa.Application.Features.Products.Services
+@using TodoSeUsa.BlazorServer.Helpers
 @using TodoSeUsa.Domain.Enums
 
 @inject IProductService ProductService;
 
-<RadzenDataList TItem="ProductDto" PageSize=@pageSize PageNumbersCount="5" Data=@products Count=@count IsLoading=@isLoading LoadData=@LoadData PagerHorizontalAlign="HorizontalAlign.Right" PagingSummaryFormat="@pagingSummaryFormat" ShowPagingSummary="true" WrapItems="true" AllowPaging="true">
+<RadzenDataList TItem="ProductDto" 
+    PageSize=@pageSize 
+    PageNumbersCount="5" 
+    Data=@products 
+    Count=@count 
+    IsLoading=@isLoading 
+    LoadData=@LoadData 
+    PagerHorizontalAlign="HorizontalAlign.Right" 
+    PagingSummaryFormat="@pagingSummaryFormat" 
+    ShowPagingSummary="true" WrapItems="true" AllowPaging="true">
     <Template Context="product">
         <RadzenCard Style="width:300px;">
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
@@ -42,16 +52,16 @@
     private int count;
     private bool isLoading;
     private string errorMessage = string.Empty;
+    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
 
     private async Task LoadData(LoadDataArgs args)
     {
         if (isLoading) return;
 
         isLoading = true;
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
 
-        QueryItem query = new(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? pageSize);
-
-        var result = await ProductService.GetProductsByBoxIdWithPaginationAsync(query, BoxId, CancellationToken.None);
+        var result = await ProductService.GetByBoxIdAsync(request, BoxId, CancellationToken.None);
 
         if (result.IsSuccess)
         {

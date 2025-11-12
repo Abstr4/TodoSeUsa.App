@@ -57,7 +57,7 @@
 
     private void OnFieldChanged()
     {
-        isSaveDisabled = string.Equals(editBoxDto.Location, originalDto.Location, StringComparison.OrdinalIgnoreCase);
+        isSaveDisabled = string.Equals(editBoxDto.Location, originalDto.Location, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(editBoxDto.Location);
         StateHasChanged();
     }
 

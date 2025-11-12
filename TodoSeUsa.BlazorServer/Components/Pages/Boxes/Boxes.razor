@@ -3,7 +3,6 @@
 @using TodoSeUsa.Application.Common.Models
 @using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
-@using TodoSeUsa.BlazorServer.Components.Pages.Tests
 @using TodoSeUsa.BlazorServer.Helpers
 
 @inject IBoxService boxService;
@@ -26,7 +25,7 @@
                             EmptyText="@GridMessage"
                             LogicalFilterOperator="@logicalFilterOperator"
                             @bind-Value="@selectedBoxes"
-                            LoadData="@LoadData"
+                            LoadData="@LoadBoxes"
                             SelectionMode="DataGridSelectionMode.Single"
                             PageSize="5"
                             AllowSorting="true"
@@ -54,7 +53,7 @@
                     <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una caja nueva" Click="@HandleCreateBox" />
                 </HeaderTemplate>
                 <Columns>
-                    <RadzenDataGridColumn Frozen="true" Property="@nameof(BoxDto.Id)" Title="ID" TextAlign="TextAlign.Center" />
+                    <RadzenDataGridColumn Property="@nameof(BoxDto.Id)" Title="ID" TextAlign="TextAlign.Center" />
 
                     <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.BoxCode)" Title="Código" />
 
@@ -76,7 +75,7 @@
 
                     <RadzenDataGridColumn Property="@nameof(BoxDto.UpdatedAt)" Title="Última actualización"/>
 
-                    <RadzenDataGridColumn Frozen="true" Sortable="false" TItem="BoxDto" Title="Acciones">
+                    <RadzenDataGridColumn Sortable="false" TItem="BoxDto" Title="Acciones">
                         <Template Context="box">
                             <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() =>HandleEditBox(box.Id, box.BoxCode))" />
                             <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(() => HandleDeleteBox(box.Id, box.BoxCode))" />
@@ -99,30 +98,36 @@
 
     private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
 
-    async Task LoadData(LoadDataArgs args)
+    async Task LoadBoxes(LoadDataArgs args)
     {
         if (isLoading) return;
 
-        isLoading = true;
-
-        QueryItem query = new(args.Filter, args.OrderBy, args.Skip ?? 0, args.Top ?? 5);
-
-        var result = await boxService.GetBoxesWithPaginationAsync(query, CancellationToken.None);
-        if (result.IsSuccess)
+        try
         {
-            boxes = result.Value.Items;
-            count = result.Value.Count;
-            selectedBoxes = boxes.Take(1).ToList();
-        }
-        else
-        {
-            boxes = [];
-            selectedBoxes = [];
-            count = 0;
-            GridMessage = result.Error.Description;
-        }
+            isLoading = true;
 
-        isLoading = false;
+            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+            var result = await boxService.GetAllAsync(request, CancellationToken.None);
+            if (result.IsSuccess)
+            {
+                boxes = result.Value.Items;
+                count = result.Value.Count;
+                selectedBoxes = boxes.Take(1).ToList();
+            }
+            else
+            {
+                boxes = [];
+                selectedBoxes = [];
+                count = 0;
+                GridMessage = result.Error.Description;
+            }
+        }
+        finally
+        {
+            isLoading = false;
+
+        }
     }
 
     private void ViewBox(int boxId)

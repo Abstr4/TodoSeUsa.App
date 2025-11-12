@@ -1,8 +1,11 @@
 ﻿using System.Linq.Dynamic.Core;
+using TodoSeUsa.Application.Common.Enums;
+using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Common.Validators;
 using TodoSeUsa.Application.Features.Boxes.DTOs;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
 using TodoSeUsa.Application.Features.Boxes.Validators;
+using TodoSeUsa.Application.Features.Products.DTOs;
 
 namespace TodoSeUsa.Application.Features.Boxes.Services;
 public class BoxService : IBoxService
@@ -44,51 +47,49 @@ public class BoxService : IBoxService
 
     }
 
-    public async Task<Result<PagedItems<BoxDto>>> GetBoxesWithPaginationAsync(QueryItem request, CancellationToken cancellationToken)
-    {
-        var validator = new QueryItemValidator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+    public async Task<Result<PagedItems<BoxDto>>> GetAllAsync(
+        QueryRequest request,
+        CancellationToken cancellationToken)
+            {
+                var query = _context.Boxes.AsQueryable();
 
-        if (!validationResult.IsValid)
-            return Result.Failure<PagedItems<BoxDto>>(BoxErrors.Failure(validationResult.ToString()));
-
-        try
-        {
-            IQueryable<Box> query = _context.Boxes
-                .Include(b => b.Products)
-                .AsQueryable()
-                .AsNoTracking();
-
-            query = query.ApplyFilter(request.Filter);
-            query = query.ApplySorting(request.OrderBy, ApplyCustomSorting);
-
-            var count = await query.CountAsync(cancellationToken);
-
-            var boxesDtos = await query
-                .Skip(request.Skip)
-                .Take(request.Take)
-                .Select(b => new BoxDto
+                if (request.Filters != null && request.Filters.Count > 0)
                 {
-                    Id = b.Id,
-                    TotalProducts = b.Products.Count,
-                    Location = b.Location,
-                    BoxCode = $"BOX-{b.Id:D5}",
-                    CreatedAt = b.CreatedAt,
-                    UpdatedAt = b.UpdatedAt,
-                })
+                    var predicate = PredicateBuilder.BuildPredicate<Box>(request);
+                    query = query.Where(predicate);
+                }
+
+                if (request.Sorts != null && request.Sorts.Count != 0)
+                {
+                    query = ApplyCustomSorting(query, request.Sorts);
+                }
+                else
+                {
+                    query = query.OrderBy(x => x.Id);
+                }
+
+                var totalCount = await query.CountAsync(cancellationToken);
+
+                query = query.Skip(request.Skip).Take(request.Take);
+
+                var items = await query
+                    .Select(b => new BoxDto
+                    {
+                        Id = b.Id,
+                        TotalProducts = b.Products.Count,
+                        Location = b.Location,
+                        BoxCode = $"BOX-{b.Id:D5}",
+                        CreatedAt = b.CreatedAt,
+                        UpdatedAt = b.UpdatedAt,
+                    })
                 .ToListAsync(cancellationToken);
 
-            var pagedItems = new PagedItems<BoxDto>() { Items = boxesDtos, Count = count };
-
-            return Result.Success(pagedItems);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while retrieving paged boxes.");
-
-            return Result.Failure<PagedItems<BoxDto>>(BoxErrors.Failure());
-        }
-    }
+                return Result.Success(new PagedItems<BoxDto>
+                {
+                    Items = items,
+                    Count = totalCount
+                });
+            }
 
     public async Task<Result<BoxDto>> GetByIdAsync(int boxId, CancellationToken cancellationToken)
     {
@@ -184,22 +185,30 @@ public class BoxService : IBoxService
         }
     }
 
-    private static IQueryable<Box>? ApplyCustomSorting(IQueryable<Box> query, string orderBy)
+    public static IQueryable<Box> ApplyCustomSorting(IQueryable<Box> query, IEnumerable<SortDescriptor>? sorts)
     {
-        if (orderBy.StartsWith("BoxCode", StringComparison.OrdinalIgnoreCase))
+        var sort = sorts?.FirstOrDefault();
+        if (sort == null || string.IsNullOrWhiteSpace(sort.Property))
+            return query;
+
+        var property = sort.Property;
+        var isDescending = sort.SortOrder == SortOrder.Descending;
+
+        if (property.Equals("BoxCode", StringComparison.OrdinalIgnoreCase))
         {
-            return orderBy.EndsWith("desc", StringComparison.OrdinalIgnoreCase)
+            return isDescending
                 ? query.OrderByDescending(b => b.Id)
                 : query.OrderBy(b => b.Id);
         }
 
-        if (orderBy.StartsWith("TotalProducts", StringComparison.OrdinalIgnoreCase))
+        if (property.Equals("TotalProducts", StringComparison.OrdinalIgnoreCase))
         {
-            return orderBy.EndsWith("desc", StringComparison.OrdinalIgnoreCase)
+            return isDescending
                 ? query.OrderByDescending(b => b.Products.Count)
                 : query.OrderBy(b => b.Products.Count);
         }
-        return null;
+        return isDescending
+            ? query.OrderByDescending(e => EF.Property<object>(e, property))
+            : query.OrderBy(e => EF.Property<object>(e, property));
     }
-
 }

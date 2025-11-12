@@ -147,8 +147,8 @@ else
                             </RadzenText>
                         </HeaderTemplate>
                         <ChildContent>
-                            <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
-                                <RadzenButton Text="Resetear filtros" Click="@(async() => await ResetProductsGridAsync())" Icon="refresh" />
+                            <RadzenCard Variant="Variant.Outlined">
+                                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@(async () => await grid.Reload())" ResetButtonClicked="@ResetProductsGridAsync" />
                             </RadzenCard>
                             <RadzenDataGrid @ref=@grid TItem="ProductDto" Data=@products
                                             Count=@productsCount
@@ -158,13 +158,25 @@ else
                                             AllowPaging="true" AllowSorting="true"
                                             AllowFiltering="true" ShowPagingSummary="true"
                                             AllowColumnResize="true"
-                                            LogicalFilterOperator="@logicalFilterOperator"
                                             FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                             FilterMode="FilterMode.Simple"
                                             PagerHorizontalAlign="HorizontalAlign.Left"
                                             ColumnWidth="200px"
-                                            class="rz-mt-4">
-
+                                            class="rz-mt-4"
+                                            ClearFilterText="Limpiar"
+                                            ApplyFilterText="Aplicar"
+                                            FilterText="Filtro"
+                                            ContainsText="Contiene"
+                                            EqualsText="Equivale"
+                                            AndOperatorText="Y"
+                                            OrOperatorText="O"
+                                            LessThanOrEqualsText="Menor o igual que"
+                                            LessThanText="Menor que"
+                                            GreaterThanOrEqualsText="Mayor o igual que"
+                                            GreaterThanText="Mayor que"
+                                            NotEqualsText="No es igual a"
+                                            IsNullText="Es nulo"
+                                            IsNotNullText="No es nulo">
                                 <Columns>
                                     <RadzenDataGridColumn Filterable="false" Property="Id" Title="ID" Width="80px" MinWidth="80px" />
                                     <RadzenDataGridColumn Property="Category" Title="Categoría" MinWidth="200px" />
@@ -307,9 +319,9 @@ else
         {
             isLoadingProducts = true;
 
-            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
+            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
 
-            var result = await ProductService.GetProductsByBoxIdAsync(request, Id, CancellationToken.None);
+            var result = await ProductService.GetByBoxIdAsync(request, Id, CancellationToken.None);
 
             if (result.IsSuccess)
             {
