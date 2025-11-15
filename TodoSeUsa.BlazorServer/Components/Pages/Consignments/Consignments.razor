@@ -1,0 +1,209 @@
+﻿@page "/consignaciones"
+
+@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.Consignments.DTOs
+@using TodoSeUsa.Application.Features.Consignments.Interfaces
+@using TodoSeUsa.BlazorServer.Helpers
+
+@inject IConsignmentService consignmentService;
+@inject DialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+
+<style>
+    .rz-custom-header {
+        width: 100%;
+    }
+</style>
+
+<RadzenCard Style="max-width: 100%">
+    <PageTitleWithBackButton Title="Consignaciones" />
+    <RadzenDataGrid @ref="grid" IsLoading="@isLoading" TItem="ConsignmentDto" Data="@consignments" Count="@count" EmptyText="@GridMessage" LogicalFilterOperator="@logicalFilterOperator" @bind-Value="@selectedConsignments" LoadData="@LoadConsignments" SelectionMode="DataGridSelectionMode.Single" PageSize="5" AllowSorting="true" AllowFiltering="true" AllowPaging="true" AllowColumnResize=true FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" GridLines="DataGridGridLines.Both" PagerHorizontalAlign="HorizontalAlign.Center" ClearFilterText="Limpiar" ApplyFilterText="Aplicar" FilterText="Filtro" ContainsText="Contiene" EqualsText="Equivale" AndOperatorText="Y" OrOperatorText="O" LessThanOrEqualsText="Menor o igual que" LessThanText="Menor que" GreaterThanOrEqualsText="Mayor o igual que" GreaterThanText="Mayor que" NotEqualsText="No es igual a" IsNullText="Es nulo" IsNotNullText="No es nulo" ColumnWidth="200px">
+        <HeaderTemplate>
+            <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una consignación nueva" Click="@HandleCreateConsignment" />
+                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
+            </RadzenStack>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn Property="Id" Title="ID" TextAlign="TextAlign.Center" MinWidth="80px" Width="80px"/>
+
+            <RadzenDataGridColumn Filterable="false" Property="TotalProducts" Title="Cant. productos" MinWidth="80px" Width="140px">
+                <Template Context="consignment">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                        <RadzenText>@consignment.TotalProducts</RadzenText>
+                        @if (consignment.TotalProducts > 0)
+                        {
+                            <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await ShowConsignmentProducts(consignment.Id))" />
+                        }
+                    </RadzenStack>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn Property="ProviderFullName" Title="Info. del proveedor" MinWidth="200px" Width="160px"/>
+
+            <RadzenDataGridColumn Property="ProviderId" Title="Id del proveedor" MinWidth="80px" Width="140px"/>
+
+            <RadzenDataGridColumn Property="Notes" Title="Notas" MinWidth="120px"/>
+
+            <RadzenDataGridColumn Property="DateIssued" Title="Emitida el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="160px"/>
+
+            <RadzenDataGridColumn Property="CreatedAt" Title="Creada el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="160px"/>
+
+            <RadzenDataGridColumn Property="UpdatedAt" Title="Última actualización" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="180px"/>
+
+            <RadzenDataGridColumn Filterable="false" Sortable="false" TItem="ConsignmentDto" Title="Acciones" MinWidth="200px" Width="160px">
+                <Template Context="consignment">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditConsignment(consignment.Id))" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleDeleteConsignment(consignment.Id))" />
+                    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewConsignment(consignment.Id))" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code {
+    private RadzenDataGrid<ConsignmentDto> grid = null!;
+    private IEnumerable<ConsignmentDto>? consignments;
+    private IList<ConsignmentDto>? selectedConsignments;
+    private int count;
+    private bool isLoading = false;
+    private string GridMessage = "No hay consignacións para mostrar.";
+
+    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
+
+    async Task LoadConsignments(LoadDataArgs args)
+    {
+        if (isLoading) return;
+
+        try
+        {
+            isLoading = true;
+
+            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+            var result = await consignmentService.GetAllAsync(request, CancellationToken.None);
+            if (result.IsSuccess)
+            {
+                consignments = result.Value.Items;
+                count = result.Value.Count;
+                selectedConsignments = consignments.Take(1).ToList();
+            }
+            else
+            {
+                consignments = [];
+                selectedConsignments = [];
+                count = 0;
+                GridMessage = result.Error.Description;
+            }
+        }
+        finally
+        {
+            isLoading = false;
+
+        }
+    }
+
+    private void ViewConsignment(int consignmentId)
+    {
+        NavigationManager.NavigateTo($"/consignaciones/{consignmentId}");
+    }
+
+    private async Task HandleEditConsignment(int consignmentId)
+    {
+        var result = await DialogService.OpenAsync<EditConsignmentForm>($"Editar consignación",
+               new Dictionary<string, object>() { { "ConsignmentId", consignmentId } },
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
+        if (result is Result<bool> editResult)
+        {
+            if (editResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación editada con éxito.");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleDeleteConsignment(int consignmentId)
+    {
+        var result = await DialogService.OpenAsync<DeleteConsignmentConfirmation>($"Confirmar eliminación",
+        new Dictionary<string, object>() { { "ConsignmentId", consignmentId } },
+        new DialogOptions()
+        {
+            CloseDialogOnOverlayClick = true
+        }
+        );
+        if (result is Result<bool> deleteResult)
+        {
+            if (deleteResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación eliminada con éxito.");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleCreateConsignment()
+    {
+        var result = await DialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
+               new Dictionary<string, object>(),
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+        if (result is Result<bool> createResult)
+        {
+            if (createResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación creada con éxito!");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
+            }
+        }
+    }
+
+    public async Task ShowConsignmentProducts(int consignmentId)
+    {
+        await DialogService.OpenAsync<ConsignmentProducts>($"Productos en la consignación",
+               new Dictionary<string, object>() { { "ConsignmentId", consignmentId } },
+               new DialogOptions()
+               {
+                   Width = "75%",
+                   Height = "65%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
+    }
+
+    async Task ResetAsync()
+    {
+        grid.Reset(true);
+        await grid.FirstPage(true);
+    }
+
+    void GoBack()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

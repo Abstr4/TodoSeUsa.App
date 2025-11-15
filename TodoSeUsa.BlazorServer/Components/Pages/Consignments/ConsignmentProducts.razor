@@ -1,0 +1,79 @@
+﻿@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.Application.Features.Products.Services
+@using TodoSeUsa.BlazorServer.Helpers
+@using TodoSeUsa.Domain.Enums
+
+@inject IProductService ProductService;
+
+<RadzenDataList TItem="ProductDto"
+                PageSize=@pageSize
+                PageNumbersCount="5"
+                Data=@products
+                Count=@count
+                IsLoading=@isLoading
+                LoadData=@LoadData
+                PagerHorizontalAlign="HorizontalAlign.Right"
+                PagingSummaryFormat="@pagingSummaryFormat"
+                ShowPagingSummary="true" WrapItems="true" AllowPaging="true">
+    <Template Context="product">
+        <RadzenCard Style="width:300px;">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                <RadzenImage Style="width: 200px; height: 200px; border-radius: 3px; border: solid; border-width: 1px" />
+                <RadzenStack Gap="0">
+                    <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Categoría</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1"><b>@(product.Category)</b></RadzenText>
+                    <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Descripción</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1"><b>@(product.Description)</b></RadzenText>
+                </RadzenStack>
+            </RadzenStack>
+            <hr style="border: none; background-color: rgba(0,0,0,.2); height: 1px; margin: 1rem 0;" />
+            <RadzenRow>
+                <RadzenColumn Size="8" class="rz-text-align-start">
+                    <RadzenBadge BadgeStyle=@BadgeStyles.GetBadgeStyleFromProductStatus(product.Status) Text=@product.Status.ToString()></RadzenBadge>
+                </RadzenColumn>
+                <RadzenColumn Size="4" class="rz-text-align-end">
+                    <RadzenBadge BadgeStyle="BadgeStyle.Secondary" Text=@($"{String.Format(new System.Globalization.CultureInfo("es-AR"), "{0:C}", product.Price)}") />
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenCard>
+    </Template>
+</RadzenDataList>
+
+
+@code {
+
+    [Parameter] public int ConsignmentId { get; set; }
+
+    private IEnumerable<ProductDto>? products;
+    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} records)";
+    private int pageSize = 3;
+    private int count;
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        var result = await ProductService.GetByConsignmentIdAsync(request, ConsignmentId, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            products = result.Value.Items;
+            count = result.Value.Count;
+        }
+        else
+        {
+            products = [];
+            count = 0;
+            errorMessage = result.Error.Description;
+        }
+
+        isLoading = false;
+    }
+}
