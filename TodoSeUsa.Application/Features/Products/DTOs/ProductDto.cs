@@ -14,11 +14,11 @@ public record ProductDto
 
     public string Description { get; init; } = string.Empty;
 
+    public ProductStatus Status { get; init; }
+
     public Body Body { get; init; }
 
     public string Size { get; init; } = string.Empty;
-
-    public ProductStatus Status { get; init; }
 
     public ProductQuality Quality { get; init; }
 

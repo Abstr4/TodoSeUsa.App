@@ -25,7 +25,7 @@ public static class EnumTranslate
     public static string TranslateSeason(Season? season)
     {
         if (season is null)
-            return "";
+            return "-";
 
         return season switch
         {

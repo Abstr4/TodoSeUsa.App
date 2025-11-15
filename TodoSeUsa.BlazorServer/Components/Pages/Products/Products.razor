@@ -11,150 +11,135 @@
 @inject SimpleNotifications SimpleNotifications;
 @inject NavigationManager NavigationManager;
 
-<PageLayoutSection Title="Productos">
-    <RadzenCard Style="max-width: 100%;">
-        <RadzenStack Gap="1rem" >
-            <RadzenCard Variant="Variant.Outlined">
-                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@(async () => await grid.Reload())" ResetButtonClicked="@ResetAsync" />
-            </RadzenCard>
+<style>
+    .rz-custom-header {
+        width: 100%;
+    }
+</style>
 
-        <RadzenDataGrid @ref="grid"
-                        style="height: 400px"
-                        IsLoading="@isLoading"
-                        TItem="ProductDto"
-                        Data="@products"
-                        Count="@count"
-                        LoadData="@LoadData"
-                        FilterMode="FilterMode.Simple"
-                        AllowSorting="true"
-                        AllowFiltering="true"
-                        AllowPaging="true"
-                        GridLines=DataGridGridLines.Both
-                        PageSize="5"
-                        ColumnWidth="200px"
-                        PagerHorizontalAlign="HorizontalAlign.Center"
-                        EmptyText="@GridMessage"
-                        ClearFilterText="Limpiar"
-                        ApplyFilterText="Aplicar"
-                        FilterText="Filtro"
-                        ContainsText="Contiene"
-                        EqualsText="Equivale"
-                        AndOperatorText="Y"
-                        OrOperatorText="O">
+<RadzenCard Style="max-width: 100%;">
+    <PageTitleWithBackButton Title="Productos" />
+    <RadzenDataGrid @ref="grid" IsLoading="@isLoading" TItem="ProductDto" Data="@products"
+                    Count="@count" LoadData="@LoadData" FilterMode="FilterMode.Simple"
+                    AllowSorting="true" AllowFiltering="true" AllowPaging="true" AllowColumnResize=true GridLines=DataGridGridLines.Both
+                    PageSize="5" PagerHorizontalAlign="HorizontalAlign.Center"
+                    EmptyText="@GridMessage" ClearFilterText="Limpiar" ApplyFilterText="Aplicar" FilterText="Filtro"
+                    ContainsText="Contiene" EqualsText="Equivale" AndOperatorText="Y" OrOperatorText="O">
 
-                <HeaderTemplate>
-                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un producto nuevo" Click="@HandleCreateProduct" />
-                </HeaderTemplate>
+        <HeaderTemplate>
+            <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un producto nuevo" Click="@HandleCreateProduct" />
+                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
+            </RadzenStack>
+        </HeaderTemplate>
 
-                <Columns>
-                    <RadzenDataGridColumn TItem="ProductDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
-                        <Template Context="product">
-                            <RadzenSplitButton Click=@(async(args) => await OnGridActionClick(args, product.Id)) Icon="read_more">
-                                <ChildContent>
-                                    <RadzenSplitButtonItem Text="Ver producto" Value="view" Icon="visibility" />
-                                    <RadzenSplitButtonItem Text="Editar producto" Value="edit" Icon="edit" />
-                                    <RadzenSplitButtonItem Text="Eliminar producto" Value="delete" Icon="delete" />
-                                </ChildContent>
-                            </RadzenSplitButton>
-                        </Template>
-                    </RadzenDataGridColumn>
+        <Columns>
+            <RadzenDataGridColumn TItem="ProductDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+                <Template Context="product">
+                    <RadzenSplitButton Click=@(async (args) => await OnGridActionClick(args, product)) Icon="visibility">
+                        <ChildContent>
+                            <RadzenSplitButtonItem Text="Ver producto" Value="view" Icon="visibility" />
+                            <RadzenSplitButtonItem Text="Editar producto" Value="edit" Icon="edit" />
+                            <RadzenSplitButtonItem Text="Eliminar producto" Value="delete" Icon="delete" />
+                        </ChildContent>
+                    </RadzenSplitButton>
+                </Template>
+            </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn Filterable="false" Property="Id" Title="ID" Width="80px" MinWidth="80px" />
+            <RadzenDataGridColumn Filterable="false" Property="Id" Title="ID" Width="80px" MinWidth="80px" />
 
-                    <RadzenDataGridColumn Property="Price" Title="Precio" MinWidth="200px" />
+            <RadzenDataGridColumn Property="Price" Title="Precio" MinWidth="120px" Width="120px" />
 
-                    <RadzenDataGridColumn Property="Quantity" Title="Cantidad" MinWidth="200px" />
+            <RadzenDataGridColumn Property="Quantity" Title="Cantidad" MinWidth="120px" Width="120px" />
 
-                    <RadzenDataGridColumn Property="Category" Title="Categoría" MinWidth="200px" />
+            <RadzenDataGridColumn Property="Category" Title="Categoría" MinWidth="200px" />
 
-                    <RadzenDataGridColumn Property="Description" Title="Descripción" MinWidth="200px" />
+            <RadzenDataGridColumn Property="Description" Title="Descripción" MinWidth="200px" />
 
-                    <RadzenDataGridColumn Property="Body" Title="Cuerpo" FilterValue="@selectedBody">
-                        <Template Context="p">
-                            @EnumTranslate.TranslateBody(p.Body)
-                        </Template>
-                        <FilterTemplate>
-                            <RadzenDropDown @bind-Value="@selectedBody"
-                                            Placeholder="Seleccionar..."
-                                            Data="@bodies"
-                                            TextProperty="Text"
-                                            ValueProperty="Value"
-                                            AllowClear="true"
-                                            Style="width:100%;">
-                            </RadzenDropDown>
-                        </FilterTemplate>
-                    </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="Body" Title="Cuerpo" FilterValue="@selectedBody" MinWidth="120px" Width="120px">
+                <Template Context="p">
+                    @EnumTranslate.TranslateBody(p.Body)
+                </Template>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value="@selectedBody"
+                                    Placeholder="Seleccionar..."
+                                    Data="@EnumFilterLists.bodies"
+                                    TextProperty="Text"
+                                    ValueProperty="Value"
+                                    AllowClear="true"
+                                    Style="width:100%;">
+                    </RadzenDropDown>
+                </FilterTemplate>
+            </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus">
-                        <Template Context="s">
-                            @EnumTranslate.TranslateStatus(s.Status)
-                        </Template>
-                        <FilterTemplate>
-                            <RadzenDropDown @bind-Value="@selectedStatus"
-                                            Placeholder="Seleccionar..."
-                                            Data="@statuses"
-                                            TextProperty="Text"
-                                            ValueProperty="Value"
-                                            AllowClear="true"
-                                            Style="width:100%;">
-                            </RadzenDropDown>
-                        </FilterTemplate>
-                    </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="120px" Width="120px">
+                <Template Context="s">
+                    @EnumTranslate.TranslateStatus(s.Status)
+                </Template>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value="@selectedStatus"
+                                    Placeholder="Seleccionar..."
+                                    Data="@EnumFilterLists.statuses"
+                                    TextProperty="Text"
+                                    ValueProperty="Value"
+                                    AllowClear="true"
+                                    Style="width:100%;">
+                    </RadzenDropDown>
+                </FilterTemplate>
+            </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality">
-                        <Template Context="p">
-                            @EnumTranslate.TranslateQuality(p.Quality)
-                        </Template>
-                        <FilterTemplate>
-                            <RadzenDropDown @bind-Value="@selectedQuality"
-                                            Placeholder="Seleccionar..."
-                                            Data="@qualities"
-                                            TextProperty="Text"
-                                            ValueProperty="Value"
-                                            AllowClear="true"
-                                            Style="width:100%;">
-                            </RadzenDropDown>
-                        </FilterTemplate>
-                    </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality" MinWidth="120px" Width="120px">
+                <Template Context="p">
+                    @EnumTranslate.TranslateQuality(p.Quality)
+                </Template>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value="@selectedQuality"
+                                    Placeholder="Seleccionar..."
+                                    Data="@EnumFilterLists.qualities"
+                                    TextProperty="Text"
+                                    ValueProperty="Value"
+                                    AllowClear="true"
+                                    Style="width:100%;">
+                    </RadzenDropDown>
+                </FilterTemplate>
+            </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn Property="Season" Title="Temporada" FilterValue="@selectedSeason">
-                        <Template Context="s">
-                            @EnumTranslate.TranslateSeason(s.Season)
-                        </Template>
-                        <FilterTemplate>
-                            <RadzenDropDown @bind-Value="@selectedSeason"
-                                            Placeholder="Seleccionar..."
-                                            Data="@seasons"
-                                            TextProperty="Text"
-                                            ValueProperty="Value"
-                                            AllowClear="true"
-                                            Style="width:100%;">
-                            </RadzenDropDown>
-                        </FilterTemplate>
-                    </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="Season" Title="Temporada" FilterValue="@selectedSeason" MinWidth="120px" Width="120px">
+                <Template Context="s">
+                    @EnumTranslate.TranslateSeason(s.Season)
+                </Template>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value="@selectedSeason"
+                                    Placeholder="Seleccionar..."
+                                    Data="@EnumFilterLists.seasons"
+                                    TextProperty="Text"
+                                    ValueProperty="Value"
+                                    AllowClear="true"
+                                    Style="width:100%;">
+                    </RadzenDropDown>
+                </FilterTemplate>
+            </RadzenDataGridColumn>
 
-                    <RadzenDataGridColumn Property="CreatedAt" Title="Creado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" />
+            <RadzenDataGridColumn Property="CreatedAt" Title="Creado el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" Width="140px"/>
 
-                    <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo reacondicionamiento" MinWidth="120px" />
+            <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo del arreglo" MinWidth="120px" Width="180px"/>
 
-                    <RadzenDataGridColumn Property="SaleId" Title="Id de la venta" MinWidth="120px" />
+            <RadzenDataGridColumn Property="SaleId" Title="Id de la venta" MinWidth="80px" Width="140px"/>
 
-                    <RadzenDataGridColumn Property="UpdatedAt" Title="Actualizado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" />
+            <RadzenDataGridColumn Property="UpdatedAt" Title="Actualizado el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="140px"/>
 
-                    <RadzenDataGridColumn Sortable="false" TItem="ProductDto" Title="Acciones">
-                        <Template Context="product">
-                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => HandleEditProduct(product.Id))" />
+            <RadzenDataGridColumn Sortable="false" TItem="ProductDto" Title="Acciones" MinWidth="160px" Width="160px">
+                <Template Context="product">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditProduct(product))" />
 
-                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(() => HandleDeleteProduct(product.Id))" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleDeleteProduct(product))" />
 
-                            <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewProduct(product.Id))" />
-                        </Template>
-                    </RadzenDataGridColumn>
-                </Columns>
-        </RadzenDataGrid>
-    </RadzenStack>
+                    <RadzenButton Icon="read_more" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewProduct(product.Id))" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
 </RadzenCard>
-</PageLayoutSection>
 
 
 @code {
@@ -170,50 +155,6 @@
     private Season? selectedSeason = null;
     private ProductStatus? selectedStatus = null;
     private Body? selectedBody = null;
-
-    private IEnumerable<FilterOption<Body?>> bodies =
-    new[] { new FilterOption<Body?> { Value = null, Text = "Todos" } }
-        .Concat(Enum.GetValues(typeof(Body))
-        .Cast<Body>()
-        .Select(b => new FilterOption<Body?>
-        {
-            Value = b,
-            Text = EnumTranslate.TranslateBody(b)
-        }))
-        .ToList();
-
-    private IEnumerable<FilterOption<ProductQuality?>> qualities =
-    new[] { new FilterOption<ProductQuality?> { Value = null, Text = "Todas" } }
-        .Concat(Enum.GetValues(typeof(ProductQuality))
-        .Cast<ProductQuality>()
-        .Select(q => new FilterOption<ProductQuality?>
-        {
-            Value = q,
-            Text = EnumTranslate.TranslateQuality(q)
-        }))
-        .ToList();
-
-    private IEnumerable<FilterOption<ProductStatus?>> statuses =
-    new[] { new FilterOption<ProductStatus?> { Value = null, Text = "Todos" } }
-        .Concat(Enum.GetValues(typeof(ProductStatus))
-        .Cast<ProductStatus>()
-        .Select(s => new FilterOption<ProductStatus?>
-        {
-            Value = s,
-            Text = EnumTranslate.TranslateStatus(s)
-        }))
-        .ToList();
-
-    private IEnumerable<FilterOption<Season?>> seasons =
-    new[] { new FilterOption<Season?> { Value = null, Text = "Todas" } }
-        .Concat(Enum.GetValues(typeof(Season))
-        .Cast<Season>()
-        .Select(s => new FilterOption<Season?>
-        {
-            Value = s,
-            Text = EnumTranslate.TranslateSeason(s)
-        }))
-        .ToList();
 
     private async Task LoadData(LoadDataArgs args)
     {
@@ -276,52 +217,66 @@
         }
     }
 
-
-    private async Task HandleEditProduct(int productId)
+    private async Task HandleEditProduct(ProductDto product)
     {
-        var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto ''",
-               new Dictionary<string, object>() { { "ProductId", productId } },
-               new DialogOptions()
-               {
-                   Width = "50%",
-                   CloseDialogOnOverlayClick = true
-               }
-        );
-
-        if (result is Result<bool> editResult)
+        try
         {
-            if (editResult.IsSuccess)
+            var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
+                   new Dictionary<string, object>() { { "ProductId", product.Id } },
+                   new DialogOptions()
+                   {
+                       Width = "50%",
+                       CloseDialogOnOverlayClick = true
+                   }
+            );
+            if (result is Result<bool> deleteResult)
             {
-                SimpleNotifications.Success($"Producto '' editado con éxito.");
-                await grid.Reload();
+                if (deleteResult.IsSuccess)
+                {
+                    SimpleNotifications.Success($"Producto con ID: {product.Id} editado con éxito.");
+                    await grid.Reload();
+                }
+                else
+                {
+                    SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                }
             }
-            else
-            {
-                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
-            }
+        }
+        catch (Exception ex)
+        {
+            
+            throw ex; 
         }
     }
 
-    private async Task HandleDeleteProduct(int productId)
+    private async Task HandleDeleteProduct(ProductDto product)
     {
-        var result = await DialogService.OpenAsync<DeleteProductConfirmation>($"Confirmar eliminación",
-        new Dictionary<string, object>() { { "ProductId", productId } },
-        new DialogOptions()
+        try
         {
-            CloseDialogOnOverlayClick = true
+            var result = await DialogService.OpenAsync<DeleteProductConfirmation>($"Confirmar eliminación",
+            new Dictionary<string, object>() { { "ProductDto", product } },
+            new DialogOptions()
+            {
+                CloseDialogOnOverlayClick = true
+            }
+            );
+            if (result is Result<bool> deleteResult)
+            {
+                if (deleteResult.IsSuccess)
+                {
+                    SimpleNotifications.Success($"Producto con ID: {product.Id} eliminado con éxito.");
+                    await grid.Reload();
+                }
+                else
+                {
+                    SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                }
+            }
         }
-        );
-        if (result is Result<bool> deleteResult)
+        catch (Exception ex)
         {
-            if (deleteResult.IsSuccess)
-            {
-                SimpleNotifications.Success($"Producto '' eliminado con éxito.");
-                await grid.Reload();
-            }
-            else
-            {
-                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
-            }
+            
+            throw ex;
         }
     }
 
@@ -349,36 +304,61 @@
         }
     }
 
+    private void ViewProduct(int productId)
+    {
+        NavigationManager.NavigateTo($"/productos/{productId}");
+    }
+
+    private async Task OnGridActionClick(RadzenSplitButtonItem item, ProductDto product)
+    {
+        if (product == null)
+        {
+            return;
+        }
+
+        if (item == null)
+        {
+            await PeekProduct(product);
+            return;
+        }
+
+        switch (item.Value)
+        {
+            case "view":
+                ViewProduct(product.Id);
+                break;
+            case "edit":
+                await HandleEditProduct(product);
+                break;
+            case "delete":
+                await HandleDeleteProduct(product);
+                break;
+        }
+    }
+
+    private async Task PeekProduct(ProductDto product)
+    {
+        await DialogService.OpenAsync<ProductDetails>("",
+           new Dictionary<string, object>() { { "ProductId", product.Id }, {"IsDialog", true } },
+           new DialogOptions()
+           {
+               WrapperCssClass = "",
+               Width = "80%",
+               Height = "90%",
+               CloseDialogOnOverlayClick = true
+           }
+        );
+    }
+
     private async Task ResetAsync()
     {
         grid.Reset(true);
         await grid.FirstPage(true);
     }
 
-    private void ViewProduct(int productId)
+    void GoBack()
     {
-        NavigationManager.NavigateTo($"/productos/{productId}");
-    }
-
-    private async Task OnGridActionClick(RadzenSplitButtonItem item, int productId)
-    {
-        if (item == null)
-        {
-            ViewProduct(productId);
-            return;
-        }
-        switch (item.Value)
-        {
-            case "view":
-                ViewProduct(productId);
-                break;
-            case "edit":
-                await HandleEditProduct(productId);
-                break;
-            case "delete":
-                await HandleDeleteProduct(productId);
-                break;
-        }
+        NavigationManager.NavigateTo("/");
     }
 }
 

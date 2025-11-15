@@ -28,7 +28,7 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
            .When(x => x.Season.HasValue);
 
         RuleFor(x => x.RefurbishmentCost)
-            .GreaterThan(0).WithMessage("El costo de reacondicionamiento debe ser mayor que cero.")
+            .GreaterThan(0).WithMessage("El costo de arreglo debe ser mayor que cero.")
             .When(x => x.RefurbishmentCost.HasValue);
 
         RuleFor(x => x.ConsignmentId)

@@ -8,6 +8,8 @@ public interface IProductService
 
     Task<Result<PagedItems<ProductDto>>> GetByBoxIdAsync(QueryRequest request, int boxId, CancellationToken cancellationToken);
 
+    Task<Result<PagedItems<ProductDto>>> GetByConsignmentIdAsync(QueryRequest request, int consignmentId, CancellationToken cancellationToken);
+
     Task<Result<ProductDto>> GetByIdAsync(int productId, CancellationToken cancellationToken);
 
     Task<Result<bool>> CreateAsync(CreateProductDto productDto, CancellationToken ct);

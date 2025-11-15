@@ -1,7 +1,4 @@
 ﻿using TodoSeUsa.Application.Common.Services;
-using TodoSeUsa.Application.Features.Boxes;
-using TodoSeUsa.Application.Features.Boxes.DTOs;
-using TodoSeUsa.Application.Features.Boxes.Validators;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Products.Interfaces;
 using TodoSeUsa.Application.Features.Products.Validators;
@@ -63,6 +60,62 @@ public class ProductService : IProductService
                 ConsignmentId = p.ConsignmentId,
                 SaleId = p.SaleId,
                 BoxId = boxId,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt
+
+            })
+        .ToListAsync(cancellationToken);
+
+        return Result.Success(new PagedItems<ProductDto>
+        {
+            Items = items,
+            Count = totalCount
+        });
+    }
+
+    public async Task<Result<PagedItems<ProductDto>>> GetByConsignmentIdAsync(
+    QueryRequest request,
+    int consignmentId,
+    CancellationToken cancellationToken)
+    {
+        var query = _context.Products.AsQueryable();
+
+        query = query.Where(p => p.ConsignmentId == consignmentId);
+
+        if (request.Filters != null && request.Filters.Count > 0)
+        {
+            var predicate = PredicateBuilder.BuildPredicate<Product>(request);
+            query = query.Where(predicate);
+        }
+
+        if (request.Sorts != null && request.Sorts.Count != 0)
+        {
+            query = query.ApplySorting(request.Sorts);
+        }
+        else
+            query = query.OrderBy(x => x.Id);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        query = query.Skip(request.Skip).Take(request.Take);
+
+        var items = await query
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Price = p.Price,
+                Quantity = p.Quantity,
+                Category = p.Category,
+                Description = p.Description,
+                Body = p.Body,
+                Size = p.Size,
+                Quality = p.Quality,
+                Status = p.Status,
+                RefurbishmentCost = p.RefurbishmentCost,
+                Season = p.Season != null ? p.Season : null,
+                ConsignmentId = p.ConsignmentId,
+                SaleId = p.SaleId,
+                BoxId = p.BoxId,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
 

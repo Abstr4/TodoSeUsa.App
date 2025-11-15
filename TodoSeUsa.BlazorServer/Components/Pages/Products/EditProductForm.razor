@@ -4,9 +4,10 @@
 @using TodoSeUsa.BlazorServer.Helpers
 @using TodoSeUsa.Domain.Enums
 
-@inject Radzen.DialogService DialogService;
 @inject IProductService ProductService;
+@inject DialogService DialogService;
 @inject SimpleNotifications SimpleNotifications;
+@inject NavigationManager NavigationManager;
 
 
 <RadzenTemplateForm TItem="EditProductDto" Data=@editProductDto Submit=@OnSubmit>
@@ -14,9 +15,9 @@
         <RadzenFieldset Text="Info. del producto">
             <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
                 <RadzenRow>
-                    <RadzenColumn Size="12" SizeSM="6">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="price-stack">
-                            <RadzenLabel Component="Category">
+                    <RadzenColumn Size="12" SizeSM="4" id="price-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
+                            <RadzenLabel Component="Price">
                                 Precio <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenNumeric Name="Price" @bind-Value=@editProductDto.Price Style="width: 100%;" TValue="decimal" Change="@OnPriceChanged" />
@@ -24,14 +25,65 @@
                             <RadzenNumericRangeValidator Component="Price" Min="1" Text="El precio debe ser mayor a cero."></RadzenNumericRangeValidator>
                         </RadzenStack>
                     </RadzenColumn>
-                    <RadzenColumn Size="12" SizeSM="6">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="quality-stack">
+                    <RadzenColumn Size="12" SizeSM="4" id="quantity-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
+                            <RadzenLabel Component="Quantity">
+                                Cantidad <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenNumeric Name="Quantity" Min="1" @bind-Value=@editProductDto.Quantity Style="width: 100%;" TValue="int" Change="@OnQuantityChanged" />
+                            <RadzenRequiredValidator Component="Quantity" Text="- La cantidad es requerida." />
+                            <RadzenNumericRangeValidator Component="Quantity" Min="1" Text="La cantidad debe ser mayor a cero."></RadzenNumericRangeValidator>
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeSM="4" id="consignmentId-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
+                            <RadzenLabel Component="ConsignmentId">
+                                Id de la consignación<RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Req." Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenNumeric Name="ConsignmentId" @bind-Value=@editProductDto.ConsignmentId Style="width: 100%;" TValue="int" Change="@OnConsignmentIdChanged" />
+                            <RadzenRequiredValidator Component="ConsignmentId" Text="El Id de la consignación es obligatorio."></RadzenRequiredValidator>
+                            <RadzenNumericRangeValidator Component="ConsignmentId" Min="1" Text="El Id de la consignación debe ser mayor a cero."></RadzenNumericRangeValidator>
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeSM="4" id="size-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
+                            <RadzenLabel Component="Size">
+                                Talle <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenTextBox Name="Size" @bind-Value=@editProductDto.Size Style="width: 100%;" Change="@OnSizeChanged" Placeholder="Talle..." />
+                            <RadzenRequiredValidator Component="Size" Text="- El talle es requerido." />
+                            <RadzenRegexValidator Component="Size"
+                                                  Pattern="^(?=.*[\p{L}\p{N}]).{1,100}$"
+                                                  Text="- El talle debe tener entre 1 y 50 caracteres válidos (no solo espacios o símbolos).">
+                            </RadzenRegexValidator>
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeSM="4" id="body-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
+                            <RadzenLabel Component="Body">
+                                Cuerpo <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenDropDown @bind-Value="@editProductDto.Body"
+                                            Placeholder="Seleccionar cuerpo..."
+                                            Data="@EnumOptionLists.bodies"
+                                            TextProperty="Text"
+                                            ValueProperty="Value"
+                                            Style="width:100%;"
+                                            TValue="Body"
+                                            Change="@OnBodyChanged"
+                                            Name="Body">
+                            </RadzenDropDown>
+                            <RadzenRequiredValidator Component="Body" Text="- La calidad es requerida." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeSM="4" id="quality-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
                             <RadzenLabel Component="Quality">
                                 Calidad <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenDropDown @bind-Value="@editProductDto.Quality"
                                             Placeholder="Seleccionar calidad..."
-                                            Data="@qualities"
+                                            Data="@EnumOptionLists.qualities"
                                             TextProperty="Text"
                                             ValueProperty="Value"
                                             Style="width:100%;"
@@ -42,8 +94,8 @@
                             <RadzenRequiredValidator Component="Quality" Text="- La calidad es requerida." />
                         </RadzenStack>
                     </RadzenColumn>
-                    <RadzenColumn Size="12" SizeSM="6">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="category-stack">
+                    <RadzenColumn Size="12" SizeSM="6" id="category-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
                             <RadzenLabel Component="Category">
                                 Categoría <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
@@ -55,18 +107,8 @@
                             </RadzenRegexValidator>
                         </RadzenStack>
                     </RadzenColumn>
-                    <RadzenColumn Size="12" SizeSM="6">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="consignmentId-stack">
-                            <RadzenLabel Component="ConsignmentId">
-                                Id de la consignación<RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
-                            </RadzenLabel>
-                            <RadzenNumeric Name="ConsignmentId" @bind-Value=@editProductDto.ConsignmentId Style="width: 100%;" TValue="int" Change="@OnConsignmentIdChanged" />
-                            <RadzenRequiredValidator Component="ConsignmentId" Text="El Id de la consignación es obligatorio."></RadzenRequiredValidator>
-                            <RadzenNumericRangeValidator Component="ConsignmentId" Min="1" Text="El Id de la consignación debe ser mayor a cero."></RadzenNumericRangeValidator>
-                        </RadzenStack>
-                    </RadzenColumn>
-                </RadzenRow>
-                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="description-stack">
+                    <RadzenColumn Size="12" SizeSM="6" id="description-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
                     <RadzenLabel Component="Description">
                         Descripción <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                     </RadzenLabel>
@@ -77,38 +119,40 @@
                                           Text="- La descripción debe tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos).">
                     </RadzenRegexValidator>
                 </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
                 <RadzenRow>
-                    <RadzenColumn Size="12" SizeSM="6">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="season-stack">
+                    <RadzenColumn Size="12" SizeSM="4" id="season-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
                             <RadzenLabel Component="Season">
                                 Temporada <RadzenBadge BadgeStyle="BadgeStyle.Info" Variant="Variant.Outlined" Text="Opcional" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenDropDown @bind-Value="@editProductDto.Season"
                                             Placeholder="Sin temporada asignada..."
-                                            Data="@seasons"
+                                            Data="@EnumOptionLists.seasons"
                                             TextProperty="Text"
                                             ValueProperty="Value"
                                             Style="width:100%;">
                             </RadzenDropDown>
                         </RadzenStack>
                     </RadzenColumn>
-                    <RadzenColumn Size="12" SizeSM="6">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="refurbishmentCost-stack">
-                            <RadzenLabel Component="RefurbishmentCost">
-                                Costo del reacondicionamiento<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
-                            </RadzenLabel>
-                            <RadzenNumeric Name="RefurbishmentCost" @bind-Value=@editProductDto.RefurbishmentCost Style="width: 100%;" Placeholder="Sin costo asignado..." />
-                        </RadzenStack>
-                    </RadzenColumn>
-                    <RadzenColumn Size="12" SizeSM="6">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" id="boxId-stack">
+                    <RadzenColumn Size="12" SizeSM="4" id="boxId-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
                             <RadzenLabel Component="BoxId">
                                 Id de la caja<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenNumeric Name="BoxId" @bind-Value=@editProductDto.BoxId Style="width: 100%;" Placeholder="Sin caja asignada..." />
                         </RadzenStack>
                     </RadzenColumn>
-                    <RadzenColumn Size="12" SizeSM="6">
+                    <RadzenColumn Size="12" SizeSM="6" id="refurbishmentCost-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
+                            <RadzenLabel Component="RefurbishmentCost">
+                                Costo del arreglo<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenNumeric Name="RefurbishmentCost" @bind-Value=@editProductDto.RefurbishmentCost Style="width: 100%;" Placeholder="Sin costo asignado..." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeSM="12" id="refresh-button">
                         <RadzenStack Style="height: 100%" Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
                             <RadzenButton Click="@ResetToOriginal">
                                 <RadzenIcon Icon="reset_settings"></RadzenIcon>
@@ -137,6 +181,9 @@
     private bool busy;
 
     private bool IsPriceValid => editProductDto.Price > 0;
+    private bool IsQuantityValid => editProductDto.Quantity > 0;
+    private bool IsSizeValid => !string.IsNullOrWhiteSpace(editProductDto.Size);
+    private bool IsBodyValid => Enum.IsDefined(typeof(Body), editProductDto.Body);
     private bool IsCategoryValid => !string.IsNullOrWhiteSpace(editProductDto.Category);
     private bool IsQualityValid => Enum.IsDefined(typeof(ProductQuality), editProductDto.Quality);
     private bool IsConsignmentValid => editProductDto.ConsignmentId > 0;
@@ -145,7 +192,8 @@
     private bool IsRefurbishmentCostValid => editProductDto.RefurbishmentCost == null || editProductDto.RefurbishmentCost > 0;
     private bool IsBoxIdValid => editProductDto.BoxId == null || editProductDto.BoxId > 0;
 
-    private bool IsSaveDisabled => !(IsPriceValid && IsCategoryValid && IsQualityValid &&
+    private bool IsSaveDisabled => !(IsPriceValid && IsQuantityValid && IsSizeValid &&
+                                 IsBodyValid && IsCategoryValid && IsQualityValid && 
                                  IsConsignmentValid && IsDescriptionValid &&
                                  IsSeasonValid && IsRefurbishmentCostValid && IsBoxIdValid) || !HasChanges();
 
@@ -159,6 +207,9 @@
             editProductDto = new EditProductDto
             {
                 Price = originalProduct.Price,
+                Quantity = originalProduct.Quantity,
+                Size = originalProduct.Size,
+                Body = originalProduct.Body,
                 Description = originalProduct.Description,
                 Category = originalProduct.Category,
                 Quality = originalProduct.Quality,
@@ -182,34 +233,30 @@
         busy = true;
         var result = await ProductService.EditProductById(ProductId, editProductDto, CancellationToken.None);
         busy = false;
-        await Task.Delay(1000);
         DialogService.Close(result);
     }
-
-    private IEnumerable<FilterOption<ProductQuality?>> qualities =
-        Enum.GetValues(typeof(ProductQuality))
-        .Cast<ProductQuality>()
-        .Select(q => new FilterOption<ProductQuality?>
-        {
-            Value = q,
-            Text = EnumTranslate.TranslateQuality(q)
-        })
-        .ToList();
-
-    private IEnumerable<FilterOption<Season?>> seasons =
-        Enum.GetValues(typeof(Season))
-        .Cast<Season>()
-        .Select(s => new FilterOption<Season?>
-        {
-            Value = s,
-            Text = EnumTranslate.TranslateSeason(s)
-        })
-        .ToList();
-
 
     private void OnPriceChanged(decimal value)
     {
         editProductDto.Price = value;
+        StateHasChanged();
+    }
+
+    private void OnQuantityChanged(int value)
+    {
+        editProductDto.Quantity = value;
+        StateHasChanged();
+    }
+
+    private void OnSizeChanged(string value)
+    {
+        editProductDto.Size = value;
+        StateHasChanged();
+    }
+
+    private void OnBodyChanged(object value)
+    {
+        editProductDto.Body = (Body)value;
         StateHasChanged();
     }
 
@@ -281,6 +328,9 @@
         editProductDto = new EditProductDto
         {
             Price = originalProduct.Price,
+            Quantity = originalProduct.Quantity,
+            Size = originalProduct.Size,
+            Body = originalProduct.Body,
             Description = originalProduct.Description,
             Category = originalProduct.Category,
             Quality = originalProduct.Quality,
@@ -297,6 +347,9 @@
     private bool HasChanges()
     {
         return editProductDto.Price != originalProduct.Price
+            || editProductDto.Quantity != originalProduct.Quantity
+            || editProductDto.Size != originalProduct.Size
+            || editProductDto.Body != originalProduct.Body
             || editProductDto.Category != originalProduct.Category
             || editProductDto.Quality != originalProduct.Quality
             || editProductDto.ConsignmentId != originalProduct.ConsignmentId

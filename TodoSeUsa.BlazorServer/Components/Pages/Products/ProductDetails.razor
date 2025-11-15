@@ -1,0 +1,237 @@
+﻿@page "/productos/{ProductId:int}"
+
+@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.Application.Features.Products.Services
+@using TodoSeUsa.BlazorServer.Helpers
+
+@inject IProductService ProductService;
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
+@inject NavigationManager NavigationManager;
+
+<style>
+    .product-table {
+        width: auto;
+        flex-grow: 1;
+    }
+</style>
+
+<RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style=" padding-bottom: 1.1rem">
+    @if (isLoading)
+    {
+        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: calc(100vh - 5.7rem);">
+            <RadzenProgressBarCircular Size="ProgressBarCircularSize.Large" ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" AriaLabel="Primary loading" />
+            <RadzenText Text="Cargando producto..."/>
+        </RadzenStack>
+    }
+    else if (product != null)
+    {
+        <RadzenCard class="rz-p-8 rz-shadow-5" Style="width: 50%; min-width: calc(250px + 2*(2rem)); padding-top: 1rem !important;">
+
+            @if (!IsDialog)
+            {
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.Center" Style="margin-bottom: 1rem">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditProduct(product))" />
+
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleDeleteProduct(product))" />
+                </RadzenStack>
+            }
+
+            <RadzenStack Wrap="FlexWrap.Wrap" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem">
+
+                <RadzenText class="rz-mb-2" Style="text-align: center; width: 100%" TextStyle="TextStyle.H4">@product.Category - @product.Description</RadzenText>
+
+                <RadzenImage Path="" Style="width: 250px; min-width:250px; height: 250px; border-radius: 5%; border: 1px solid;" />
+
+                <table class="table product-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Propiedad</th>
+                            <th scope="col">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ID</td>
+                            <td>@product.Id</td>
+                        </tr>
+                        <tr>
+                            <td>Estado</td>
+                            <td><RadzenBadge BadgeStyle="BadgeStyles.GetBadgeStyleFromProductStatus(product.Status)" Text="@EnumTranslate.TranslateStatus(product.Status)"></RadzenBadge></td>
+                        </tr>
+                        <tr>
+                            <td>Calidad</td>
+                            <td>@EnumTranslate.TranslateQuality(product.Quality)</td>
+                        </tr>
+                        <tr>
+                            <td>Precio</td>
+                            <td>$ @product.Price</td>
+                        </tr>
+                        <tr>
+                            <td>Cantidad</td>
+                            <td>@product.Quantity</td>
+                        </tr>
+                        <tr>
+                            <td>Id de la consignación</td>
+                            <td>
+                                <span>@product.ConsignmentId</span>
+                                <RadzenLink Path=@($"/consignaciones/{product.ConsignmentId}") style="vertical-align: super" >
+                                    <RadzenIcon Icon="info" IconStyle="IconStyle.Info" />
+                                </RadzenLink>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </RadzenStack>
+
+            <RadzenCard class="rz-background-color-info-lighter rz-shadow-0 rz-border-radius-0" style="margin: 0 -2rem; padding: 1rem 2rem !important">
+
+                <RadzenText TextStyle="TextStyle.H5" Text="Detalles"></RadzenText>
+
+                <RadzenRow RowGap="0">
+
+                    <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Cuerpo"/>
+                        <RadzenText><b>@EnumTranslate.TranslateBody(product.Body)</b></RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Talle"/>
+                        <RadzenText><b>@product.Size</b></RadzenText>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Temporada</RadzenText>
+                        <RadzenText><b>@EnumTranslate.TranslateSeason(product.Season)</b></RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Costo del arreglo</RadzenText>
+                        <RadzenText><b>@(product.RefurbishmentCost != null ? "$ " + product.RefurbishmentCost.ToString() : '-')</b></RadzenText>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">En caja Id</RadzenText>
+                        <RadzenText>
+                            <b>@(product.BoxId != null ? product.BoxId.ToString() : '-')</b>
+                            @if (product.BoxId != null)
+                            {
+                                <RadzenLink Path=@($"/cajas/{product.BoxId}") style="vertical-align: super">
+                                    <RadzenIcon Icon="info" IconStyle="IconStyle.Info" />
+                                </RadzenLink>
+                            }
+                        </RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">En venta Id</RadzenText>
+                        <RadzenText>
+                            <b>
+                                @(product.SaleId != null ? product.SaleId.ToString() : '-')
+                            </b>
+                            @if (product.SaleId != null)
+                            {                            
+                                <RadzenLink Path=@($"/ventas/{product.SaleId}") style="vertical-align: super">
+                                    <RadzenIcon Icon="info" IconStyle="IconStyle.Info" />
+                                </RadzenLink>
+                            }
+                        </RadzenText>
+
+                    </RadzenColumn>
+
+                    <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Creado el</RadzenText>
+                        <RadzenText><b>@(product.CreatedAt.ToString(format: "yyyy/MM/dd HH:mm"))</b></RadzenText>
+
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Actualizado el</RadzenText>
+                        <RadzenText><b>@(product.UpdatedAt.ToString(format: "yyyy/MM/dd HH:mm"))</b></RadzenText>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenCard>
+        </RadzenCard>
+    }
+</RadzenStack>
+
+
+@code
+{
+    [Parameter] public int ProductId { get; set; }
+    [Parameter] public bool IsDialog { get; set; }
+
+    private ProductDto? product;
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProduct();
+    }
+
+    private async Task LoadProduct()
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+        StateHasChanged();
+
+        var result = await ProductService.GetByIdAsync(ProductId, CancellationToken.None);
+        if (result.IsSuccess)
+            product = result.Value;
+        else
+        {
+            errorMessage = result.Error.Description;
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleEditProduct(ProductDto product)
+    {
+        var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
+               new Dictionary<string, object>() { { "ProductId", product.Id } },
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+        if (result is Result<bool> editResult)
+        {
+            if (editResult.IsSuccess)
+            {                
+                SimpleNotifications.Success($"Producto con ID: {product.Id} editado con éxito.");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleDeleteProduct(ProductDto product)
+    {
+        var result = await DialogService.OpenAsync<DeleteProductConfirmation>($"Confirmar eliminación",
+        new Dictionary<string, object>() { { "ProductDto", product } },
+        new DialogOptions()
+        {
+            CloseDialogOnOverlayClick = true
+        }
+        );
+        if (result is Result<bool> deleteResult)
+        {
+            if (deleteResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Producto con ID: {product.Id} eliminado con éxito.");
+                NavigationManager.NavigateTo("/productos");
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {result.Error.Description}");
+            }
+        }
+    }
+}
