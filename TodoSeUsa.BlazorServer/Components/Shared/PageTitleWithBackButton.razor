@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Components
+
+@inject NavigationManager NavigationManager;
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Style="width: 100%;">
+    <div style="flex: 0 0 auto;">
+        <RadzenButton Click="@GoBack" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+    </div>
+
+    <div style="flex: 1; text-align: center;">
+        <RadzenText Text="@Title" TextStyle="TextStyle.H3" Style="margin: 0"></RadzenText>
+    </div>
+
+    <div style="flex: 0 0 auto; visibility: hidden;">
+        <RadzenButton Icon="arrow_back" Text="Volver" Size="ButtonSize.Medium" />
+    </div>
+</RadzenStack>
+<hr />
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+
+    void GoBack()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
