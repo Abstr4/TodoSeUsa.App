@@ -148,7 +148,7 @@ else
                         </HeaderTemplate>
                         <ChildContent>
                             <RadzenCard Variant="Variant.Outlined">
-                                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@(async () => await grid.Reload())" ResetButtonClicked="@ResetProductsGridAsync" />
+                                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="grid.Reload" ResetButtonClicked="@ResetProductsGridAsync" />
                             </RadzenCard>
                             <RadzenDataGrid @ref=@grid TItem="ProductDto" Data=@products
                                             Count=@productsCount
@@ -184,12 +184,12 @@ else
                                     <RadzenDataGridColumn Property="Price" Title="Precio" MinWidth="200px" />
                                     <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus">
                                         <Template Context="s">
-                                            @TranslateStatus(s.Status)
+                                            @EnumTranslate.TranslateStatus(s.Status)
                                         </Template>
                                         <FilterTemplate>
                                             <RadzenDropDown @bind-Value="@selectedStatus"
                                                             Placeholder="Seleccionar..."
-                                                            Data="@statuses"
+                                                            Data="@EnumFilterLists.statuses"
                                                             TextProperty="Text"
                                                             ValueProperty="Value"
                                                             AllowClear="true"
@@ -199,12 +199,12 @@ else
                                     </RadzenDataGridColumn>
                                     <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality">
                                         <Template Context="p">
-                                            @TranslateQuality(p.Quality)
+                                            @EnumTranslate.TranslateQuality(p.Quality)
                                         </Template>
                                         <FilterTemplate>
                                             <RadzenDropDown @bind-Value="@selectedQuality"
                                                             Placeholder="Seleccionar..."
-                                                            Data="@qualities"
+                                                            Data="@EnumFilterLists.qualities"
                                                             TextProperty="Text"
                                                             ValueProperty="Value"
                                                             AllowClear="true"
@@ -214,12 +214,12 @@ else
                                     </RadzenDataGridColumn>
                                     <RadzenDataGridColumn Property="Season" Title="Temporada" FilterValue="@selectedSeason">
                                         <Template Context="s">
-                                            @TranslateSeason(s.Season)
+                                            @EnumTranslate.TranslateSeason(s.Season)
                                         </Template>
                                         <FilterTemplate>
                                             <RadzenDropDown @bind-Value="@selectedSeason"
                                                             Placeholder="Seleccionar..."
-                                                            Data="@seasons"
+                                                            Data="@EnumFilterLists.seasons"
                                                             TextProperty="Text"
                                                             ValueProperty="Value"
                                                             AllowClear="true"
@@ -228,7 +228,7 @@ else
                                         </FilterTemplate>
                                     </RadzenDataGridColumn>
                                     <RadzenDataGridColumn Property="CreatedAt" Title="Creado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" />
-                                    <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo reacondicionamiento" MinWidth="120px" />
+                                    <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo del arreglo" MinWidth="120px" />
                                     <RadzenDataGridColumn Property="SaleId" Title="Id de la venta" MinWidth="120px" />
                                     <RadzenDataGridColumn Property="UpdatedAt" Title="Actualizado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" />
                                 </Columns>
@@ -264,39 +264,6 @@ else
     private ProductQuality? selectedQuality = null;
     private Season? selectedSeason = null;
     private ProductStatus? selectedStatus = null;
-
-    private IEnumerable<FilterOption<ProductQuality?>> qualities =
-    new[] { new FilterOption<ProductQuality?> { Value = null, Text = "Todas" } }
-        .Concat(Enum.GetValues(typeof(ProductQuality))
-        .Cast<ProductQuality>()
-        .Select(q => new FilterOption<ProductQuality?>
-        {
-            Value = q,
-            Text = TranslateQuality(q)
-        }))
-        .ToList();
-
-    private IEnumerable<FilterOption<ProductStatus?>> statuses =
-    new[] { new FilterOption<ProductStatus?> { Value = null, Text = "Todos" } }
-        .Concat(Enum.GetValues(typeof(ProductStatus))
-        .Cast<ProductStatus>()
-        .Select(s => new FilterOption<ProductStatus?>
-        {
-            Value = s,
-            Text = TranslateStatus(s)
-        }))
-        .ToList();
-
-    private IEnumerable<FilterOption<Season?>> seasons =
-    new[] { new FilterOption<Season?> { Value = null, Text = "Todas" } }
-        .Concat(Enum.GetValues(typeof(Season))
-        .Cast<Season>()
-        .Select(s => new FilterOption<Season?>
-        {
-            Value = s,
-            Text = TranslateSeason(s)
-        }))
-        .ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -413,41 +380,6 @@ else
         };
 
         await LoadProducts(args);
-    }
-
-    private static string TranslateQuality(ProductQuality quality) => quality switch
-    {
-        ProductQuality.Poor => "Mala",
-        ProductQuality.Fair => "Aceptable",
-        ProductQuality.Good => "Buena",
-        ProductQuality.LikeNew => "Como nueva",
-        ProductQuality.New => "Nueva",
-        _ => quality.ToString()
-    };
-
-    private static string TranslateStatus(ProductStatus status) => status switch
-    {
-        ProductStatus.Available => "Disponible",
-        ProductStatus.Sold => "Vendido",
-        ProductStatus.Loaned => "Prestado",
-        ProductStatus.Reserved => "Reservado",
-        ProductStatus.Discontinued => "Descontinuado",
-        _ => status.ToString()
-    };
-
-    private static string TranslateSeason(Season? season)
-    {
-        if (season is null)
-            return "";
-
-        return season switch
-        {
-            Season.Spring => "Primavera",
-            Season.Summer => "Verano",
-            Season.Autumn => "Otoño",
-            Season.Winter => "Invierno",
-            _ => season.ToString()!
-        };
     }
 
     private void GoBack() => NavigationManager.NavigateTo("/cajas");
