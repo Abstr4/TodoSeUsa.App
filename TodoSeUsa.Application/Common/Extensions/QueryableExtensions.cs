@@ -7,29 +7,6 @@ namespace TodoSeUsa.Application.Common.Extensions;
 
 public static class QueryableExtensions
 {
-    public static IQueryable<T> ApplySorting<T>(
-        this IQueryable<T> query,
-        string? orderBy,
-        Func<IQueryable<T>, string, IQueryable<T>?>? customSorting = null,
-        string defaultOrderBy = "Id")
-    {
-        if (string.IsNullOrWhiteSpace(orderBy))
-            return query.OrderBy(defaultOrderBy);
-
-        try
-        {
-            var customQuery = customSorting?.Invoke(query, orderBy);
-            if (customQuery is not null)
-                return customQuery;
-
-            return query.OrderBy(orderBy);
-        }
-        catch
-        {
-            return query.OrderBy(defaultOrderBy);
-        }
-    }
-
     public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, IEnumerable<SortDescriptor>? sorts)
     {
         var sort = sorts?.FirstOrDefault();
@@ -40,8 +17,8 @@ public static class QueryableExtensions
         var isDescending = sort.SortOrder == SortOrder.Descending;
 
         return isDescending
-            ? query.OrderByDescending(e => EF.Property<object>(e, property))
-            : query.OrderBy(e => EF.Property<object>(e, property));
+            ? query.OrderByDescending(e => EF.Property<object>(e!, property))
+            : query.OrderBy(e => EF.Property<object>(e!, property));
     }
 
     public static IQueryable<T> ApplyFilter<T>(this IQueryable<T> query, string? filter)
@@ -53,7 +30,6 @@ public static class QueryableExtensions
                 ResolveTypesBySimpleName = true
             };
 
-            // Register your enum types directly in the constructor
             config.CustomTypeProvider = new DefaultDynamicLinqCustomTypeProvider(
                 config,
                 [ typeof(ProductStatus), typeof(ProductQuality), typeof(Season), typeof(PaymentStatus), typeof(PaymentMethod), typeof(LoanedProductStatus), typeof(LoanNoteStatus), typeof(ReservationStatus) ]
