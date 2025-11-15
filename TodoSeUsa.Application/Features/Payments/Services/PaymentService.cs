@@ -23,7 +23,7 @@ public sealed class PaymentService : IPaymentService
                 .AsNoTracking();
 
             query = query.ApplyFilter(request.Filter);
-            query = query.ApplySorting(request.OrderBy);
+            // query = query.ApplySorting(request.OrderBy);
 
             var count = await query.CountAsync(cancellationToken);
 

@@ -27,7 +27,7 @@ public sealed class SaleService : ISaleService
 
 
             query = query.ApplyFilter(request.Filter);
-            query = query.ApplySorting(request.OrderBy, ApplyCustomSorting);
+            // query = query.ApplySorting(request.OrderBy, ApplyCustomSorting);
 
             var count = await query.CountAsync(cancellationToken);
 
