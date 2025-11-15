@@ -77,7 +77,7 @@ public static class PredicateBuilder
             FilterOperator.LessThan => Expression.LessThan(member, constant),
             FilterOperator.LessThanOrEqual => Expression.LessThanOrEqual(member, constant),
             FilterOperator.Contains => Expression.Call(member, typeof(string).GetMethod("Contains", [typeof(string)])!, constant),
-            FilterOperator.DoesNotContain => Expression.Not(Expression.Call(member, typeof(string).GetMethod("Contains", new[] { typeof(string) })!, constant)),
+            FilterOperator.DoesNotContain => Expression.Not(Expression.Call(member, typeof(string).GetMethod("Contains", [typeof(string)])!, constant)),
             FilterOperator.StartsWith => Expression.Call(member, typeof(string).GetMethod("StartsWith", [typeof(string)])!, constant),
             FilterOperator.EndsWith => Expression.Call(member, typeof(string).GetMethod("EndsWith", [typeof(string)])!, constant),
             FilterOperator.In => Expression.Call(
