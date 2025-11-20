@@ -15,11 +15,16 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.FirstName).IsRequired().HasMaxLength(100);
         builder.Property(p => p.LastName).IsRequired().HasMaxLength(100);
 
-        builder.Property(p => p.EmailAddress).IsRequired().HasMaxLength(100);
-        builder.Property(p => p.PhoneNumber).IsRequired().HasMaxLength(20);
+        builder.Property(p => p.EmailAddress).HasMaxLength(100);
+        builder.Property(p => p.PhoneNumber).HasMaxLength(20);
 
-        builder.HasIndex(p => p.EmailAddress).IsUnique();
-        builder.HasIndex(p => p.PhoneNumber).IsUnique();
+        builder.HasIndex(p => p.EmailAddress)
+            .IsUnique()
+            .HasFilter("[EmailAddress] IS NOT NULL");
+
+        builder.HasIndex(p => p.PhoneNumber)
+            .IsUnique()
+            .HasFilter("[PhoneNumber] IS NOT NULL");
 
         builder.HasOne(p => p.Client)
             .WithOne(c => c.Person)
@@ -31,7 +36,12 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
             .HasForeignKey<Provider>(pr => pr.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.ToTable("People")
-            .HasQueryFilter(b => !b.DeletedAt.HasValue);
+        builder.ToTable("People", t =>
+        {
+            t.HasCheckConstraint(
+                "CK_Person_EmailOrPhone",
+                "[EmailAddress] IS NOT NULL OR [PhoneNumber] IS NOT NULL");
+        })
+        .HasQueryFilter(b => !b.DeletedAt.HasValue);
     }
 }

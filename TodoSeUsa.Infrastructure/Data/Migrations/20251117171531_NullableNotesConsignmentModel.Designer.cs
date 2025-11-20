@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TodoSeUsa.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using TodoSeUsa.Infrastructure.Data;
 namespace TodoSeUsa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251117171531_NullableNotesConsignmentModel")]
+    partial class NullableNotesConsignmentModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -299,6 +302,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EmailAddress")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -313,6 +317,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -325,17 +330,12 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EmailAddress")
-                        .IsUnique()
-                        .HasFilter("[EmailAddress] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("PhoneNumber")
-                        .IsUnique()
-                        .HasFilter("[PhoneNumber] IS NOT NULL");
+                        .IsUnique();
 
-                    b.ToTable("People", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_Person_EmailOrPhone", "[EmailAddress] IS NOT NULL OR [PhoneNumber] IS NOT NULL");
-                        });
+                    b.ToTable("People", (string)null);
 
                     b.UseTpcMappingStrategy();
                 });

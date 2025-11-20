@@ -19,6 +19,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Provider> Providers => Set<Provider>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<Sale> Sales => Set<Sale>();
+    public DbSet<Person> Persons => Set<Person>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     { }
