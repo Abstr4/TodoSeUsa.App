@@ -9,4 +9,7 @@ public static class ProviderErrors
     public static Error Failure() => Error.Failure(
     "Providers.Failure",
     "Ocurrió un error inesperado.");
+    public static Error Failure(string message) => Error.Failure(
+    "Providers.Failure",
+    message);
 }
