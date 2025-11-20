@@ -1,0 +1,283 @@
+﻿@page "/proveedores"
+
+@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.Providers.DTOs
+@using TodoSeUsa.Application.Features.Providers.Interfaces
+@using TodoSeUsa.BlazorServer.Helpers
+
+@inject IProviderService providerService;
+@inject DialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+
+<style>
+    .rz-custom-header {
+        width: 100%;
+    }
+</style>
+
+<RadzenCard Style="max-width: 100%">
+    <PageTitleWithBackButton Title="Consignaciones" />
+    <RadzenDataGrid @ref="grid" 
+        IsLoading="@isLoading" 
+        TItem="ProviderDto" 
+        Data="@providers" 
+        @bind-Value="@selectedProviders" 
+        LoadData="@LoadProviders" 
+        Count="@count" 
+        EmptyText="@GridMessage" 
+        LogicalFilterOperator="@logicalFilterOperator" 
+        SelectionMode="DataGridSelectionMode.Single" 
+        PageSize="5" 
+        AllowSorting="true" 
+        AllowFiltering="true" 
+        AllowPaging="true" 
+        AllowColumnResize=true 
+        FilterMode="FilterMode.Simple" 
+        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
+        PagerHorizontalAlign="HorizontalAlign.Center" 
+        ClearFilterText="Limpiar" ApplyFilterText="Aplicar" FilterText="Filtro" 
+        ContainsText="Contiene" EqualsText="Equivale" AndOperatorText="Y" 
+        OrOperatorText="O" LessThanOrEqualsText="Menor o igual que" LessThanText="Menor que" 
+        GreaterThanOrEqualsText="Mayor o igual que" GreaterThanText="Mayor que" NotEqualsText="No es igual a" 
+        IsNullText="Es nulo" IsNotNullText="No es nulo" ColumnWidth="200px">
+
+        <HeaderTemplate>
+
+            <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
+
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un proveedor nueva" Click="@HandleCreateProvider" />
+
+                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
+
+            </RadzenStack>
+        </HeaderTemplate>
+
+        <Columns>
+            <RadzenDataGridColumn TItem="ProviderDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+
+                <Template Context="provider">
+                    <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, provider)) Icon="read_more">
+
+                        <ChildContent>
+                            <RadzenSplitButtonItem Text="Ver proveedor" Value="view" Icon="read_more" />
+                            <RadzenSplitButtonItem Text="Editar proveedor" Value="edit" Icon="edit" />
+                            <RadzenSplitButtonItem Text="Eliminar proveedor" Value="delete" Icon="delete" />
+                        </ChildContent>
+
+                    </RadzenSplitButton>
+                </Template>
+
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn Property="Id" Title="ID" TextAlign="TextAlign.Center" MinWidth="80px" Width="80px"/>
+
+            <RadzenDataGridColumn Property="CommissionPercent" Title="Comisión (en %)" TextAlign="TextAlign.Center" MinWidth="120px" Width="120px"/>
+
+            <RadzenDataGridColumn Filterable="false" Property="TotalConsignments" Title="Cant. consignaciones" MinWidth="80px" Width="140px">
+                <Template Context="provider">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                        <RadzenText>@provider.TotalConsignments</RadzenText>
+@*                         @if (provider.TotalConsignments > 0)
+                        {
+                            <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await ShowProviderProducts(provider.Id))" />
+                        } *@
+                    </RadzenStack>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn Property="FullName" Title="Info. del proveedor" MinWidth="200px" Width="160px"/>
+
+            <RadzenDataGridColumn Property="ContactInfo" Title="Info. de contacto" MinWidth="200px" Width="160px"/>
+
+            <RadzenDataGridColumn Property="CreatedAt" Title="Creada el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="160px"/>
+
+            <RadzenDataGridColumn Property="UpdatedAt" Title="Última actualización" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="180px"/>
+
+            <RadzenDataGridColumn Filterable="false" Sortable="false" TItem="ProviderDto" Title="Acciones" MinWidth="200px" Width="160px">
+                <Template Context="provider">
+
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditProvider(provider))" />
+
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleDeleteProvider(provider))" />
+
+                    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewProvider(provider.Id))" />
+
+                </Template>
+            </RadzenDataGridColumn>
+
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code {
+    private RadzenDataGrid<ProviderDto> grid = null!;
+    private IEnumerable<ProviderDto>? providers;
+    private IList<ProviderDto>? selectedProviders;
+    private int count;
+    private bool isLoading = false;
+    private string GridMessage = "No hay proveedors para mostrar.";
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    async Task LoadProviders(LoadDataArgs args)
+    {
+        if (isLoading) return;
+
+        try
+        {
+            isLoading = true;
+
+            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+            var result = await providerService.GetAllAsync(request, CancellationToken.None);
+            if (result.IsSuccess)
+            {
+                providers = result.Value.Items;
+                count = result.Value.Count;
+                selectedProviders = providers.Take(1).ToList();
+            }
+            else
+            {
+                providers = [];
+                selectedProviders = [];
+                count = 0;
+                GridMessage = result.Error.Description;
+            }
+        }
+        finally
+        {
+            isLoading = false;
+
+        }
+    }
+
+    private void ViewProvider(int providerId)
+    {
+        NavigationManager.NavigateTo($"/proveedores/{providerId}");
+    }
+
+    private async Task HandleEditProvider(ProviderDto provider)
+    {
+        var result = await DialogService.OpenAsync<EditProviderForm>($"Editar proveedor",
+               new Dictionary<string, object>() { { "ProviderDto", provider } },
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
+        if (result is Result<bool> editResult)
+        {
+            if (editResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación editada con éxito.");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleDeleteProvider(ProviderDto provider)
+    {
+        var result = await DialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
+        new Dictionary<string, object>() { { "ProviderDto", provider } },
+        new DialogOptions()
+        {
+            CloseDialogOnOverlayClick = true
+        }
+        );
+        if (result is Result<bool> deleteResult)
+        {
+            if (deleteResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación eliminada con éxito.");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleCreateProvider()
+    {
+        var result = await DialogService.OpenAsync<CreateProviderForm>("Crear una nueva proveedor",
+               new Dictionary<string, object>(),
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+        if (result is Result<int> createResult)
+        {
+            if (createResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación creada con éxito!");
+                NavigationManager.NavigateTo($"/proveedores/{createResult.Value}");
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
+            }
+        }
+    }
+
+    // public async Task ShowProviderProducts(int providerId)
+    // {
+    //     await DialogService.OpenAsync<ProviderProducts>($"Productos en la proveedor ID: {providerId}",
+    //            new Dictionary<string, object>() { { "ProviderId", providerId } },
+    //            new DialogOptions()
+    //            {
+    //                Width = "75%",
+    //                Height = "90%",
+    //                CloseDialogOnOverlayClick = true
+    //            }
+    //     );
+
+    // }
+
+    private async Task OnSplitButtonClick(RadzenSplitButtonItem item, ProviderDto provider)
+    {
+        if (provider == null)
+        {
+            return;
+        }
+
+        if (item == null)
+        {
+            ViewProvider(provider.Id);
+            return;
+        }
+
+        switch (item.Value)
+        {
+            case "view":
+                ViewProvider(provider.Id);
+                break;
+            case "edit":
+                await HandleEditProvider(provider);
+                break;
+            case "delete":
+                await HandleDeleteProvider(provider);
+                break;
+        }
+    }
+
+    async Task ResetAsync()
+    {
+        grid.Reset(true);
+        await grid.FirstPage(true);
+    }
+
+    void GoBack()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

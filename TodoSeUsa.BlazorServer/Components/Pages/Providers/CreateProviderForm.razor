@@ -1,0 +1,200 @@
+﻿@using System.Text.Json
+@using System.Text.RegularExpressions
+@using TodoSeUsa.Application.Features.Providers.DTOs
+@using TodoSeUsa.Application.Features.Providers.Interfaces
+@using TodoSeUsa.BlazorServer.Helpers
+@using TodoSeUsa.Domain.Enums
+
+@inject DialogService DialogService;
+@inject IProviderService ProviderService;
+
+
+<RadzenTemplateForm TItem="CreateProviderDto" Data=@createProviderDto Submit=@OnSubmit>
+
+    <RadzenStack Gap="1rem">
+        
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+            <RadzenFieldset Text="Información básica">
+
+                    <RadzenRow>
+
+                        <RadzenColumn Size="6" id="firstName-column">
+
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                <RadzenLabel Component="FirstName">
+                                    Nombre <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                </RadzenLabel>
+
+                                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                                    <RadzenTextBox Name="FirstName" @bind-Value=@createProviderDto.FirstName Style="width: 100%;" Placeholder="Nombre..." />
+                                </RadzenStack>
+
+                                <RadzenRequiredValidator Component="FirstName" Text="- El nombre es requerido." />
+                            </RadzenStack>
+                        </RadzenColumn>
+                        <RadzenColumn Size="6" id="lastName-column">
+
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                <RadzenLabel Component="LastName">
+                                    Apellido <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                </RadzenLabel>
+
+                                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                                    <RadzenTextBox Name="LastName" @bind-Value=@createProviderDto.LastName Style="width: 100%;" Placeholder="Apellido..." />
+                                </RadzenStack>
+
+                                <RadzenRequiredValidator Component="LastName" Text="- El apellido es requerido." />
+                            </RadzenStack>
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenFieldset>
+
+            <RadzenFieldset Text="Información de contacto">
+                <RadzenColumn Size="6" id="emailAddress-column">
+
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                        <RadzenLabel Component="EmailAddress">
+                            Email <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                        </RadzenLabel>
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                            <RadzenTextBox Name="EmailAddress" @bind-Value=@createProviderDto.EmailAddress Style="width: 100%;" Change="@OnEmailAddressChanged" Placeholder="Email..." />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenColumn>
+                <RadzenColumn Size="6" id="phoneNumber-column">
+
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                        <RadzenLabel Component="PhoneNumber">
+                            Email <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                        </RadzenLabel>
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                            <RadzenTextBox Name="PhoneNumber" @bind-Value=@createProviderDto.PhoneNumber Style="width: 100%;" Change="@OnPhoneNumberChanged" Placeholder="Email..." />
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenColumn>
+                <RadzenColumn Size="6" id="address-column">
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                            <RadzenLabel Component="Address">
+                                Número de teléfono <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                                <RadzenTextBox Name="Address" @bind-Value=@createProviderDto.Address Style="width: 100%;" Change="@OnAddressChanged" Placeholder="Número de teléfono..." />
+                            </RadzenStack>
+                        </RadzenStack>
+                    </RadzenColumn>
+                <RadzenTextBox Name="ContactValidationGhost" Style="display:none" />
+                <RadzenCustomValidator Component="ContactValidationGhost"
+                                       Text="- Debes ingresar al menos un dato de contacto."
+                                       Validator="@ValidateContactInfo" />
+            </RadzenFieldset>
+        </RadzenStack>
+        
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
+
+            <RadzenButton IsBusy="@busy" BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@IsSaveDisabled />
+
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code
+{
+    private bool busy;
+
+    private bool IsSaveDisabled => !(IsCommissionPercentValid && IsFirstNameValid && IsLastNameValid);
+
+    private bool IsCommissionPercentValid => createProviderDto.CommissionPercent >= 0m && createProviderDto.CommissionPercent <= 100m;
+    private bool IsFirstNameValid => createProviderDto.FirstName.Length > 0 || createProviderDto.FirstName.Length < 50;
+    private bool IsLastNameValid => createProviderDto.LastName.Length > 0 || createProviderDto.LastName.Length < 100;
+    private bool IsEmailValid => EmailValidator(createProviderDto.EmailAddress);
+    private bool IsPhoneNumberValid => IsValidE164Phone(createProviderDto.PhoneNumber);
+    private bool IsAddressValid => IsEmptyOrMatchesAlphanumericPattern(createProviderDto.Address);
+
+
+    private CreateProviderDto createProviderDto = new();
+
+    async Task OnSubmit(CreateProviderDto createProviderDto)
+    {
+        busy = true;
+        var result = await ProviderService.CreateAsync(createProviderDto, CancellationToken.None);
+        busy = false;
+        DialogService.Close(result);
+    }
+
+    // private void OnFirstNameChanged(string value)
+    // {
+    //     createProviderDto.FirstName = value;
+    //     StateHasChanged();
+    // }
+
+    // private void OnLastNameChanged(string value)
+    // {
+    //     createProviderDto.LastName = value;
+    //     StateHasChanged();
+    // }
+
+    private bool ValidateContactInfo()
+    {
+        return
+            !string.IsNullOrWhiteSpace(createProviderDto.EmailAddress) ||
+            !string.IsNullOrWhiteSpace(createProviderDto.PhoneNumber);
+    }
+
+    private void OnEmailAddressChanged(string? value)
+    {
+        createProviderDto.EmailAddress = value == "" ? null : value;
+        StateHasChanged();
+    }
+
+    private void OnAddressChanged(string? value)
+    {
+        createProviderDto.Address = value == "" ? null : value;
+        StateHasChanged();
+    }
+
+    private void OnPhoneNumberChanged(string? value)
+    {
+        createProviderDto.PhoneNumber = value == "" ? null : value;
+        StateHasChanged();
+    }
+
+    bool IsEmptyOrMatchesAlphanumericPattern(string? input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return true;
+
+        return Regex.IsMatch(input, "^(?=.*[A-Za-z0-9]).{1,250}$");
+    }
+
+    private bool EmailValidator(string? email)
+    {
+        if (email is null) return true;
+
+        int index = email.IndexOf('@');
+
+        return
+            email.Length >= 3 &&
+            email.Length <= 250 &&
+            index > 0 &&
+            index != email.Length - 1 &&
+            index == email.LastIndexOf('@');
+    }
+
+    private bool IsValidE164Phone(string? phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone)) return true;
+
+        return Regex.IsMatch(phone, @"^\+[1-9]\d{1,14}$");
+    }
+}
+

@@ -41,209 +41,214 @@
         </RadzenStack>
     </RadzenCard>
 }
-else if (originalBox is null)
+else if (originalBox != null)
 {
-    <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
-        @errorMessage
-    </RadzenAlert>
-    <RadzenButton Icon="arrow_back" Text="Volver" Click="@GoBack" />
+    <RadzenCard class="rz-shadow-5" Style="width: 100%; min-width: calc(250px + 2*(2rem));">
+        <RadzenStack Gap="1rem">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                         JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
 
+
+                <RadzenButton Click="@GoBack" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+
+
+                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                    <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
+                                  Click=@HandleEditBox Style="flex-grow: 1;" />
+
+                    <RadzenButton Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger"
+                                  Click=@HandleDeleteBox Style="flex-grow: 1;" />
+                </RadzenStack>
+            </RadzenStack>
+
+            <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important">Detalles de caja </RadzenText>
+
+            <RadzenTable Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell style="width: 40%; font-weight:bold;">
+                            <RadzenText TextStyle="TextStyle.H6" Text="Propiedad" />
+                        </RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell style="width: 60%; font-weight:bold;">
+                            <RadzenText TextStyle="TextStyle.H6" Text="Valor" />
+                        </RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+
+                <RadzenTableBody>
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="ID" style="font-weight:bold" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.Id.ToString()" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.BoxCode" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Ubicación" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.Location" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Productos en la caja" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.TotalProducts.ToString()" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creado" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.CreatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizado" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.UpdatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+                </RadzenTableBody>
+            </RadzenTable>
+
+            @if (originalBox.TotalProducts == 0)
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    Ésta caja no contiene productos.
+                </RadzenAlert>
+            }
+            else
+            {
+                <RadzenFieldset AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
+                    <HeaderTemplate>
+                        <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
+                            <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos en la caja</b>
+                        </RadzenText>
+                    </HeaderTemplate>
+                    <ChildContent>
+                        <RadzenCard Variant="Variant.Outlined">
+                            <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="grid.Reload" ResetButtonClicked="@ResetProductsGridAsync" />
+                        </RadzenCard>
+                        <RadzenDataGrid @ref=@grid TItem="ProductDto" Data=@products
+                                        Count=@productsCount
+                                        IsLoading=@isLoadingProducts
+                                        LoadData=@LoadProducts
+                                        PageSize="5"
+                                        AllowPaging="true" AllowSorting="true"
+                                        AllowFiltering="true" ShowPagingSummary="true"
+                                        AllowColumnResize="true"
+                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        FilterMode="FilterMode.Simple"
+                                        PagerHorizontalAlign="HorizontalAlign.Left"
+                                        ColumnWidth="200px"
+                                        class="rz-mt-4"
+                                        ClearFilterText="Limpiar"
+                                        ApplyFilterText="Aplicar"
+                                        FilterText="Filtro"
+                                        ContainsText="Contiene"
+                                        EqualsText="Equivale"
+                                        AndOperatorText="Y"
+                                        OrOperatorText="O"
+                                        LessThanOrEqualsText="Menor o igual que"
+                                        LessThanText="Menor que"
+                                        GreaterThanOrEqualsText="Mayor o igual que"
+                                        GreaterThanText="Mayor que"
+                                        NotEqualsText="No es igual a"
+                                        IsNullText="Es nulo"
+                                        IsNotNullText="No es nulo">
+                            <Columns>
+                                <RadzenDataGridColumn Filterable="false" Property="Id" Title="ID" Width="80px" MinWidth="80px" />
+                                <RadzenDataGridColumn Property="Category" Title="Categoría" MinWidth="200px" />
+                                <RadzenDataGridColumn Property="Description" Title="Descripción" MinWidth="200px" />
+                                <RadzenDataGridColumn Property="Price" Title="Precio" MinWidth="200px" />
+                                <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus">
+                                    <Template Context="s">
+                                        @EnumTranslate.TranslateStatus(s.Status)
+                                    </Template>
+                                    <FilterTemplate>
+                                        <RadzenDropDown @bind-Value="@selectedStatus"
+                                                        Placeholder="Seleccionar..."
+                                                        Data="@EnumFilterLists.statuses"
+                                                        TextProperty="Text"
+                                                        ValueProperty="Value"
+                                                        AllowClear="true"
+                                                        Style="width:100%;">
+                                        </RadzenDropDown>
+                                    </FilterTemplate>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality">
+                                    <Template Context="p">
+                                        @EnumTranslate.TranslateQuality(p.Quality)
+                                    </Template>
+                                    <FilterTemplate>
+                                        <RadzenDropDown @bind-Value="@selectedQuality"
+                                                        Placeholder="Seleccionar..."
+                                                        Data="@EnumFilterLists.qualities"
+                                                        TextProperty="Text"
+                                                        ValueProperty="Value"
+                                                        AllowClear="true"
+                                                        Style="width:100%;">
+                                        </RadzenDropDown>
+                                    </FilterTemplate>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn Property="Season" Title="Temporada" FilterValue="@selectedSeason">
+                                    <Template Context="s">
+                                        @EnumTranslate.TranslateSeason(s.Season)
+                                    </Template>
+                                    <FilterTemplate>
+                                        <RadzenDropDown @bind-Value="@selectedSeason"
+                                                        Placeholder="Seleccionar..."
+                                                        Data="@EnumFilterLists.seasons"
+                                                        TextProperty="Text"
+                                                        ValueProperty="Value"
+                                                        AllowClear="true"
+                                                        Style="width:100%;">
+                                        </RadzenDropDown>
+                                    </FilterTemplate>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn Property="CreatedAt" Title="Creado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" />
+                                <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo del arreglo" MinWidth="120px" />
+                                <RadzenDataGridColumn Property="SaleId" Title="Id de la venta" MinWidth="120px" />
+                                <RadzenDataGridColumn Property="UpdatedAt" Title="Actualizado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" />
+                            </Columns>
+                        </RadzenDataGrid>
+                    </ChildContent>
+                    <SummaryTemplate>
+                        <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                            <b>@originalBox.TotalProducts Productos</b>
+                        </RadzenCard>
+                    </SummaryTemplate>
+                </RadzenFieldset>
+            }
+        </RadzenStack>
+    </RadzenCard>
 }
 else
 {
-    <PageLayoutSection Title="@($"Detalles de caja '{originalBox.BoxCode}'")">
-        <RadzenCard Style="padding:2rem; width: 100%">
-            <RadzenStack Gap="1rem">
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Right" Wrap="FlexWrap.Wrap">
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                        <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
-                                      Click=@HandleEditBox />
-                        <RadzenButton Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger"
-                                      Click=@HandleDeleteBox />
-                    </RadzenStack>
-                </RadzenStack>
-
-                <RadzenTable Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
-                    <RadzenTableHeader>
-                        <RadzenTableHeaderRow>
-                            <RadzenTableHeaderCell style="width: 40%; font-weight:bold;">
-                                <RadzenText TextStyle="TextStyle.H6" Text="Propiedad" />
-                            </RadzenTableHeaderCell>
-                            <RadzenTableHeaderCell style="width: 60%; font-weight:bold;">
-                                <RadzenText TextStyle="TextStyle.H6" Text="Valor" />
-                            </RadzenTableHeaderCell>
-                        </RadzenTableHeaderRow>
-                    </RadzenTableHeader>
-
-                    <RadzenTableBody>
-                        <RadzenTableRow>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="ID" style="font-weight:bold" />
-                            </RadzenTableCell>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.Id.ToString()" />
-                            </RadzenTableCell>
-                        </RadzenTableRow>
-
-                        <RadzenTableRow>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código" style="font-weight:bold;" />
-                            </RadzenTableCell>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.BoxCode" />
-                            </RadzenTableCell>
-                        </RadzenTableRow>
-
-                        <RadzenTableRow>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="Ubicación" style="font-weight:bold;" />
-                            </RadzenTableCell>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.Location" />
-                            </RadzenTableCell>
-                        </RadzenTableRow>
-
-                        <RadzenTableRow>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="Productos totales" style="font-weight:bold;" />
-                            </RadzenTableCell>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.TotalProducts.ToString()" />
-                            </RadzenTableCell>
-                        </RadzenTableRow>
-
-                        <RadzenTableRow>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creado" style="font-weight:bold;" />
-                            </RadzenTableCell>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.CreatedAt.ToString("dd/MM/yyyy HH:mm")" />
-                            </RadzenTableCell>
-                        </RadzenTableRow>
-
-                        <RadzenTableRow>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizado" style="font-weight:bold;" />
-                            </RadzenTableCell>
-                            <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.UpdatedAt.ToString("dd/MM/yyyy HH:mm")" />
-                            </RadzenTableCell>
-                        </RadzenTableRow>
-                    </RadzenTableBody>
-                </RadzenTable>
-
-                @if (originalBox.TotalProducts == 0)
-                {
-                    <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter">
-                        Ésta caja no contiene productos.
-                    </RadzenAlert>
-                }
-                else
-                {
-                    <RadzenFieldset AllowCollapse="true" Collapsed="true" class="w-100 rz-mt-4">
-                        <HeaderTemplate>
-                            <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
-                                <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos en la caja</b>
-                            </RadzenText>
-                        </HeaderTemplate>
-                        <ChildContent>
-                            <RadzenCard Variant="Variant.Outlined">
-                                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="grid.Reload" ResetButtonClicked="@ResetProductsGridAsync" />
-                            </RadzenCard>
-                            <RadzenDataGrid @ref=@grid TItem="ProductDto" Data=@products
-                                            Count=@productsCount
-                                            IsLoading=@isLoadingProducts
-                                            LoadData=@LoadProducts
-                                            PageSize="5"
-                                            AllowPaging="true" AllowSorting="true"
-                                            AllowFiltering="true" ShowPagingSummary="true"
-                                            AllowColumnResize="true"
-                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                                            FilterMode="FilterMode.Simple"
-                                            PagerHorizontalAlign="HorizontalAlign.Left"
-                                            ColumnWidth="200px"
-                                            class="rz-mt-4"
-                                            ClearFilterText="Limpiar"
-                                            ApplyFilterText="Aplicar"
-                                            FilterText="Filtro"
-                                            ContainsText="Contiene"
-                                            EqualsText="Equivale"
-                                            AndOperatorText="Y"
-                                            OrOperatorText="O"
-                                            LessThanOrEqualsText="Menor o igual que"
-                                            LessThanText="Menor que"
-                                            GreaterThanOrEqualsText="Mayor o igual que"
-                                            GreaterThanText="Mayor que"
-                                            NotEqualsText="No es igual a"
-                                            IsNullText="Es nulo"
-                                            IsNotNullText="No es nulo">
-                                <Columns>
-                                    <RadzenDataGridColumn Filterable="false" Property="Id" Title="ID" Width="80px" MinWidth="80px" />
-                                    <RadzenDataGridColumn Property="Category" Title="Categoría" MinWidth="200px" />
-                                    <RadzenDataGridColumn Property="Description" Title="Descripción" MinWidth="200px" />
-                                    <RadzenDataGridColumn Property="Price" Title="Precio" MinWidth="200px" />
-                                    <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus">
-                                        <Template Context="s">
-                                            @EnumTranslate.TranslateStatus(s.Status)
-                                        </Template>
-                                        <FilterTemplate>
-                                            <RadzenDropDown @bind-Value="@selectedStatus"
-                                                            Placeholder="Seleccionar..."
-                                                            Data="@EnumFilterLists.statuses"
-                                                            TextProperty="Text"
-                                                            ValueProperty="Value"
-                                                            AllowClear="true"
-                                                            Style="width:100%;">
-                                            </RadzenDropDown>
-                                        </FilterTemplate>
-                                    </RadzenDataGridColumn>
-                                    <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality">
-                                        <Template Context="p">
-                                            @EnumTranslate.TranslateQuality(p.Quality)
-                                        </Template>
-                                        <FilterTemplate>
-                                            <RadzenDropDown @bind-Value="@selectedQuality"
-                                                            Placeholder="Seleccionar..."
-                                                            Data="@EnumFilterLists.qualities"
-                                                            TextProperty="Text"
-                                                            ValueProperty="Value"
-                                                            AllowClear="true"
-                                                            Style="width:100%;">
-                                            </RadzenDropDown>
-                                        </FilterTemplate>
-                                    </RadzenDataGridColumn>
-                                    <RadzenDataGridColumn Property="Season" Title="Temporada" FilterValue="@selectedSeason">
-                                        <Template Context="s">
-                                            @EnumTranslate.TranslateSeason(s.Season)
-                                        </Template>
-                                        <FilterTemplate>
-                                            <RadzenDropDown @bind-Value="@selectedSeason"
-                                                            Placeholder="Seleccionar..."
-                                                            Data="@EnumFilterLists.seasons"
-                                                            TextProperty="Text"
-                                                            ValueProperty="Value"
-                                                            AllowClear="true"
-                                                            Style="width:100%;">
-                                            </RadzenDropDown>
-                                        </FilterTemplate>
-                                    </RadzenDataGridColumn>
-                                    <RadzenDataGridColumn Property="CreatedAt" Title="Creado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" />
-                                    <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo del arreglo" MinWidth="120px" />
-                                    <RadzenDataGridColumn Property="SaleId" Title="Id de la venta" MinWidth="120px" />
-                                    <RadzenDataGridColumn Property="UpdatedAt" Title="Actualizado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" />
-                                </Columns>
-                            </RadzenDataGrid>
-                        </ChildContent>
-                        <SummaryTemplate>
-                            <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
-                                <b>@originalBox.TotalProducts Productos</b>
-                            </RadzenCard>
-                        </SummaryTemplate>
-                    </RadzenFieldset>
-                }
-            </RadzenStack>
-        </RadzenCard>
-    </PageLayoutSection>
+    <RadzenAlert Text="@errorMessage" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter"/>
+    <RadzenButton Icon="arrow_back" Text="Volver" Click="@GoBack" />
 }
 
 
@@ -252,14 +257,19 @@ else
     [Parameter] public int Id { get; set; }
 
     private RadzenDataGrid<ProductDto> grid = null!;
-    BoxDto? originalBox;
+
+    private BoxDto? originalBox;
+    private bool isLoading = false;
+
     private EditBoxDto editBox = new();
-    IEnumerable<ProductDto>? products;
-    int productsCount;
-    string? errorMessage;
-    bool isLoadingProducts = false;
-    bool isLoading = true;
-    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
+
+    private IEnumerable<ProductDto>? products;
+    private bool isLoadingProducts = false;
+    private int productsCount;
+
+    private string? errorMessage;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
 
     private ProductQuality? selectedQuality = null;
     private Season? selectedSeason = null;
@@ -267,6 +277,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (isLoading) return;
+
+        isLoading = true;
+
         var result = await BoxService.GetByIdAsync(Id, CancellationToken.None);
         if (result.IsSuccess)
         {
@@ -282,29 +296,24 @@ else
     private async Task LoadProducts(LoadDataArgs args)
     {
         if (isLoadingProducts) return;
-        try
+
+        isLoadingProducts = true;
+
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+        var result = await ProductService.GetByBoxIdAsync(request, Id, CancellationToken.None);
+
+        if (result.IsSuccess)
         {
-            isLoadingProducts = true;
-
-            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
-
-            var result = await ProductService.GetByBoxIdAsync(request, Id, CancellationToken.None);
-
-            if (result.IsSuccess)
-            {
-                products = result.Value.Items;
-                productsCount = result.Value.Count;
-            }
-            else
-            {
-                products = [];
-                productsCount = 0;
-            }
+            products = result.Value.Items;
+            productsCount = result.Value.Count;
         }
-        finally
+        else
         {
-            isLoadingProducts = false;
+            products = [];
+            productsCount = 0;
         }
+        isLoadingProducts = false;
     }
 
     private async Task HandleEditBox()

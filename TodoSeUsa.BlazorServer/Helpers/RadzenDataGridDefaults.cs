@@ -1,4 +1,7 @@
-﻿namespace TodoSeUsa.BlazorServer.Helpers;
+﻿using Radzen;
+using Radzen.Blazor;
+
+namespace TodoSeUsa.BlazorServer.Helpers;
 
 public static class RadzenDataGridDefaults
 {
@@ -6,4 +9,5 @@ public static class RadzenDataGridDefaults
     public const bool AllowSorting = true;
     public const bool AllowPaging = true;
     public const bool AllowFiltering = true;
+    public const LogicalFilterOperator FilterOperator = LogicalFilterOperator.And;
 }

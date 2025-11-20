@@ -11,12 +11,6 @@
 @inject SimpleNotifications SimpleNotifications;
 @inject NavigationManager NavigationManager;
 
-<style>
-    .rz-custom-header {
-        width: 100%;
-    }
-</style>
-
 <RadzenCard Style="max-width: 100%;">
     <PageTitleWithBackButton Title="Productos" />
     <RadzenDataGrid @ref="grid" IsLoading="@isLoading" TItem="ProductDto" Data="@products"
@@ -34,9 +28,10 @@
         </HeaderTemplate>
 
         <Columns>
+
             <RadzenDataGridColumn TItem="ProductDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
                 <Template Context="product">
-                    <RadzenSplitButton Click=@(async (args) => await OnGridActionClick(args, product)) Icon="visibility">
+                    <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, product)) Icon="visibility">
                         <ChildContent>
                             <RadzenSplitButtonItem Text="Ver producto" Value="view" Icon="visibility" />
                             <RadzenSplitButtonItem Text="Editar producto" Value="edit" Icon="edit" />
@@ -149,12 +144,12 @@
     private bool isLoading = false;
     private string GridMessage = "No hay productos para mostrar.";
 
-    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
-
     private ProductQuality? selectedQuality = null;
     private Season? selectedSeason = null;
     private ProductStatus? selectedStatus = null;
     private Body? selectedBody = null;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
 
     private async Task LoadData(LoadDataArgs args)
     {
@@ -309,7 +304,7 @@
         NavigationManager.NavigateTo($"/productos/{productId}");
     }
 
-    private async Task OnGridActionClick(RadzenSplitButtonItem item, ProductDto product)
+    private async Task OnSplitButtonClick(RadzenSplitButtonItem item, ProductDto product)
     {
         if (product == null)
         {

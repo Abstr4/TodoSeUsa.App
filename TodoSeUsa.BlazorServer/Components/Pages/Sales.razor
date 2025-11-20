@@ -28,7 +28,6 @@
                             FilterMode="FilterMode.Simple"
                             FilterCaseSensitivity="@filterCaseSensitivity"
                             LogicalFilterOperator="@logicalFilterOperator"
-                            GridLines="@gridLines"
                             PageSize="5"
                             PagerHorizontalAlign="HorizontalAlign.Center"
                             EmptyText="No hay ventas para mostrar."
@@ -72,9 +71,8 @@
     private string GridMessage = "No hay ventas para mostrar.";
     private CancellationTokenSource? cts;
 
-    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.And;
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
     private FilterCaseSensitivity filterCaseSensitivity = FilterCaseSensitivity.CaseInsensitive;
-    private Radzen.DataGridGridLines gridLines = Radzen.DataGridGridLines.Both;
 
     private async Task LoadData(LoadDataArgs args)
     {

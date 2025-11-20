@@ -7,10 +7,16 @@
 
 @inject IProductService ProductService;
 
-<RadzenDataList TItem="ProductDto"  PageSize=@pageSize  PageNumbersCount="5"  Data=@products  Count=@count 
-    IsLoading=@isLoading LoadData=@LoadData PagerHorizontalAlign="HorizontalAlign.Right"  PagingSummaryFormat="@pagingSummaryFormat" 
-    ShowPagingSummary="true" WrapItems="true" AllowPaging="true">
-
+<RadzenDataList TItem="ProductDto"
+                PageSize=@pageSize
+                PageNumbersCount="5"
+                Data=@products
+                Count=@count
+                IsLoading=@isLoading
+                LoadData=@LoadData
+                PagerHorizontalAlign="HorizontalAlign.Right"
+                PagingSummaryFormat="@pagingSummaryFormat"
+                ShowPagingSummary="true" WrapItems="true" AllowPaging="true">
     <Template Context="product">
 
         <RadzenCard Style="width:300px;">
@@ -23,9 +29,6 @@
                 <RadzenRow>
                     <RadzenImage Style="width: 200px; min-width: 200px; min-height: 200px; height: 200px; border-radius: 3px; border: solid; border-width: 1px" />
                     <RadzenColumn>
-                        <RadzenText class="rz-display-flex rz-mb-0" Text="Consignación ID" />
-                        <RadzenText> <b>@product.ConsignmentId</b> </RadzenText>
-
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Cuerpo" />
                         <RadzenText> <b>@EnumTranslate.TranslateBody(product.Body)</b> </RadzenText>
 
@@ -34,6 +37,9 @@
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Temporada" />
                         <RadzenText> <b>@EnumTranslate.TranslateSeason(product.Season)</b> </RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Caja ID" />
+                        <RadzenText> <b>@(product.BoxId != null ? $"{product.BoxId}" : "-")</b> </RadzenText>
                     </RadzenColumn>
                 </RadzenRow>
 
@@ -41,7 +47,7 @@
                 <RadzenRow>
 
                     <RadzenColumn>
-                        <RadzenText class="rz-display-flex rz-mb-0" Text="Venta ID"/>
+                        <RadzenText class="rz-display-flex rz-mb-0" Text="Venta ID" />
                         <RadzenText id="saleid-text">
                             <b> @(product.SaleId != null ? product.SaleId.ToString() : '-') </b>
                             @if (product.SaleId != null)
@@ -73,7 +79,7 @@
             <RadzenRow>
 
                 <RadzenColumn Size="8" class="rz-text-align-start" id="status-column">
-                    <RadzenBadge BadgeStyle=@BadgeStyles.GetBadgeStyleFromProductStatus(product.Status) Text=@product.Status.ToString()/>
+                    <RadzenBadge BadgeStyle=@BadgeStyles.GetBadgeStyleFromProductStatus(product.Status) Text=@product.Status.ToString() />
                 </RadzenColumn>
 
                 <RadzenColumn Size="4" class="rz-text-align-end" id="price-column">
@@ -88,10 +94,10 @@
 
 @code {
 
-    [Parameter] public int BoxId { get; set; }
+    [Parameter] public int ConsignmentId { get; set; }
 
     private IEnumerable<ProductDto>? products;
-    string pagingSummaryFormat = "Mostrando página {0} de {1} (total {2} productos)";
+    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} records)";
     private int pageSize = 3;
     private int count;
     private bool isLoading;
@@ -103,10 +109,9 @@
         if (isLoading) return;
 
         isLoading = true;
+
         QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
-
-        var result = await ProductService.GetByBoxIdAsync(request, BoxId, CancellationToken.None);
-
+        var result = await ProductService.GetByConsignmentIdAsync(request, ConsignmentId, CancellationToken.None);
         if (result.IsSuccess)
         {
             products = result.Value.Items;
@@ -121,5 +126,4 @@
 
         isLoading = false;
     }
-
 }

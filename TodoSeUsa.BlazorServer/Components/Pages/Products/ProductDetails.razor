@@ -152,8 +152,15 @@
             </RadzenCard>
         </RadzenCard>
     }
-</RadzenStack>
+    else
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+            @errorMessage
+        </RadzenAlert>
+        <RadzenButton Icon="arrow_back" Text="Volver" Click=GoBack />
 
+    }
+</RadzenStack>
 
 @code
 {
@@ -233,5 +240,11 @@
                 SimpleNotifications.Error($"Error: {result.Error.Description}");
             }
         }
+    }
+
+
+    void GoBack()
+    {
+        NavigationManager.NavigateTo("/");
     }
 }

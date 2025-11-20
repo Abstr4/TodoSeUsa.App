@@ -15,7 +15,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="4" id="price-column">
                         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
-                            <RadzenLabel Component="Category">
+                            <RadzenLabel Component="Price">
                                 Precio <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenNumeric Name="Price" @bind-Value=@createProductDto.Price Style="width: 100%;" TValue="decimal" Min="1" Change="@OnPriceChanged" />
@@ -38,7 +38,7 @@
                             <RadzenLabel Component="ConsignmentId">
                                 Id de la consignación<RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Req." Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenNumeric Name="ConsignmentId" @bind-Value=@createProductDto.ConsignmentId Style="width: 100%;" TValue="int" Min="1" Change="@OnConsignmentIdChanged" />
+                            <RadzenNumeric Name="ConsignmentId" @bind-Value=@createProductDto.ConsignmentId Style="width: 100%;" TValue="int" Min="1" Change="@OnConsignmentIdChanged" Disabled="@(ConsignmentId != null)"/>
                             <RadzenRequiredValidator Component="ConsignmentId" Text="El Id de la consignación es obligatorio."></RadzenRequiredValidator>
                             <RadzenNumericRangeValidator Component="ConsignmentId" Min="1" Text="El Id de la consignación debe ser mayor a cero."></RadzenNumericRangeValidator>
                         </RadzenStack>
@@ -110,8 +110,7 @@
                             <RadzenRequiredValidator Component="Description" Text="- La descripción es requerida." />
                             <RadzenRegexValidator Component="Description"
                                                   Pattern="^(?=.*[\p{L}\p{N}]).{1,250}$"
-                                                  Text="- La descripción debe tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos).">
-                            </RadzenRegexValidator>
+                                                  Text="- La descripción debe tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos)." />
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>
@@ -199,6 +198,9 @@
 
 @code
 {
+    [Parameter] public int? ConsignmentId { get; set; }
+    [Parameter] public int? SaleId { get; set; }
+
     private bool busy;
 
     private bool IsSaveDisabled => !(IsPriceValid && IsQuantityValid && IsBodyValid && IsSizeValid &&
@@ -219,14 +221,24 @@
     private bool IsBoxIdValid => createProductDto.BoxId == null || createProductDto.BoxId > 0;
 
 
-    private CreateProductDto createProductDto = new()
+    private CreateProductDto createProductDto = new();
+
+    protected override void OnInitialized()
     {
-        Price = 1,
-        ConsignmentId = 1,
-        Quantity = 1,
-        Body = Body.Unisex,
-        Quality = ProductQuality.New
-    };
+        InitializeCreateProductDto();
+    }
+
+    private void InitializeCreateProductDto()
+    {
+        createProductDto = new CreateProductDto
+        {
+            Price = 0,
+            Quantity = 1,
+            Body = Body.Unisex,
+            Quality = ProductQuality.New,
+            ConsignmentId = ConsignmentId ?? 0
+        };
+    }
 
     async Task OnSubmit(CreateProductDto createProductDto)
     {

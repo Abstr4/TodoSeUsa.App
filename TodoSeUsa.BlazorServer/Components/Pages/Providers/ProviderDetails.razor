@@ -1,0 +1,449 @@
+﻿@page "/proveedores/{Id:int}"
+
+@using TodoSeUsa.Application.Common
+@using TodoSeUsa.Application.Common.Models
+@using TodoSeUsa.Application.Features.Providers.DTOs
+@using TodoSeUsa.Application.Features.Providers.Interfaces
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.BlazorServer.Components.Pages.Products
+@using TodoSeUsa.BlazorServer.Helpers
+@using TodoSeUsa.Domain.Enums
+
+@inject IProviderService ProviderService
+@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@inject SimpleNotifications SimpleNotifications
+
+
+<style>
+    .rz-fieldset-toggler {
+        font-weight: 800;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid;
+        border-radius: 25%;
+    }
+
+    table h6, .subtitle1 {
+        margin: 0 !important;
+    }
+</style>
+
+<RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style=" padding-bottom: 1.1rem">
+    @if (isLoading)
+    {
+        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: calc(100vh - 5.7rem);">
+            <RadzenProgressBarCircular Size="ProgressBarCircularSize.Large" ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" AriaLabel="Primary loading" />
+            <RadzenText Text="Cargando consignación..." />
+        </RadzenStack>
+    }
+    else if (provider != null)
+    {
+        <RadzenCard class="rz-shadow-5" Style="width: 100%; min-width: calc(250px + 2*(2rem));">
+
+            <RadzenStack Gap="1rem">
+
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
+                        JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
+
+                        <RadzenButton Click="@GoBack" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                            <RadzenButton Icon="add" Text="Agregar nuevo producto" ButtonStyle="ButtonStyle.Success"
+                                        Click=@HandleAddProduct Style="flex-grow: 1;" />
+
+                            <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
+                                        Click=@HandleEditProvider Style="flex-grow: 1;" />
+
+                            <RadzenButton  Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger"
+                                            Click=@HandleDeleteProvider Style="flex-grow: 1;"/>
+                        </RadzenStack>
+                    </RadzenStack>
+
+                    <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important">Detalles de consignación </RadzenText>
+
+                    <RadzenTable Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
+
+                        <RadzenTableHeader>
+
+                            <RadzenTableHeaderRow>
+
+                                <RadzenTableHeaderCell style="width: 40%; font-weight:bold;" id="property-header">
+                                    <RadzenText TextStyle="TextStyle.H6" Text="Propiedad" />
+                                </RadzenTableHeaderCell>
+
+                                <RadzenTableHeaderCell style="width: 60%; font-weight:bold;" id="value-header">
+                                    <RadzenText TextStyle="TextStyle.H6" Text="Valor" />
+                                </RadzenTableHeaderCell>
+                            </RadzenTableHeaderRow>
+                        </RadzenTableHeader>
+
+                        <RadzenTableBody>
+
+                            <RadzenTableRow id="id-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="ID" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.Id.ToString()" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="provider-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Proveedor" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                <RadzenText TextStyle="TextStyle.Subtitle1">
+                                    @provider.ProviderFullName - ID: @provider.ProviderId.ToString()
+                                    <RadzenLink Path=@($"/proveedores/{provider.ProviderId}") style="vertical-align: super">
+                                        <RadzenIcon Icon="info" IconStyle="IconStyle.Info" />
+                                    </RadzenLink>
+                                </RadzenText>
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="notes-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Notas" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.Notes" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="totalProducts-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Productos en la consignación" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.TotalProducts.ToString()" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="issuedAt-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Emitida el" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.DateIssued.ToString("dd/MM/yyyy HH:mm")" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="createdAt-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creada el" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.CreatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="updatedAt-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizada el" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.UpdatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+                        </RadzenTableBody>
+
+                    </RadzenTable>
+
+                    @if (provider.TotalProducts > 0)
+                    {
+                        <RadzenFieldset AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
+
+                        <HeaderTemplate>
+                            <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
+                                <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos en la consignación</b>
+                            </RadzenText>
+                        </HeaderTemplate>
+
+                        <ChildContent>
+
+                            <RadzenDataGrid @ref=@grid TItem="ProductDto" Data=@products
+                                            Count=@productsCount
+                                            IsLoading=@isLoadingProducts
+                                            LoadData=@LoadProducts
+                                            PageSize="5"
+                                            AllowPaging="true" AllowSorting="true"
+                                            AllowFiltering="true" ShowPagingSummary="true"
+                                            AllowColumnResize="true"
+                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                            FilterMode="FilterMode.Simple"
+                                            PagerHorizontalAlign="HorizontalAlign.Left"
+                                            ColumnWidth="200px"
+                                            class="rz-mt-4"
+                                            ClearFilterText="Limpiar"
+                                            ApplyFilterText="Aplicar"
+                                            FilterText="Filtro"
+                                            ContainsText="Contiene"
+                                            EqualsText="Equivale"
+                                            AndOperatorText="Y"
+                                            OrOperatorText="O"
+                                            LessThanOrEqualsText="Menor o igual que"
+                                            LessThanText="Menor que"
+                                            GreaterThanOrEqualsText="Mayor o igual que"
+                                            GreaterThanText="Mayor que"
+                                            NotEqualsText="No es igual a"
+                                            IsNullText="Es nulo"
+                                            IsNotNullText="No es nulo">
+
+                                <HeaderTemplate>
+                                    <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" class="w-100 p-3">
+                                        <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Agregar nuevo producto" Click="@HandleAddProduct" />
+                                        <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetProductsGridAsync" />
+                                    </RadzenStack>
+                                </HeaderTemplate>
+
+                                <Columns>
+                                    <RadzenDataGridColumn Filterable="false" Property="Id" Title="ID" Width="80px" MinWidth="80px" />
+                                    <RadzenDataGridColumn Property="Category" Title="Categoría" MinWidth="200px" />
+                                    <RadzenDataGridColumn Property="Description" Title="Descripción" MinWidth="200px" />
+                                    <RadzenDataGridColumn Property="Price" Title="Precio" MinWidth="100px" />
+                                    <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="120px">
+                                        <Template Context="s">
+                                            @EnumTranslate.TranslateStatus(s.Status)
+                                        </Template>
+                                        <FilterTemplate>
+                                            <RadzenDropDown @bind-Value="@selectedStatus"
+                                                            Placeholder="Seleccionar..."
+                                                            Data="@EnumFilterLists.statuses"
+                                                            TextProperty="Text"
+                                                            ValueProperty="Value"
+                                                            AllowClear="true"
+                                                            Style="width:100%;">
+                                            </RadzenDropDown>
+                                        </FilterTemplate>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality" MinWidth="120px">
+                                        <Template Context="p">
+                                            @EnumTranslate.TranslateQuality(p.Quality)
+                                        </Template>
+                                        <FilterTemplate>
+                                            <RadzenDropDown @bind-Value="@selectedQuality"
+                                                            Placeholder="Seleccionar..."
+                                                            Data="@EnumFilterLists.qualities"
+                                                            TextProperty="Text"
+                                                            ValueProperty="Value"
+                                                            AllowClear="true"
+                                                            Style="width:100%;">
+                                            </RadzenDropDown>
+                                        </FilterTemplate>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn Property="Season" Title="Temporada" FilterValue="@selectedSeason" MinWidth="100px">
+                                        <Template Context="s">
+                                            @EnumTranslate.TranslateSeason(s.Season)
+                                        </Template>
+                                        <FilterTemplate>
+                                            <RadzenDropDown @bind-Value="@selectedSeason"
+                                                            Placeholder="Seleccionar..."
+                                                            Data="@EnumFilterLists.seasons"
+                                                            TextProperty="Text"
+                                                            ValueProperty="Value"
+                                                            AllowClear="true"
+                                                            Style="width:100%;">
+                                            </RadzenDropDown>
+                                        </FilterTemplate>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn Property="CreatedAt" Title="Creado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" />
+                                    <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo del arreglo" MinWidth="100px" />
+                                    <RadzenDataGridColumn Property="SaleId" Title="Id de la venta" MinWidth="80px" />
+                                    <RadzenDataGridColumn Property="UpdatedAt" Title="Actualizado" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" />
+                                </Columns>
+
+                            </RadzenDataGrid>
+                        </ChildContent>
+
+                        <SummaryTemplate>
+                            <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                                <b>@provider.TotalProducts Productos</b>
+                            </RadzenCard>
+                        </SummaryTemplate>
+
+                    </RadzenFieldset>
+                    }
+                    else
+                    {
+                        <RadzenAlert Text="Ésta consignación no contiene productos." AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter"/>
+                    }
+                </RadzenStack>
+        </RadzenCard>
+    }
+    else
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Text="@errorMessage"/>
+        <RadzenButton Icon="arrow_back" Text="Volver" Click="@GoBack" />
+    }
+</RadzenStack>
+
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private RadzenDataGrid<ProductDto> grid = null!;
+
+    ProviderDto? provider;
+    bool isLoading = false;
+
+    IEnumerable<ProductDto>? products;
+    int productsCount;
+    bool isLoadingProducts = false;
+
+    string? errorMessage;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    private ProductQuality? selectedQuality = null;
+    private Season? selectedSeason = null;
+    private ProductStatus? selectedStatus = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        var result = await ProviderService.GetByIdAsync(Id, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            provider = result.Value;
+        }
+        else
+        {
+            errorMessage = result.Error.Description;
+        }
+        isLoading = false;
+    }
+
+    private async Task LoadProducts(LoadDataArgs args)
+    {
+        if (isLoadingProducts) return;
+        isLoadingProducts = true;
+
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+        var result = await ProductService.GetByProviderIdAsync(request, Id, CancellationToken.None);
+
+        if (result.IsSuccess)
+        {
+            products = result.Value.Items;
+            productsCount = result.Value.Count;
+        }
+        else
+        {
+            products = [];
+            productsCount = 0;
+        }
+        isLoadingProducts = false;
+    }
+
+    private async Task HandleAddProduct()
+    {
+       var result = await DialogService.OpenAsync<CreateProductForm>("Crear un producto nuevo",
+           new Dictionary<string, object>() { { "ProviderId", Id } },
+           new DialogOptions()
+           {
+               Width = "50%",
+               CloseDialogOnOverlayClick = true
+           }
+       );
+        if (result is Result<bool> createResult)
+        {
+            if (createResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Producto creado con éxito!");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleEditProvider()
+    {
+        if (provider is null) return;
+
+        var result = await DialogService.OpenAsync<EditProviderForm>($"Editar consignación código",
+               new Dictionary<string, object>() { { "ProviderDto", provider } },
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
+        if (result is Result<bool> editResult)
+        {
+            if (editResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación editada con éxito.");
+
+                var refreshed = await ProviderService.GetByIdAsync(provider.Id, CancellationToken.None);
+                if (refreshed.IsSuccess)
+                {
+                    provider = refreshed.Value;
+                }
+                StateHasChanged();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleDeleteProvider()
+    {
+        if (provider is null) return;
+
+        var result = await DialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
+        new Dictionary<string, object>() { { "ProviderDto", provider } },
+        new DialogOptions()
+        {
+            CloseDialogOnOverlayClick = true
+        }
+        );
+        if (result is Result<bool> deleteResult)
+        {
+            if (deleteResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación eliminada con éxito.");
+                GoBack();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task ResetProductsGridAsync()
+    {
+        selectedQuality = null;
+        selectedSeason = null;
+        selectedStatus = null;
+
+        grid.Reset();
+
+        var args = new LoadDataArgs
+        {
+            Skip = 0,
+            Top = grid.PageSize
+        };
+
+        await LoadProducts(args);
+    }
+
+    private void GoBack() => NavigationManager.NavigateTo("/consignaciones");
+}
