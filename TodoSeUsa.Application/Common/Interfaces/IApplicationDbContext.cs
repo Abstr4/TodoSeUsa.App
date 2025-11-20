@@ -20,5 +20,7 @@ public interface IApplicationDbContext
 
     DbSet<Reservation> Reservations { get; }
 
+    DbSet<Person> Persons { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
