@@ -18,7 +18,18 @@
 
 <RadzenCard Style="max-width: 100%">
     <PageTitleWithBackButton Title="Consignaciones" />
-    <RadzenDataGrid @ref="grid" IsLoading="@isLoading" TItem="ConsignmentDto" Data="@consignments" Count="@count" EmptyText="@GridMessage" LogicalFilterOperator="@logicalFilterOperator" @bind-Value="@selectedConsignments" LoadData="@LoadConsignments" SelectionMode="DataGridSelectionMode.Single" PageSize="5" AllowSorting="true" AllowFiltering="true" AllowPaging="true" AllowColumnResize=true FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" GridLines="DataGridGridLines.Both" PagerHorizontalAlign="HorizontalAlign.Center" ClearFilterText="Limpiar" ApplyFilterText="Aplicar" FilterText="Filtro" ContainsText="Contiene" EqualsText="Equivale" AndOperatorText="Y" OrOperatorText="O" LessThanOrEqualsText="Menor o igual que" LessThanText="Menor que" GreaterThanOrEqualsText="Mayor o igual que" GreaterThanText="Mayor que" NotEqualsText="No es igual a" IsNullText="Es nulo" IsNotNullText="No es nulo" ColumnWidth="200px">
+    <RadzenDataGrid @ref="grid" IsLoading="@isLoading" TItem="ConsignmentDto" Data="@consignments" 
+        @bind-Value="@selectedConsignments" LoadData="@LoadConsignments" 
+        Count="@count" EmptyText="@GridMessage" LogicalFilterOperator="@logicalFilterOperator" 
+        SelectionMode="DataGridSelectionMode.Single" PageSize="5" 
+        AllowSorting="true" AllowFiltering="true" AllowPaging="true" AllowColumnResize=true 
+        FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
+        GridLines="DataGridGridLines.Both" PagerHorizontalAlign="HorizontalAlign.Center" 
+        ClearFilterText="Limpiar" ApplyFilterText="Aplicar" FilterText="Filtro" 
+        ContainsText="Contiene" EqualsText="Equivale" AndOperatorText="Y" 
+        OrOperatorText="O" LessThanOrEqualsText="Menor o igual que" LessThanText="Menor que" 
+        GreaterThanOrEqualsText="Mayor o igual que" GreaterThanText="Mayor que" NotEqualsText="No es igual a" 
+        IsNullText="Es nulo" IsNotNullText="No es nulo" ColumnWidth="200px">
         <HeaderTemplate>
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
                 <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una consignación nueva" Click="@HandleCreateConsignment" />
@@ -26,6 +37,22 @@
             </RadzenStack>
         </HeaderTemplate>
         <Columns>
+            <RadzenDataGridColumn TItem="ConsignmentDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+
+                <Template Context="consignment">
+                    <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, consignment)) Icon="read_more">
+
+                        <ChildContent>
+                            <RadzenSplitButtonItem Text="Ver consignación" Value="view" Icon="read_more" />
+                            <RadzenSplitButtonItem Text="Editar consignación" Value="edit" Icon="edit" />
+                            <RadzenSplitButtonItem Text="Eliminar consignación" Value="delete" Icon="delete" />
+                        </ChildContent>
+
+                    </RadzenSplitButton>
+                </Template>
+
+            </RadzenDataGridColumn>
+
             <RadzenDataGridColumn Property="Id" Title="ID" TextAlign="TextAlign.Center" MinWidth="80px" Width="80px"/>
 
             <RadzenDataGridColumn Filterable="false" Property="TotalProducts" Title="Cant. productos" MinWidth="80px" Width="140px">
@@ -54,11 +81,16 @@
 
             <RadzenDataGridColumn Filterable="false" Sortable="false" TItem="ConsignmentDto" Title="Acciones" MinWidth="200px" Width="160px">
                 <Template Context="consignment">
-                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditConsignment(consignment.Id))" />
-                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleDeleteConsignment(consignment.Id))" />
+
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditConsignment(consignment))" />
+
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleDeleteConsignment(consignment))" />
+
                     <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewConsignment(consignment.Id))" />
+
                 </Template>
             </RadzenDataGridColumn>
+
         </Columns>
     </RadzenDataGrid>
 </RadzenCard>
@@ -71,7 +103,7 @@
     private bool isLoading = false;
     private string GridMessage = "No hay consignacións para mostrar.";
 
-    private LogicalFilterOperator logicalFilterOperator = LogicalFilterOperator.Or;
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
 
     async Task LoadConsignments(LoadDataArgs args)
     {
@@ -110,10 +142,10 @@
         NavigationManager.NavigateTo($"/consignaciones/{consignmentId}");
     }
 
-    private async Task HandleEditConsignment(int consignmentId)
+    private async Task HandleEditConsignment(ConsignmentDto consignment)
     {
         var result = await DialogService.OpenAsync<EditConsignmentForm>($"Editar consignación",
-               new Dictionary<string, object>() { { "ConsignmentId", consignmentId } },
+               new Dictionary<string, object>() { { "ConsignmentDto", consignment } },
                new DialogOptions()
                {
                    Width = "50%",
@@ -135,10 +167,10 @@
         }
     }
 
-    private async Task HandleDeleteConsignment(int consignmentId)
+    private async Task HandleDeleteConsignment(ConsignmentDto consignment)
     {
         var result = await DialogService.OpenAsync<DeleteConsignmentConfirmation>($"Confirmar eliminación",
-        new Dictionary<string, object>() { { "ConsignmentId", consignmentId } },
+        new Dictionary<string, object>() { { "ConsignmentDto", consignment } },
         new DialogOptions()
         {
             CloseDialogOnOverlayClick = true
@@ -168,12 +200,12 @@
                    CloseDialogOnOverlayClick = true
                }
         );
-        if (result is Result<bool> createResult)
+        if (result is Result<int> createResult)
         {
             if (createResult.IsSuccess)
             {
                 SimpleNotifications.Success($"Consignación creada con éxito!");
-                await grid.Reload();
+                NavigationManager.NavigateTo($"/consignaciones/{createResult.Value}");
             }
             else
             {
@@ -184,16 +216,43 @@
 
     public async Task ShowConsignmentProducts(int consignmentId)
     {
-        await DialogService.OpenAsync<ConsignmentProducts>($"Productos en la consignación",
+        await DialogService.OpenAsync<ConsignmentProducts>($"Productos en la consignación ID: {consignmentId}",
                new Dictionary<string, object>() { { "ConsignmentId", consignmentId } },
                new DialogOptions()
                {
                    Width = "75%",
-                   Height = "65%",
+                   Height = "90%",
                    CloseDialogOnOverlayClick = true
                }
         );
 
+    }
+
+    private async Task OnSplitButtonClick(RadzenSplitButtonItem item, ConsignmentDto consignment)
+    {
+        if (consignment == null)
+        {
+            return;
+        }
+
+        if (item == null)
+        {
+            ViewConsignment(consignment.Id);
+            return;
+        }
+
+        switch (item.Value)
+        {
+            case "view":
+                ViewConsignment(consignment.Id);
+                break;
+            case "edit":
+                await HandleEditConsignment(consignment);
+                break;
+            case "delete":
+                await HandleDeleteConsignment(consignment);
+                break;
+        }
     }
 
     async Task ResetAsync()

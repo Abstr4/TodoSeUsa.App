@@ -14,8 +14,7 @@ public class CreateConsignmentDtoValidator : AbstractValidator<CreateConsignment
             .LessThanOrEqualTo(DateTime.Now).WithMessage("La fecha de emisión no puede ser mayor a la fecha actual.");
 
         RuleFor(x => x.Notes)
-            .NotEmpty().WithMessage("La ubicación es obligatoria.")
-            .MaximumLength(250).WithMessage("La longitud de la ubicación debe ser menor que 250 carácteres.");
+            .MaximumLength(250).WithMessage("Las notas deben tener menos que 250 carácteres.");
     }
 }
 

@@ -2,9 +2,9 @@
 
 public class EditConsignmentDto
 {
-    public DateTime DateIssued { get; set; } = DateTime.Now;
+    public DateTime DateIssued { get; set; }
 
-    public string Notes { get; set; } = string.Empty;
+    public string? Notes { get; set; }
 
     public int ProviderId { get; set; }
 }

@@ -10,7 +10,7 @@ public record ConsignmentDto
 
     public int ProviderId { get; init; }
 
-    public string Notes { get; init; } = string.Empty;
+    public string? Notes { get; init; }
 
     public int TotalProducts { get; init; }
 

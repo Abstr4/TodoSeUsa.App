@@ -1,5 +1,169 @@
-﻿<h3>EditConsignmentForm</h3>
+﻿@using System.Text.Json
+@using System.Text.RegularExpressions
+@using TodoSeUsa.Application.Features.Consignments.DTOs
+@using TodoSeUsa.Application.Features.Consignments.Interfaces
+@using TodoSeUsa.BlazorServer.Helpers
+@using TodoSeUsa.Domain.Enums
 
-@code {
+@inject DialogService DialogService;
+@inject IConsignmentService ConsignmentService;
+@inject SimpleNotifications SimpleNotifications;
 
+
+<RadzenTemplateForm TItem="EditConsignmentDto" Data=@editConsignmentDto Submit=@OnSubmit>
+    <RadzenStack Gap="1rem">
+        <RadzenFieldset Text="Info. de la consignación">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+                <RadzenRow>
+                    <RadzenColumn Size="6" id="ProviderId-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+                            <RadzenLabel Component="ProviderId">
+                                ID del proveedor <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenNumeric Name="ProviderId" @bind-Value=@editConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" Change="@OnProviderIdChanged" />
+                            <RadzenRequiredValidator Component="ProviderId" Text="- El ID del proveedor es requerido." />
+                            <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El ID del proveedor debe ser mayor a cero." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6" id="dateIssued-column">
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                            <RadzenLabel Component="DateIssued">
+                                Fecha de emisión <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                                <RadzenDatePicker Max="DateTime.Now" Name="DateIssued" @bind-Value=@editConsignmentDto.DateIssued Style="flex-grow: 1;" Change="@OnDateIssuedChanged" Placeholder="Fecha de emisión..." />
+
+                                <RadzenButton Icon="alarm" Click="@(() => editConsignmentDto.DateIssued = DateTime.Now)" Text="Ahora" />
+                            </RadzenStack>
+
+                            <RadzenRequiredValidator Component="DateIssued" Text="- La fecha de emisión es requerida." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6" id="notes-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+                            <RadzenLabel Component="Notes">
+                                Notas <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+                            <RadzenTextBox Name="Notes" @bind-Value=@editConsignmentDto.Notes Style="width: 100%;" Change="@OnNotesChanged" Placeholder="Notas..." />
+
+                            <RadzenRegexValidator Component="Notes"
+                                                  Pattern="^(?=.*[A-Za-z0-9]).{1,250}$"
+                                                  Text="- Las notas deben tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos)." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <RadzenRow>
+                    <RadzenColumn Size="12" SizeSM="12" id="refresh-button">
+
+                        <RadzenStack Style="height: 100%" Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
+
+                            <RadzenButton Click="@ResetToOriginal">
+
+                                <RadzenIcon Icon="reset_settings"></RadzenIcon>
+
+                            </RadzenButton>
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenFieldset>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem" class="rz-mt-8">
+
+            <RadzenButton IsBusy=@busy BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@IsSaveDisabled />
+
+            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code
+{
+    [Parameter] public required ConsignmentDto ConsignmentDto { get; set; }
+
+    private bool busy;
+
+    private bool IsSaveDisabled => !(IsProviderIdValid && IsNotesValid && IsDateIssuedValid) || !HasChanges();
+
+    private bool IsProviderIdValid => editConsignmentDto.ProviderId > 0;
+    private bool IsDateIssuedValid => editConsignmentDto.DateIssued <= DateTime.Now;
+    private bool IsNotesValid => IsEmptyOrMatchesAlphanumericPattern(editConsignmentDto.Notes);
+
+    private EditConsignmentDto editConsignmentDto = new();
+
+    protected override void OnInitialized()
+    {
+        SetEditDtoToOriginal();
+    }
+
+    private void SetEditDtoToOriginal()
+    {
+        editConsignmentDto = new EditConsignmentDto
+        {
+            ProviderId = ConsignmentDto.ProviderId,
+            DateIssued = ConsignmentDto.DateIssued,
+            Notes = ConsignmentDto.Notes
+        };
+    }
+
+    async Task OnSubmit(EditConsignmentDto editConsignmentDto)
+    {
+        busy = true;
+        var result = await ConsignmentService.EditByIdAsync(ConsignmentDto.Id, editConsignmentDto, CancellationToken.None);
+        busy = false;
+        DialogService.Close(result);
+    }
+
+    private void OnProviderIdChanged(int value)
+    {
+        editConsignmentDto.ProviderId = value;
+        StateHasChanged();
+    }
+
+    private void OnNotesChanged(string? value)
+    {
+        editConsignmentDto.Notes = value == "" ? null : value;
+        StateHasChanged();
+    }
+
+    bool IsEmptyOrMatchesAlphanumericPattern(string? input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return true;
+
+        return Regex.IsMatch(input, "^(?=.*[A-Za-z0-9]).{1,250}$");
+    }
+
+    private void OnDateIssuedChanged(DateTime? value)
+    {
+        if (value != null)
+        {
+            editConsignmentDto.DateIssued = value.Value;
+            StateHasChanged();
+        }
+        else
+        {
+            editConsignmentDto.DateIssued = DateTime.Now;
+        }
+    }
+
+    private void ResetToOriginal()
+    {
+        SetEditDtoToOriginal();
+        StateHasChanged();
+    }
+
+    private bool HasChanges()
+    {
+        return editConsignmentDto.ProviderId != ConsignmentDto.ProviderId
+            || editConsignmentDto.DateIssued != ConsignmentDto.DateIssued
+            || editConsignmentDto.Notes != ConsignmentDto.Notes;
+
+    }
 }
+

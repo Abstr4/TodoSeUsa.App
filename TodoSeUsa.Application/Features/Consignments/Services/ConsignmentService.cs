@@ -66,13 +66,13 @@ public sealed class ConsignmentService : IConsignmentService
         });
     }
 
-    public async Task<Result<bool>> CreateConsignmentAsync(CreateConsignmentDto createConsignmentDto, CancellationToken ct)
+    public async Task<Result<int>> CreateAsync(CreateConsignmentDto createConsignmentDto, CancellationToken ct)
     {
         var validator = new CreateConsignmentDtoValidator();
         var validationResult = await validator.ValidateAsync(createConsignmentDto, ct);
 
         if (!validationResult.IsValid)
-            return Result.Failure<bool>(ConsignmentErrors.Failure(validationResult.ToString()));
+            return Result.Failure<int>(ConsignmentErrors.Failure(validationResult.ToString()));
 
         Consignment consignment = new()
         {
@@ -85,15 +85,19 @@ public sealed class ConsignmentService : IConsignmentService
 
         try
         {
-            await _context.Consignments.AddAsync(consignment, ct);
-            await _context.SaveChangesAsync(ct);
-            return Result.Success(true);
+            var entry = await _context.Consignments.AddAsync(consignment, ct);
 
+            var saved = await _context.SaveChangesAsync(ct);
+
+            if (saved > 0)
+                return Result.Success(entry.Entity.Id);
+
+            return Result.Failure<int>(ConsignmentErrors.Failure("No se pudo crear la consignación."));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to create the consignment.");
-            return Result.Failure<bool>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar crear la caja."));
+            return Result.Failure<int>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar crear la consignación."));
         }
 
     }
@@ -132,11 +136,11 @@ public sealed class ConsignmentService : IConsignmentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to retrieve the consignment with ID {consignmentId}.", consignmentId);
-            return Result.Failure<ConsignmentDto>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar recuperar la caja."));
+            return Result.Failure<ConsignmentDto>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar recuperar la consignación."));
         }
     }
 
-    public async Task<Result<bool>> DeleteConsignmentById(int consignmentId, CancellationToken cancellationToken)
+    public async Task<Result<bool>> DeleteByIdAsync(int consignmentId, CancellationToken cancellationToken)
     {
         if (consignmentId <= 0)
             return Result.Failure<bool>(ConsignmentErrors.Failure("El Id debe ser mayor que cero."));
@@ -152,7 +156,7 @@ public sealed class ConsignmentService : IConsignmentService
 
             if (consignment.Products.Count > 0)
             {
-                return Result.Failure<bool>(ConsignmentErrors.Failure("No se puede borrar una caja que contiene productos."));
+                return Result.Failure<bool>(ConsignmentErrors.Failure("No se puede borrar una consignación que contiene productos."));
             }
 
             _context.Consignments.Remove(consignment);
@@ -162,11 +166,11 @@ public sealed class ConsignmentService : IConsignmentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to delete the consignment with ID {consignmentId}", consignmentId);
-            return Result.Failure<bool>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar borrar la caja."));
+            return Result.Failure<bool>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar borrar la consignación."));
         }
     }
 
-    public async Task<Result<bool>> EditConsignmentById(int consignmentId, EditConsignmentDto editConsignmentDto, CancellationToken cancellationToken)
+    public async Task<Result<bool>> EditByIdAsync(int consignmentId, EditConsignmentDto editConsignmentDto, CancellationToken cancellationToken)
     {
         if (consignmentId <= 0)
             return Result.Failure<bool>(ConsignmentErrors.Failure("El Id debe ser mayor que cero."));
@@ -194,7 +198,7 @@ public sealed class ConsignmentService : IConsignmentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to edit the consignment with ID {consignmentId}.", consignmentId);
-            return Result.Failure<bool>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar editar la caja."));
+            return Result.Failure<bool>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar editar la consignación."));
         }
     }
 
@@ -243,11 +247,11 @@ public sealed class ConsignmentService : IConsignmentService
             switch (filter.Property)
             {
                 case "ProviderFullName":
-                    var val = filter.FilterValue.ToString()!.ToLower();
+                    var val = filter.FilterValue.ToString();
                     query = query.Where(c =>
-                        c.Provider.Person.FirstName.Contains(val, StringComparison.OrdinalIgnoreCase) ||
-                        c.Provider.Person.LastName.Contains(val, StringComparison.OrdinalIgnoreCase) ||
-                        c.ProviderId.ToString().Contains(val, StringComparison.OrdinalIgnoreCase)
+                        EF.Functions.Like(c.Provider.Person.FirstName, $"%{val}%") ||
+                        EF.Functions.Like(c.Provider.Person.LastName, $"%{val}%") 
+                        // || EF.Functions.Like(EF.Property<int>(c, "ProviderId").ToString(), $"%{val}%")
                     );
                     break;
 
