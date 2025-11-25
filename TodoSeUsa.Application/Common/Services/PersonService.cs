@@ -69,6 +69,24 @@ internal class PersonService : IPersonService
         if (!result.IsValid)
             throw new ValidationException(result.ToString());
 
+        if (!string.IsNullOrEmpty(person.EmailAddress))
+        {
+            bool emailExists = await _context.Persons
+                .AnyAsync(p => p.Id != person.Id && p.EmailAddress == person.EmailAddress, cancellationToken);
+
+            if (emailExists)
+                throw new ValidationException("Ya existe una persona con ese correo electrónico.");
+        }
+
+        if (!string.IsNullOrEmpty(person.PhoneNumber))
+        {
+            bool phoneExists = await _context.Persons
+                .AnyAsync(p => p.Id != person.Id && p.PhoneNumber == person.PhoneNumber, cancellationToken);
+
+            if (phoneExists)
+                throw new ValidationException("Ya existe una persona con ese número de teléfono.");
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

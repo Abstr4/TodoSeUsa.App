@@ -21,14 +21,10 @@ public class ClientService : IClientService
         try
         {
             IQueryable<Client> query = _context.Clients
-                .Include(b => b.Person)
-                .Include(b => b.LoanNotes)
-                .Include(b => b.Sales)
                 .AsQueryable()
                 .AsNoTracking();
 
             query = query.ApplyFilter(request.Filter);
-            // query = query.ApplySorting(request.OrderBy, ApplyCustomSorting);
 
             var count = await query.CountAsync(cancellationToken);
 

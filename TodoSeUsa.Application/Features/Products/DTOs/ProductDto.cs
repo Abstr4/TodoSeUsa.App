@@ -32,6 +32,14 @@ public record ProductDto
 
     public int? BoxId { get; init; }
 
+    public int ProviderId { get; init; }
+
+    public string ProviderFirstName { get; init; } = string.Empty;
+
+    public string ProviderLastName { get; init; } = string.Empty;
+
+    public string ProviderInfo => ProviderFirstName + ' ' + ProviderLastName + " - ID: " + ProviderId.ToString();
+
     public DateTime CreatedAt { get; init; }
 
     public DateTime UpdatedAt { get; init; }

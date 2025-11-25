@@ -24,8 +24,10 @@ public class ProviderService : IProviderService
     public async Task<Result<PagedItems<ProviderDto>>> GetAllAsync(QueryRequest request, CancellationToken cancellationToken)
     {
         var query = _context.Providers
-            .Include(c => c.Consignments)
-            .Include(c => c.Person)
+            .Include(p => p.Person)
+            .Include(p => p.Consignments)
+                .ThenInclude(cg => cg.Products)
+            .AsNoTracking()
             .AsQueryable();
 
         if (request.Filters != null && request.Filters.Count > 0)
@@ -46,15 +48,19 @@ public class ProviderService : IProviderService
         query = query.Skip(request.Skip).Take(request.Take);
 
         var items = await query
-            .Select(c => new ProviderDto
+            .Select( p => new ProviderDto
             {
-                Id = c.Id,
-                CommissionPercent = c.CommissionPercent,
-                TotalConsignments = c.Consignments.Count,
-                FirstName = c.Person.FirstName,
-                LastName = c.Person.LastName,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt
+                Id = p.Id,
+                CommissionPercent = p.CommissionPercent,
+                TotalConsignments = p.Consignments.Count,
+                TotalProducts = p.Consignments.Sum(cg => cg.Products.Count),
+                FirstName = p.Person.FirstName,
+                LastName = p.Person.LastName,
+                EmailAddress = p.Person.EmailAddress,
+                PhoneNumber = p.Person.PhoneNumber,
+                Address = p.Person.Address,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt
             })
         .ToListAsync(cancellationToken);
 
@@ -133,36 +139,34 @@ public class ProviderService : IProviderService
 
         try
         {
-            var provider = await _context.Providers
-                    .Include(p => p.Person)
-                    .Include(p => p.Consignments)
+            var providerDto = await _context.Providers
+                .Where(p => p.Id == providerId)
+                .Select(p => new ProviderDto
+                {
+                    Id = p.Id,
+                    CommissionPercent = p.CommissionPercent,
+                    TotalConsignments = p.Consignments.Count,
+                    TotalProducts = p.Consignments.Sum(cg => cg.Products.Count),
+                    FirstName = p.Person.FirstName,
+                    LastName = p.Person.LastName,
+                    EmailAddress = p.Person.EmailAddress,
+                    PhoneNumber = p.Person.PhoneNumber,
+                    Address = p.Person.Address,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == providerId, cancellationToken);
+                .FirstOrDefaultAsync(cancellationToken);
 
-            if (provider == null)
-            {
+            if (providerDto == null)
                 return Result.Failure<ProviderDto>(ProviderErrors.NotFound(providerId));
-            }
 
-            var providerDto = new ProviderDto
-            {
-                Id = provider.Id,
-                FirstName = provider.Person.FirstName,
-                LastName = provider.Person.LastName,
-                EmailAddress = provider.Person.EmailAddress,
-                PhoneNumber = provider.Person.PhoneNumber,
-                Address = provider.Person.Address,
-                CommissionPercent = provider.CommissionPercent,
-                TotalConsignments = provider.Consignments.Count,
-                CreatedAt = provider.CreatedAt,
-                UpdatedAt = provider.UpdatedAt
-            };
             return Result.Success(providerDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to retrieve the provider with ID {providerId}.", providerId);
-            return Result.Failure<ProviderDto>(ProviderErrors.Failure($"Ocurrió un error inesperado al intentar recuperar el proveedor."));
+            return Result.Failure<ProviderDto>(ProviderErrors.Failure("Ocurrió un error inesperado al intentar recuperar el proveedor."));
         }
     }
 
@@ -174,7 +178,6 @@ public class ProviderService : IProviderService
         try
         {
             var provider = await _context.Providers
-                .Include(b => b.Consignments)
                 .FirstOrDefaultAsync(b => b.Id == providerId, cancellationToken);
 
             if (provider is null)
@@ -218,17 +221,15 @@ public class ProviderService : IProviderService
         try
         {
             var provider = await _context.Providers
-                .Include(p => p.Person)
                 .FirstOrDefaultAsync(p => p.Id == providerId, cancellationToken);
 
             if (provider == null)
                 return Result.Failure<bool>(ProviderErrors.NotFound(providerId));
 
             provider.CommissionPercent = dto.CommissionPercent;
-
             provider.Person.FirstName = dto.FirstName;
             provider.Person.LastName = dto.LastName;
-            provider.Person.EmailAddress = dto.EmailAddress;
+            provider.Person.EmailAddress = dto.EmailAddress ?? provider.Person.EmailAddress;
             provider.Person.PhoneNumber = dto.PhoneNumber;
             provider.Person.Address = dto.Address;
 
@@ -259,18 +260,26 @@ public class ProviderService : IProviderService
         var property = sort.Property;
         var isDescending = sort.SortOrder == SortOrder.Descending;
 
+        if (property.Equals("TotalProducts", StringComparison.OrdinalIgnoreCase))
+        {
+            return isDescending
+            ? query.OrderByDescending(p => p.Consignments.Sum(cg => cg.Products.Count))
+            : query.OrderBy(p => p.Consignments.Sum(cg => cg.Products.Count));
+        }
+
         if (property.Equals("TotalConsignments", StringComparison.OrdinalIgnoreCase))
         {
             return isDescending
-                ? query.OrderByDescending(b => b.Consignments.Count)
-                : query.OrderBy(b => b.Consignments.Count);
+                ? query.OrderByDescending(p => p.Consignments.Count)
+                : query.OrderBy(p => p.Consignments.Count);
         }
+
         if (sort.Property == "FullName")
         {
             return isDescending
-                 ? query.OrderByDescending(c => c.Person.FirstName)
-                            .ThenByDescending(c => c.Person.LastName)
-                 : query.OrderBy(c => c.Person.FirstName).ThenBy(c => c.Person.LastName);
+                 ? query.OrderByDescending(p => p.Person.FirstName)
+                            .ThenByDescending(p => p.Person.LastName)
+                 : query.OrderBy(p => p.Person.FirstName).ThenBy(p => p.Person.LastName);
         }
 
         return isDescending

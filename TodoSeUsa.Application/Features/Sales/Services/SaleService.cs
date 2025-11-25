@@ -19,9 +19,6 @@ public sealed class SaleService : ISaleService
         try
         {
             IQueryable<Sale> query = _context.Sales
-                .Include(s => s.Client)
-                .Include(s => s.Products)
-                .Include(s => s.Payments)
                 .AsQueryable()
                 .AsNoTracking();
 
@@ -65,23 +62,5 @@ public sealed class SaleService : ISaleService
 
             return Result.Failure<PagedItems<SaleDto>>(SaleErrors.Failure());
         }
-    }
-
-    private static IQueryable<Sale>? ApplyCustomSorting(IQueryable<Sale> query, string orderBy)
-    {
-
-        if (orderBy.StartsWith("TotalProducts", StringComparison.OrdinalIgnoreCase))
-        {
-            return orderBy.EndsWith("desc", StringComparison.OrdinalIgnoreCase)
-                ? query.OrderByDescending(b => b.Products.Count)
-                : query.OrderBy(b => b.Products.Count);
-        }
-        if (orderBy.StartsWith("TotalPayments", StringComparison.OrdinalIgnoreCase))
-        {
-            return orderBy.EndsWith("desc", StringComparison.OrdinalIgnoreCase)
-                ? query.OrderByDescending(b => b.Payments.Count)
-                : query.OrderBy(b => b.Payments.Count);
-        }
-        return null;
     }
 }

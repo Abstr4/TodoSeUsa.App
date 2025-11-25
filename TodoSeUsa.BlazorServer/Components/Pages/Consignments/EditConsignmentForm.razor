@@ -21,7 +21,7 @@
                                 ID del proveedor <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenNumeric Name="ProviderId" @bind-Value=@editConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" Change="@OnProviderIdChanged" />
-                            <RadzenRequiredValidator Component="ProviderId" Text="- El ID del proveedor es requerido." />
+                            <RadzenRequiredValidator Component="ProviderId" Text="El ID del proveedor es requerido." />
                             <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El ID del proveedor debe ser mayor a cero." />
                         </RadzenStack>
                     </RadzenColumn>
@@ -40,7 +40,7 @@
                                 <RadzenButton Icon="alarm" Click="@(() => editConsignmentDto.DateIssued = DateTime.Now)" Text="Ahora" />
                             </RadzenStack>
 
-                            <RadzenRequiredValidator Component="DateIssued" Text="- La fecha de emisión es requerida." />
+                            <RadzenRequiredValidator Component="DateIssued" Text="La fecha de emisión es requerida." />
                         </RadzenStack>
                     </RadzenColumn>
                     <RadzenColumn Size="6" id="notes-column">
@@ -52,7 +52,7 @@
 
                             <RadzenRegexValidator Component="Notes"
                                                   Pattern="^(?=.*[A-Za-z0-9]).{1,250}$"
-                                                  Text="- Las notas deben tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos)." />
+                                                  Text="Las notas deben tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos)." />
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>

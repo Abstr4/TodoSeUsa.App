@@ -4,8 +4,6 @@ using System.Reflection;
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
 using TodoSeUsa.Application.Features.Boxes.Services;
-using TodoSeUsa.Application.Features.Clients.Interfaces;
-using TodoSeUsa.Application.Features.Clients.Services;
 using TodoSeUsa.Application.Features.Consignments.Interfaces;
 using TodoSeUsa.Application.Features.Consignments.Services;
 using TodoSeUsa.Application.Features.Payments.Interfaces;
@@ -27,7 +25,6 @@ public static class DependencyInjection
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         builder.Services.AddScoped<IBoxService, BoxService>();
-        builder.Services.AddScoped<IClientService, ClientService>();
         builder.Services.AddScoped<IProductService, ProductService>();
         builder.Services.AddScoped<IPaymentService, PaymentService>();
         builder.Services.AddScoped<IConsignmentService, ConsignmentService>();

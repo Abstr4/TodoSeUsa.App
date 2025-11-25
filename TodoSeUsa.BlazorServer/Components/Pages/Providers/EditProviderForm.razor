@@ -4,84 +4,199 @@
 @using TodoSeUsa.Application.Features.Providers.Interfaces
 @using TodoSeUsa.BlazorServer.Helpers
 @using TodoSeUsa.Domain.Enums
+@using TodoSeUsa.Domain.Validators
+
+@inject IProviderService ProviderService;
 
 @inject DialogService DialogService;
-@inject IProviderService ProviderService;
 @inject SimpleNotifications SimpleNotifications;
+@inject TooltipService tooltipService
 
 
 <RadzenTemplateForm TItem="EditProviderDto" Data=@editProviderDto Submit=@OnSubmit>
+
     <RadzenStack Gap="1rem">
-        <RadzenFieldset Text="Info. del proveedor">
-            <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-                <RadzenRow>
+        
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+            <RadzenFieldset Text="Información básica">
+
+                <RadzenRow Gap="1rem">
+
                     <RadzenColumn Size="6" id="firstName-column">
+
                         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
                             <RadzenLabel Component="FirstName">
-                                Nombre <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                Nombre <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenTextBox Name="FirstName" @bind-Value=@editProviderDto.FirstName Style="width: 100%;" Change="@OnFirstNameChanged" Placeholder="Nombre..." />
 
-                            <RadzenRegexValidator Component="FirstName"
-                                                  Pattern="^(?=.*[A-Za-z0-9]).{1,250}$"
-                                                  Text="- El nombre deben tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos)." />
+                            <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                                <RadzenTextBox MaxLength="50" Name="FirstName" @bind-Value=@editProviderDto.FirstName Style="width: 100%;" Placeholder="Nombre..." />
+                            </RadzenStack>
+
+                            <RadzenRequiredValidator Component="FirstName" Text="El nombre es requerido." />
+                            <RadzenLengthValidator Component="FirstName" Text="El nombre debe tener menos de 50 carácteres." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6" id="lastName-column">
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                            <RadzenLabel Component="LastName">
+                                Apellido <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                                <RadzenTextBox MaxLength="100" Name="LastName" @bind-Value=@editProviderDto.LastName Style="width: 100%;" Placeholder="Apellido..." />
+                            </RadzenStack>
+
+                            <RadzenRequiredValidator Component="LastName" Text="El apellido es requerido." />
+                            <RadzenLengthValidator Component="LastName" Text="El apellido debe tener menos de 100 carácteres." />
+
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6" id="comissionPercent-column">
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                            <RadzenLabel Component="CommissionPercent">
+                                Porcentaje de comisión <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                                <RadzenNumeric Min="0" Max="100" Name="CommissionPercent" @bind-Value=@editProviderDto.CommissionPercent Style="width: 100%;" Placeholder="Porcentaje de comisión..." />
+                            </RadzenStack>
+
+                            <RadzenRequiredValidator Component="CommissionPercent" Text="El porcentaje de comisión es requerido." />
+                            <RadzenNumericRangeValidator Component="CommissionPercent" Min="0" Max="100" Text="El porcentaje de comisión debe estar entre 0 y 100." />
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>
+            </RadzenFieldset>
 
-                <RadzenRow>
-                    <RadzenColumn Size="12" SizeSM="12" id="refresh-button">
+            <RadzenFieldset Text="Información de contacto">
+                <HeaderTemplate>
+                    <RadzenIcon Style="margin-left: 4px" class="filled-icon" Icon="info" IconColor="@Colors.Warning" MouseEnter="@(args => ShowTooltip(args))" />
+                </HeaderTemplate>
+                <ChildContent>
+                    <RadzenRow Gap="1rem">
 
-                        <RadzenStack Style="height: 100%" Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
+                        <RadzenColumn Size="6" id="emailAddress-column">
 
-                            <RadzenButton Click="@ResetToOriginal">
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
 
-                                <RadzenIcon Icon="reset_settings"></RadzenIcon>
+                                <RadzenLabel Component="EmailAddress">
+                                    Email <RadzenIcon class="filled-icon" Icon="info" IconColor="@Colors.Warning" MouseEnter="@(args => ShowTooltip(args))" />
+                                </RadzenLabel>
 
-                            </RadzenButton>
-                        </RadzenStack>
-                    </RadzenColumn>
-                </RadzenRow>
-            </RadzenStack>
-        </RadzenFieldset>
+                                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                                    <RadzenTextBox Name="EmailAddress" MaxLength="250" @bind-Value=@editProviderDto.EmailAddress Style="width: 100%;" Change="@OnEmailAddressChanged" Placeholder="Email..." />
+
+                                    <RadzenCustomValidator Component="EmailAddress" Validator="@(() => InputValidators.IsValidEmailAddress(editProviderDto.EmailAddress))" Text="El email es inválido. Ejemplo: 'ejemplo@dominio.com'." />
+                                </RadzenStack>
+                            </RadzenStack>
+                        </RadzenColumn>
+                        <RadzenColumn Size="6" id="phoneNumber-column">
+
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                <RadzenLabel Component="PhoneNumber">
+                                    Número de teléfono <RadzenIcon class="filled-icon" Icon="info" IconColor="@Colors.Warning" MouseEnter="@(args => ShowTooltip(args))" />
+                                </RadzenLabel>
+
+                                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+                                    <RadzenTextBox MaxLength=20 Name="PhoneNumber" @bind-Value=@editProviderDto.PhoneNumber Style="width: 100%;" Change="@OnPhoneNumberChanged" Placeholder="Número de teléfono..." />
+                                    <RadzenCustomValidator Component="PhoneNumber" Validator="@(() => InputValidators.IsValidPhoneNumber(editProviderDto.PhoneNumber))" Text="El número de teléfono es inválido. Ingrese uno como '1234 567 890'." />
+                                </RadzenStack>
+                            </RadzenStack>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" id="ghost-contactInfo-validation">
+
+                            <RadzenTextBox Name="ContactGhost"
+                                           Style="display:none"
+                                           @bind-Value="contactGhost" />
+
+                            <RadzenCustomValidator Component="ContactGhost" Text="Debes ingresar al menos un dato de contacto (Email o Número de teléfono)." Validator="@(() => InputValidators.IsValidContactInformation(editProviderDto.EmailAddress, editProviderDto.PhoneNumber))" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="6" id="address-column">
+
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                <RadzenLabel Component="Address">
+                                    Dirección <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                </RadzenLabel>
+
+                                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                                    <RadzenTextBox Name="Address" @bind-Value=@editProviderDto.Address Style="width: 100%;" Change="@OnAddressChanged" Placeholder="Dirección..." />
+
+                                    <RadzenCustomValidator Component="Address" Validator="@(() => InputValidators.IsNullOrEmptyOrMatchesAlphanumericPattern(editProviderDto.Address))" 
+                                        Text="Debe ingresar un texto válido, no sólo símbolos o espacios en blanco."/>
+                                </RadzenStack>
+                            </RadzenStack>
+                        </RadzenColumn>
+                    </RadzenRow>
+                </ChildContent>
+            </RadzenFieldset>
+            <RadzenRow>
+                <RadzenColumn Size="12" SizeSM="12" id="refresh-button">
+
+                    <RadzenStack Style="height: 100%" Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
+
+                        <RadzenButton Click="@ResetToOriginal">
+
+                            <RadzenIcon Icon="reset_settings"></RadzenIcon>
+
+                        </RadzenButton>
+                    </RadzenStack>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem" class="rz-mt-8">
 
-            <RadzenButton IsBusy=@busy BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@IsSaveDisabled />
+            <RadzenButton IsBusy=@busy BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@(!HasChanges())/>
 
             <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
         </RadzenStack>
+
     </RadzenStack>
 </RadzenTemplateForm>
 
 @code
 {
-    [Parameter] public required ProviderDto ProviderDto { get; set; }
-
     private bool busy;
 
-    private bool IsSaveDisabled => !(IsCommissionPercentValid && IsFirstNameValid && IsLastNameValid);
-
-    private bool IsCommissionPercentValid => editProviderDto.CommissionPercent >= 0m && editProviderDto.CommissionPercent <= 100m;
-    private bool IsFirstNameValid => editProviderDto.FirstName.Length > 0 || editProviderDto.FirstName.Length < 50;
-    private bool IsLastNameValid => editProviderDto.LastName.Length > 0 || editProviderDto.LastName.Length < 100;
-    private bool IsEmailValid => EmailValidator(editProviderDto.EmailAddress);
-    private bool IsPhoneNumberValid => IsValidE164Phone(editProviderDto.PhoneNumber);
-    private bool IsAddressValid => IsEmptyOrMatchesAlphanumericPattern(editProviderDto.Address);
+    [Parameter] public required ProviderDto ProviderDto { get; set; }
 
     private EditProviderDto editProviderDto = new();
+
+    private string contactGhost = "";
 
     protected override void OnInitialized()
     {
         SetEditDtoToOriginal();
     }
 
+    private void ResetToOriginal()
+    {
+        SetEditDtoToOriginal();
+        StateHasChanged();
+    }
+
     private void SetEditDtoToOriginal()
     {
         editProviderDto = new EditProviderDto
         {
-            FirstName = ProviderDto.FirstName
-
+            FirstName = ProviderDto.FirstName,
+            LastName = ProviderDto.LastName,
+            EmailAddress = ProviderDto.EmailAddress,
+            PhoneNumber = ProviderDto.PhoneNumber,
+            Address = ProviderDto.Address,
+            CommissionPercent = ProviderDto.CommissionPercent
         };
     }
 
@@ -93,58 +208,38 @@
         DialogService.Close(result);
     }
 
-    private void OnFirstNameChanged(string value)
-    {
-        editProviderDto.FirstName = value;
-        StateHasChanged();
-    }
-
-
-    private void ResetToOriginal()
-    {
-        SetEditDtoToOriginal();
-        StateHasChanged();
-    }
-
     private void OnEmailAddressChanged(string? value)
     {
         editProviderDto.EmailAddress = value == "" ? null : value;
         StateHasChanged();
     }
 
-    bool IsEmptyOrMatchesAlphanumericPattern(string? input)
+    private void OnAddressChanged(string? value)
     {
-        if (string.IsNullOrEmpty(input))
-            return true;
-
-        return Regex.IsMatch(input, "^(?=.*[A-Za-z0-9]).{1,250}$");
+        editProviderDto.Address = value == "" ? null : value;
+        StateHasChanged();
     }
 
-    private bool EmailValidator(string? email)
+    private void OnPhoneNumberChanged(string? value)
     {
-        if (email is null) return true;
-
-        int index = email.IndexOf('@');
-
-        return
-            email.Length >= 3 &&
-            email.Length <= 250 &&
-            index > 0 &&
-            index != email.Length - 1 &&
-            index == email.LastIndexOf('@');
-    }
-
-    private bool IsValidE164Phone(string? phone)
-    {
-        if (string.IsNullOrWhiteSpace(phone)) return true;
-
-        return Regex.IsMatch(phone, @"^\+[1-9]\d{1,14}$");
+        editProviderDto.PhoneNumber = value == "" ? null : value;
+        StateHasChanged();
     }
 
     private bool HasChanges()
     {
-        return editProviderDto.FirstName != ProviderDto.FirstName;
+        return 
+            editProviderDto.FirstName != ProviderDto.FirstName ||
+            editProviderDto.LastName != ProviderDto.LastName ||
+            editProviderDto.EmailAddress != ProviderDto.EmailAddress ||
+            editProviderDto.PhoneNumber != ProviderDto.PhoneNumber ||
+            editProviderDto.Address != ProviderDto.Address ||
+            editProviderDto.CommissionPercent != ProviderDto.CommissionPercent;
+    }
 
+    void ShowTooltip(ElementReference elementReference)
+    {
+        tooltipService.Open(elementReference, "Se necesita un método de contacto (Email o Número de tel.)");
     }
 }
 

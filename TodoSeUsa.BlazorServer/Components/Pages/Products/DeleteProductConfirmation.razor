@@ -24,7 +24,7 @@
     async Task Delete(int productId)
     {
         busy = true;
-        var result = await ProductService.DeleteProductById(productId, CancellationToken.None);
+        var result = await ProductService.DeleteById(productId, CancellationToken.None);
         busy = false;
         DialogService.Close(result);
     }

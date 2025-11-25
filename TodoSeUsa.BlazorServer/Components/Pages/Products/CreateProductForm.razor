@@ -19,7 +19,7 @@
                                 Precio <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenNumeric Name="Price" @bind-Value=@createProductDto.Price Style="width: 100%;" TValue="decimal" Min="1" Change="@OnPriceChanged" />
-                            <RadzenRequiredValidator Component="Price" Text="- El precio es requerido." />
+                            <RadzenRequiredValidator Component="Price" Text="El precio es requerido." />
                             <RadzenNumericRangeValidator Component="Price" Min="1" Text="El precio debe ser mayor a cero."></RadzenNumericRangeValidator>
                         </RadzenStack>
                     </RadzenColumn>
@@ -29,7 +29,7 @@
                                 Cantidad <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenNumeric Name="Quantity" @bind-Value=@createProductDto.Quantity Style="width: 100%;" TValue="int" Min="1" Change="@OnQuantityChanged" />
-                            <RadzenRequiredValidator Component="Quantity" Text="- La cantidad es requerida." />
+                            <RadzenRequiredValidator Component="Quantity" Text="La cantidad es requerida." />
                             <RadzenNumericRangeValidator Component="Quantity" Min="1" Text="La cantidad debe ser mayor a cero."></RadzenNumericRangeValidator>
                         </RadzenStack>
                     </RadzenColumn>
@@ -52,7 +52,7 @@
                             <RadzenRequiredValidator Component="Size" Text="El talle es obligatorio."></RadzenRequiredValidator>
                             <RadzenRegexValidator Component="Size"
                                                   Pattern="^(?=.*[\p{L}\p{N}]).{1,50}$"
-                                                  Text="- El talle debe tener entre 1 y 50 caracteres válidos (no solo espacios o símbolos)."/>
+                                                  Text="El talle debe tener entre 1 y 50 caracteres válidos (no solo espacios o símbolos)."/>
                         </RadzenStack>
                     </RadzenColumn>
                     <RadzenColumn Size="4" id="body-column">
@@ -69,7 +69,7 @@
                                             Change="@OnBodyChanged"
                                             Name="Body">
                             </RadzenDropDown>
-                            <RadzenRequiredValidator Component="Quality" Text="- La calidad es requerida." />
+                            <RadzenRequiredValidator Component="Quality" Text="La calidad es requerida." />
                         </RadzenStack>
                     </RadzenColumn>
                     <RadzenColumn Size="4" id="quality-column">
@@ -86,7 +86,7 @@
                                             Change="@OnQualityChanged"
                                             Name="Quality">
                             </RadzenDropDown>
-                            <RadzenRequiredValidator Component="Quality" Text="- La calidad es requerida." />
+                            <RadzenRequiredValidator Component="Quality" Text="La calidad es requerida." />
                         </RadzenStack>
                     </RadzenColumn>
                     <RadzenColumn Size="6" id="category-column">
@@ -95,10 +95,10 @@
                                 Categoría <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenTextBox Name="Category" @bind-Value=@createProductDto.Category Style="width: 100%;" Change="@OnCategoryChanged" Placeholder="Categoría..." />
-                            <RadzenRequiredValidator Component="Category" Text="- La categoría es requerida." />
+                            <RadzenRequiredValidator Component="Category" Text="La categoría es requerida." />
                             <RadzenRegexValidator Component="Category"
                                                   Pattern="^(?=.*[\p{L}\p{N}]).{1,100}$"
-                                                  Text="- La categoría debe tener entre 1 y 100 caracteres válidos (no solo espacios o símbolos)."/>
+                                                  Text="La categoría debe tener entre 1 y 100 caracteres válidos (no solo espacios o símbolos)."/>
                         </RadzenStack>
                     </RadzenColumn>
                     <RadzenColumn Size="6" id="description-column">
@@ -107,10 +107,10 @@
                                 Descripción <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <RadzenTextBox Name="Description" @bind-Value=@createProductDto.Description Style="width: 100%;" Change="@OnDescriptionChanged" Placeholder="Descripción..." />
-                            <RadzenRequiredValidator Component="Description" Text="- La descripción es requerida." />
+                            <RadzenRequiredValidator Component="Description" Text="La descripción es requerida." />
                             <RadzenRegexValidator Component="Description"
                                                   Pattern="^(?=.*[\p{L}\p{N}]).{1,250}$"
-                                                  Text="- La descripción debe tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos)." />
+                                                  Text="La descripción debe tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos)." />
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>
@@ -159,7 +159,7 @@
                                 }
                             </div>
                         </RadzenStack>
-                        <RadzenCustomValidator Component="BoxId" Text="- El Id de caja debe ser mayor a cero." Validator="@(() => IsBoxIdValid)" />
+                        <RadzenCustomValidator Component="BoxId" Text="El Id de caja debe ser mayor a cero." Validator="@(() => IsBoxIdValid)" />
                     </RadzenColumn>
                     <RadzenColumn Size="6" id="refurbishmentCost-column">
                         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
@@ -184,7 +184,7 @@
                                        onmouseout="this.style.backgroundColor='transparent'">close</i>
                                 }
                             </div>
-                            <RadzenNumericRangeValidator Component="RefurbishmentCost" Min="1" Text="- El costo del arreglo debe ser mayor a cero" Visible="@createProductDto.RefurbishmentCost.HasValue"></RadzenNumericRangeValidator>
+                            <RadzenNumericRangeValidator Component="RefurbishmentCost" Min="1" Text="El costo del arreglo debe ser mayor a cero" Visible="@createProductDto.RefurbishmentCost.HasValue"></RadzenNumericRangeValidator>
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>

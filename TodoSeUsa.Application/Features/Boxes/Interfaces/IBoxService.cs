@@ -4,7 +4,7 @@ namespace TodoSeUsa.Application.Features.Boxes.Interfaces;
 
 public interface IBoxService
 {
-    Task<Result<bool>> CreateBoxAsync(CreateBoxDto createBoxDto, CancellationToken ct);
+    Task<Result<bool>> CreateAsync(CreateBoxDto createBoxDto, CancellationToken ct);
 
     Task<Result<PagedItems<BoxDto>>> GetAllAsync(QueryRequest request, CancellationToken cancellationToken);
 

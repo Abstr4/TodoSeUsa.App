@@ -10,11 +10,13 @@ public interface IProductService
 
     Task<Result<PagedItems<ProductDto>>> GetByConsignmentIdAsync(QueryRequest request, int consignmentId, CancellationToken cancellationToken);
 
+    Task<Result<PagedItems<ProductDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken cancellationToken);
+
     Task<Result<ProductDto>> GetByIdAsync(int productId, CancellationToken cancellationToken);
 
     Task<Result<bool>> CreateAsync(CreateProductDto productDto, CancellationToken ct);
 
-    Task<Result<bool>> EditProductById(int productId, EditProductDto editProductDto, CancellationToken cancellationToken);
+    Task<Result<bool>> EditById(int productId, EditProductDto editProductDto, CancellationToken cancellationToken);
 
-    Task<Result<bool>> DeleteProductById(int productId, CancellationToken cancellationToken);
+    Task<Result<bool>> DeleteById(int productId, CancellationToken cancellationToken);
 }

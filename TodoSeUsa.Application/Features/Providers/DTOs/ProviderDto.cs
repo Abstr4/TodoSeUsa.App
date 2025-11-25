@@ -8,15 +8,17 @@ public record ProviderDto
 
     public int TotalConsignments { get; init; }
 
+    public int TotalProducts { get; init; }
+
     public string FirstName { get; init; } = string.Empty;
 
     public string LastName { get; init; } = string.Empty;
 
-    public string? EmailAddress { get; init; } = string.Empty;
+    public string? EmailAddress { get; init; }
 
-    public string? PhoneNumber { get; init; } = string.Empty;
+    public string? PhoneNumber { get; init; }
 
-    public string? Address { get; init; } = string.Empty;
+    public string? Address { get; init; }
 
     public DateTime CreatedAt { get; init; }
 
@@ -24,5 +26,5 @@ public record ProviderDto
 
     public string FullName => $"{FirstName} {LastName}";
 
-    public string ContactInfo => $"Email: {EmailAddress ?? "N/A"}, Phone: {PhoneNumber ?? "N/A"}, Address: {Address ?? "N/A"}";
+    public string ContactInfo => $"Email: {EmailAddress ?? "N/A"} - Número de teléfono: {PhoneNumber ?? "N/A"} - Dirección: {Address ?? "N/A"}";
 }

@@ -14,8 +14,8 @@
                     Ubicación Física <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                 </RadzenLabel>
                 <RadzenTextBox Name="Location" @bind-Value=@createBoxDto.Location Style="width: 100%; max-width: 400px;" Change=@OnFieldChanged />
-                <RadzenRequiredValidator Component="Location" Text="- La ubicación física es requerida." />
-                <RadzenLengthValidator Min="1" Max="250" Component="Location" Text="- La ubicación física debe entre 1 y 250 carácteres."></RadzenLengthValidator>
+                <RadzenRequiredValidator Component="Location" Text="La ubicación física es requerida." />
+                <RadzenLengthValidator Min="1" Max="250" Component="Location" Text="La ubicación física debe entre 1 y 250 carácteres."></RadzenLengthValidator>
             </RadzenStack>
         </RadzenFieldset>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
@@ -31,7 +31,7 @@
 
     async Task OnSubmit(CreateBoxDto createBoxDto)
     {
-        var result = await BoxService.CreateBoxAsync(createBoxDto, CancellationToken.None);
+        var result = await BoxService.CreateAsync(createBoxDto, CancellationToken.None);
         DialogService.Close(result);
     }
 

@@ -17,8 +17,8 @@
         flex-grow: 1;
     }
 </style>
-
 <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style=" padding-bottom: 1.1rem">
+
     @if (isLoading)
     {
         <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: calc(100vh - 5.7rem);">
@@ -32,10 +32,16 @@
 
             @if (!IsDialog)
             {
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" AlignItems="AlignItems.Center" Style="margin-bottom: 1rem">
-                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditProduct(product))" />
 
-                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleDeleteProduct(product))" />
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Style="margin-bottom: 1rem">
+
+                    <RadzenButton Click="@GoBack" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditProduct(product))" />
+
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleDeleteProduct(product))" />
+                    </RadzenStack>
                 </RadzenStack>
             }
 
@@ -245,6 +251,6 @@
 
     void GoBack()
     {
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo("/productos");
     }
 }

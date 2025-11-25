@@ -8,12 +8,15 @@
 
 	<ItemGroup>
 	  <Compile Remove="Common\Profiles\**" />
+	  <Compile Remove="Features\Clients\**" />
 	  <Compile Remove="Features\LoanNotes\**" />
 	  <Compile Remove="Features\Reservations\**" />
 	  <EmbeddedResource Remove="Common\Profiles\**" />
+	  <EmbeddedResource Remove="Features\Clients\**" />
 	  <EmbeddedResource Remove="Features\LoanNotes\**" />
 	  <EmbeddedResource Remove="Features\Reservations\**" />
 	  <None Remove="Common\Profiles\**" />
+	  <None Remove="Features\Clients\**" />
 	  <None Remove="Features\LoanNotes\**" />
 	  <None Remove="Features\Reservations\**" />
 	</ItemGroup>

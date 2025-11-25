@@ -17,7 +17,7 @@
 </style>
 
 <RadzenCard Style="max-width: 100%">
-    <PageTitleWithBackButton Title="Consignaciones" />
+    <PageTitleWithBackButton Title="Proveedores" />
     <RadzenDataGrid @ref="grid" 
         IsLoading="@isLoading" 
         TItem="ProviderDto" 
@@ -46,7 +46,7 @@
 
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un proveedor nueva" Click="@HandleCreateProvider" />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un proveedor nuevo" Click="@HandleCreateProvider" />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -72,9 +72,15 @@
 
             <RadzenDataGridColumn Property="Id" Title="ID" TextAlign="TextAlign.Center" MinWidth="80px" Width="80px"/>
 
-            <RadzenDataGridColumn Property="CommissionPercent" Title="Comisión (en %)" TextAlign="TextAlign.Center" MinWidth="120px" Width="120px"/>
+            <RadzenDataGridColumn TItem="ProviderDto" Property="CommissionPercent" Title="Comisión (%)"
+                                  TextAlign="TextAlign.Center" MinWidth="140px" Width="140px">
+                <Template Context="data">
+                    @($"{data.CommissionPercent:0}%")
+                </Template>
+            </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Filterable="false" Property="TotalConsignments" Title="Cant. consignaciones" MinWidth="80px" Width="140px">
+
+            <RadzenDataGridColumn Filterable="false" Property="TotalConsignments" Title="Cant. consignaciones" MinWidth="80px" Width="180px">
                 <Template Context="provider">
                     <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
                         <RadzenText>@provider.TotalConsignments</RadzenText>
@@ -86,15 +92,16 @@
                 </Template>
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Property="FullName" Title="Info. del proveedor" MinWidth="200px" Width="160px"/>
+            <RadzenDataGridColumn Property="FullName" Title="Info. del proveedor" MinWidth="200px" Width="220px"/>
 
-            <RadzenDataGridColumn Property="ContactInfo" Title="Info. de contacto" MinWidth="200px" Width="160px"/>
+            <RadzenDataGridColumn Property="ContactInfo" Title="Info. de contacto" MinWidth="200px" Width="240px"/>
 
-            <RadzenDataGridColumn Property="CreatedAt" Title="Creada el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="160px"/>
+            <RadzenDataGridColumn Property="CreatedAt" Title="Creado el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" Width="160px"/>
 
-            <RadzenDataGridColumn Property="UpdatedAt" Title="Última actualización" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="180px"/>
+            <RadzenDataGridColumn Property="UpdatedAt" Title="Última actualización" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" Width="180px"/>
 
             <RadzenDataGridColumn Filterable="false" Sortable="false" TItem="ProviderDto" Title="Acciones" MinWidth="200px" Width="160px">
+
                 <Template Context="provider">
 
                     <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditProvider(provider))" />
@@ -116,7 +123,7 @@
     private IList<ProviderDto>? selectedProviders;
     private int count;
     private bool isLoading = false;
-    private string GridMessage = "No hay proveedors para mostrar.";
+    private string GridMessage = "No hay proveedores para mostrar.";
 
     private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
 
@@ -124,32 +131,27 @@
     {
         if (isLoading) return;
 
-        try
+        isLoading = true;
+
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+        var result = await providerService.GetAllAsync(request, CancellationToken.None);
+        if (result.IsSuccess)
         {
-            isLoading = true;
-
-            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
-
-            var result = await providerService.GetAllAsync(request, CancellationToken.None);
-            if (result.IsSuccess)
-            {
-                providers = result.Value.Items;
-                count = result.Value.Count;
-                selectedProviders = providers.Take(1).ToList();
-            }
-            else
-            {
-                providers = [];
-                selectedProviders = [];
-                count = 0;
-                GridMessage = result.Error.Description;
-            }
+            providers = result.Value.Items;
+            count = result.Value.Count;
+            selectedProviders = providers.Take(1).ToList();
         }
-        finally
+        else
         {
-            isLoading = false;
-
+            providers = [];
+            selectedProviders = [];
+            count = 0;
+            GridMessage = result.Error.Description;
         }
+
+        isLoading = false;
+
     }
 
     private void ViewProvider(int providerId)
@@ -172,7 +174,7 @@
         {
             if (editResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Consignación editada con éxito.");
+                SimpleNotifications.Success($"Proveedor editado con éxito.");
                 await grid.Reload();
             }
             else
@@ -195,7 +197,7 @@
         {
             if (deleteResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Consignación eliminada con éxito.");
+                SimpleNotifications.Success($"Proveedor eliminado con éxito.");
                 await grid.Reload();
             }
             else
@@ -207,7 +209,7 @@
 
     private async Task HandleCreateProvider()
     {
-        var result = await DialogService.OpenAsync<CreateProviderForm>("Crear una nueva proveedor",
+        var result = await DialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -219,7 +221,7 @@
         {
             if (createResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Consignación creada con éxito!");
+                SimpleNotifications.Success($"Proveedor creado con éxito!");
                 NavigationManager.NavigateTo($"/proveedores/{createResult.Value}");
             }
             else
