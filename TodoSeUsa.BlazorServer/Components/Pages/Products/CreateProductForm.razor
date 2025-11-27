@@ -1,11 +1,9 @@
-﻿@using System.Text.Json
-@using TodoSeUsa.Application.Features.Products.DTOs
+﻿@using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
-@using TodoSeUsa.BlazorServer.Helpers
-@using TodoSeUsa.Domain.Enums
+
+@inject IProductService ProductService;
 
 @inject DialogService DialogService;
-@inject IProductService ProductService;
 
 
 <RadzenTemplateForm TItem="CreateProductDto" Data=@createProductDto Submit=@OnSubmit>
@@ -18,7 +16,7 @@
                             <RadzenLabel Component="Price">
                                 Precio <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenNumeric Name="Price" @bind-Value=@createProductDto.Price Style="width: 100%;" TValue="decimal" Min="1" Change="@OnPriceChanged" />
+                            <RadzenNumeric Name="Price" @bind-Value=@createProductDto.Price Style="width: 100%;" TValue="decimal" Min="0" />
                             <RadzenRequiredValidator Component="Price" Text="El precio es requerido." />
                             <RadzenNumericRangeValidator Component="Price" Min="1" Text="El precio debe ser mayor a cero."></RadzenNumericRangeValidator>
                         </RadzenStack>
@@ -28,7 +26,7 @@
                             <RadzenLabel Component="Quantity">
                                 Cantidad <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenNumeric Name="Quantity" @bind-Value=@createProductDto.Quantity Style="width: 100%;" TValue="int" Min="1" Change="@OnQuantityChanged" />
+                            <RadzenNumeric Name="Quantity" @bind-Value=@createProductDto.Quantity Style="width: 100%;" TValue="int" Min="1" />
                             <RadzenRequiredValidator Component="Quantity" Text="La cantidad es requerida." />
                             <RadzenNumericRangeValidator Component="Quantity" Min="1" Text="La cantidad debe ser mayor a cero."></RadzenNumericRangeValidator>
                         </RadzenStack>
@@ -38,7 +36,7 @@
                             <RadzenLabel Component="ConsignmentId">
                                 Id de la consignación<RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Req." Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenNumeric Name="ConsignmentId" @bind-Value=@createProductDto.ConsignmentId Style="width: 100%;" TValue="int" Min="1" Change="@OnConsignmentIdChanged" Disabled="@(ConsignmentId != null)"/>
+                            <RadzenNumeric Name="ConsignmentId" @bind-Value=@createProductDto.ConsignmentId Style="width: 100%;" TValue="int" Min="1" Disabled="@(ConsignmentId != null)"/>
                             <RadzenRequiredValidator Component="ConsignmentId" Text="El Id de la consignación es obligatorio."></RadzenRequiredValidator>
                             <RadzenNumericRangeValidator Component="ConsignmentId" Min="1" Text="El Id de la consignación debe ser mayor a cero."></RadzenNumericRangeValidator>
                         </RadzenStack>
@@ -48,7 +46,7 @@
                             <RadzenLabel Component="Size">
                                 Talle<RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenTextBox Name="Size" @bind-Value=@createProductDto.Size Style="width: 100%;" TValue="int" Min="1" Change="@OnSizeChanged" />
+                            <RadzenTextBox Name="Size" @bind-Value=@createProductDto.Size Style="width: 100%;" TValue="int" Min="1" />
                             <RadzenRequiredValidator Component="Size" Text="El talle es obligatorio."></RadzenRequiredValidator>
                             <RadzenRegexValidator Component="Size"
                                                   Pattern="^(?=.*[\p{L}\p{N}]).{1,50}$"
@@ -66,7 +64,6 @@
                                             TextProperty="Text"
                                             ValueProperty="Value"
                                             Style="width:100%;"
-                                            Change="@OnBodyChanged"
                                             Name="Body">
                             </RadzenDropDown>
                             <RadzenRequiredValidator Component="Quality" Text="La calidad es requerida." />
@@ -83,7 +80,6 @@
                                             TextProperty="Text"
                                             ValueProperty="Value"
                                             Style="width:100%;"
-                                            Change="@OnQualityChanged"
                                             Name="Quality">
                             </RadzenDropDown>
                             <RadzenRequiredValidator Component="Quality" Text="La calidad es requerida." />
@@ -94,7 +90,7 @@
                             <RadzenLabel Component="Category">
                                 Categoría <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenTextBox Name="Category" @bind-Value=@createProductDto.Category Style="width: 100%;" Change="@OnCategoryChanged" Placeholder="Categoría..." />
+                            <RadzenTextBox Name="Category" @bind-Value=@createProductDto.Category Style="width: 100%;" Placeholder="Categoría..." />
                             <RadzenRequiredValidator Component="Category" Text="La categoría es requerida." />
                             <RadzenRegexValidator Component="Category"
                                                   Pattern="^(?=.*[\p{L}\p{N}]).{1,100}$"
@@ -106,7 +102,7 @@
                             <RadzenLabel Component="Description">
                                 Descripción <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenTextBox Name="Description" @bind-Value=@createProductDto.Description Style="width: 100%;" Change="@OnDescriptionChanged" Placeholder="Descripción..." />
+                            <RadzenTextBox Name="Description" @bind-Value=@createProductDto.Description Style="width: 100%;" Placeholder="Descripción..." />
                             <RadzenRequiredValidator Component="Description" Text="La descripción es requerida." />
                             <RadzenRegexValidator Component="Description"
                                                   Pattern="^(?=.*[\p{L}\p{N}]).{1,250}$"
@@ -121,7 +117,7 @@
                                 Temporada <RadzenBadge BadgeStyle="BadgeStyle.Info" Variant="Variant.Outlined" Text="Opcional" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
                             <div style="position: relative; display: flex; align-items: center;">
-                                <RadzenDropDown @bind-Value="@createProductDto.Season" Placeholder="Sin temporada asignada..." Data="@EnumOptionLists.seasons" TextProperty="Text" ValueProperty="Value" Style="width:100%;" Change="@OnSeasonChanged"></RadzenDropDown>
+                                <RadzenDropDown @bind-Value="@createProductDto.Season" Placeholder="Sin temporada asignada..." Data="@EnumOptionLists.seasons" TextProperty="Text" ValueProperty="Value" Style="width:100%;" ></RadzenDropDown>
 
                                 @if (createProductDto.Season.HasValue)
                                 {
@@ -146,8 +142,7 @@
                                                Style="width: 100%;"
                                                Min="1"
                                                Placeholder="Sin caja asignada..."
-                                               TValue="int?"
-                                               Change="@OnBoxIdChanged" />
+                                               TValue="int?" />
 
                                 @if (createProductDto.BoxId.HasValue)
                                 {
@@ -159,7 +154,7 @@
                                 }
                             </div>
                         </RadzenStack>
-                        <RadzenCustomValidator Component="BoxId" Text="El Id de caja debe ser mayor a cero." Validator="@(() => IsBoxIdValid)" />
+                        <RadzenCustomValidator Component="BoxId" Text="El Id de caja debe ser mayor a cero." Validator="@(() => IsBoxIdValid)"/>
                     </RadzenColumn>
                     <RadzenColumn Size="6" id="refurbishmentCost-column">
                         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" >
@@ -172,8 +167,7 @@
                                                Style="width: 100%;"
                                                Min="1"
                                                Placeholder="Sin costo asignado..."
-                                               TValue="decimal?"
-                                               Change="@OnRefurbishmentCostChanged" />
+                                               TValue="decimal?" />
 
                                 @if (createProductDto.RefurbishmentCost.HasValue)
                                 {
@@ -191,7 +185,7 @@
             </RadzenStack>
         </RadzenFieldset>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton IsBusy="@busy" BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@IsSaveDisabled />
+            <RadzenButton IsBusy="@busy" BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" />
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
@@ -203,25 +197,9 @@
 
     private bool busy;
 
-    private bool IsSaveDisabled => !(IsPriceValid && IsQuantityValid && IsBodyValid && IsSizeValid &&
-                                 IsCategoryValid && IsQualityValid &&
-                                 IsConsignmentIdValid && IsDescriptionValid &&
-                                 IsSeasonValid && IsRefurbishmentCostValid && IsBoxIdValid);
-
-    private bool IsPriceValid => createProductDto.Price > 0;
-    private bool IsQuantityValid => createProductDto.Quantity > 0;
-    private bool IsBodyValid => Enum.IsDefined(typeof(Body), createProductDto.Body);
-    private bool IsSizeValid => !string.IsNullOrWhiteSpace(createProductDto.Size);
-    private bool IsCategoryValid => !string.IsNullOrWhiteSpace(createProductDto.Category);
-    private bool IsQualityValid => Enum.IsDefined(typeof(ProductQuality), createProductDto.Quality);
-    private bool IsConsignmentIdValid => createProductDto.ConsignmentId > 0;
-    private bool IsDescriptionValid => !string.IsNullOrWhiteSpace(createProductDto.Description);
-    private bool IsSeasonValid => createProductDto.Season == null || Enum.IsDefined(typeof(Season), createProductDto.Season);
-    private bool IsRefurbishmentCostValid => createProductDto.RefurbishmentCost == null || createProductDto.RefurbishmentCost > 0;
-    private bool IsBoxIdValid => createProductDto.BoxId == null || createProductDto.BoxId > 0;
-
-
     private CreateProductDto createProductDto = new();
+
+    private bool IsBoxIdValid => createProductDto.BoxId == null || createProductDto.BoxId > 0;
 
     protected override void OnInitialized()
     {
@@ -233,7 +211,7 @@
         createProductDto = new CreateProductDto
         {
             Price = 0,
-            Quantity = 1,
+            Quantity = 0,
             Body = Body.Unisex,
             Quality = ProductQuality.New,
             ConsignmentId = ConsignmentId ?? 0
@@ -248,91 +226,21 @@
         DialogService.Close(result);
     }
 
-
-    private void OnPriceChanged(decimal value)
-    {
-        createProductDto.Price = value;
-        StateHasChanged();
-    }
-
-    private void OnQuantityChanged(int value)
-    {
-        createProductDto.Quantity = value;
-        StateHasChanged();
-    }
-
-    private void OnSizeChanged(string value)
-    {
-        createProductDto.Size = value;
-        StateHasChanged();
-    }
-
-    private void OnBodyChanged(object value)
-    {
-        createProductDto.Body = (Body)value;
-        StateHasChanged();
-    }
-
-    private void OnCategoryChanged(string value)
-    {
-        createProductDto.Category = value;
-        StateHasChanged();
-    }
-
-    private void OnQualityChanged(object value)
-    {
-        createProductDto.Quality = (ProductQuality)value;
-        StateHasChanged();
-    }
-
-    private void OnConsignmentIdChanged(int value)
-    {
-        createProductDto.ConsignmentId = value;
-        StateHasChanged();
-    }
-
-    private void OnDescriptionChanged(string value)
-    {
-        createProductDto.Description = value;
-        StateHasChanged();
-    }
-
-    private void OnBoxIdChanged(int? value)
-    {
-        createProductDto.BoxId = value;
-        StateHasChanged();
-    }
-
-    private void OnRefurbishmentCostChanged(decimal? value)
-    {
-        createProductDto.RefurbishmentCost = value;
-        StateHasChanged();
-    }
-
-    private void OnSeasonChanged(object? value)
-    {
-        createProductDto.Season = (Season?)value;
-        StateHasChanged();
-    }
-
     private void ClearBoxId()
     {
         createProductDto.BoxId = null;
-        OnBoxIdChanged(null);
         StateHasChanged();
     }
 
     private void ClearRefurbishmentCost()
     {
         createProductDto.RefurbishmentCost = null;
-        OnRefurbishmentCostChanged(null);
         StateHasChanged();
     }
 
     private void ClearSeason()
     {
         createProductDto.Season = null;
-        OnSeasonChanged(null);
         StateHasChanged();
     }
 }

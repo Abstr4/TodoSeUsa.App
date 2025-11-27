@@ -1,28 +1,28 @@
 ﻿using System.Linq.Dynamic.Core;
 using TodoSeUsa.Application.Common.Enums;
 using TodoSeUsa.Application.Common.Services;
-using TodoSeUsa.Application.Common.Validators;
 using TodoSeUsa.Application.Features.Boxes.DTOs;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
 using TodoSeUsa.Application.Features.Boxes.Validators;
-using TodoSeUsa.Application.Features.Products.DTOs;
 
 namespace TodoSeUsa.Application.Features.Boxes.Services;
 public class BoxService : IBoxService
 {
     private readonly ILogger<BoxService> _logger;
-    private readonly IApplicationDbContext _context;
+    private readonly IApplicationDbContextFactory _contextFactory;
 
-    public BoxService(ILogger<BoxService> logger, IApplicationDbContext context)
+    public BoxService(ILogger<BoxService> logger, IApplicationDbContextFactory contextFactory)
     {
         _logger = logger;
-        _context = context;
+        _contextFactory = contextFactory;
     }
-    
+
     public async Task<Result<PagedItems<BoxDto>>> GetAllAsync(
         QueryRequest request,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
+        var _context = await _contextFactory.CreateDbContextAsync(ct);
+
         var query = _context.Boxes.AsQueryable();
 
         if (request.Filters != null && request.Filters.Count > 0)
@@ -40,7 +40,7 @@ public class BoxService : IBoxService
             query = query.OrderBy(x => x.Id);
         }
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        var totalCount = await query.CountAsync(ct);
 
         query = query.Skip(request.Skip).Take(request.Take);
 
@@ -54,7 +54,7 @@ public class BoxService : IBoxService
                 CreatedAt = b.CreatedAt,
                 UpdatedAt = b.UpdatedAt,
             })
-        .ToListAsync(cancellationToken);
+        .ToListAsync(ct);
 
         return Result.Success(new PagedItems<BoxDto>
         {
@@ -63,13 +63,15 @@ public class BoxService : IBoxService
         });
     }
 
-    public async Task<Result<BoxDto>> GetByIdAsync(int boxId, CancellationToken cancellationToken)
+    public async Task<Result<BoxDto>> GetByIdAsync(int boxId, CancellationToken ct)
     {
         if (boxId <= 0)
             return Result.Failure<BoxDto>(BoxErrors.Failure("El Id debe ser mayor que cero."));
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             var boxDto = await _context.Boxes
                 .AsNoTracking()
                 .Where(b => b.Id == boxId)
@@ -82,7 +84,7 @@ public class BoxService : IBoxService
                     CreatedAt = b.CreatedAt,
                     UpdatedAt = b.UpdatedAt
                 })
-                .FirstOrDefaultAsync(cancellationToken);
+                .FirstOrDefaultAsync(ct);
 
             if (boxDto == null)
                 return Result.Failure<BoxDto>(BoxErrors.NotFound(boxId));
@@ -104,40 +106,42 @@ public class BoxService : IBoxService
         if (!validationResult.IsValid)
             return Result.Failure<bool>(BoxErrors.Failure(validationResult.ToString()));
 
-        Box box = new() 
+        Box box = new()
         {
             Location = boxDto.Location
         };
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             await _context.Boxes.AddAsync(box, ct);
             await _context.SaveChangesAsync(ct);
             return Result.Success(true);
-
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to create the box.");
             return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar crear la caja."));
         }
-
     }
 
-    public async Task<Result<bool>> EditBoxById(int boxId, EditBoxDto editBoxDto, CancellationToken cancellationToken)
+    public async Task<Result<bool>> EditBoxById(int boxId, EditBoxDto editBoxDto, CancellationToken ct)
     {
         if (boxId <= 0)
             return Result.Failure<bool>(BoxErrors.Failure("El Id debe ser mayor que cero."));
 
         var validator = new EditBoxDtoValidator();
-        var validationResult = await validator.ValidateAsync(editBoxDto, cancellationToken);
+        var validationResult = await validator.ValidateAsync(editBoxDto, ct);
 
         if (!validationResult.IsValid)
             return Result.Failure<bool>(BoxErrors.Failure(validationResult.ToString()));
 
         try
         {
-            Box? box = await _context.Boxes.FirstOrDefaultAsync(b => b.Id == boxId, cancellationToken);
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
+            Box? box = await _context.Boxes.FirstOrDefaultAsync(b => b.Id == boxId, ct);
 
             if (box == null)
             {
@@ -147,7 +151,7 @@ public class BoxService : IBoxService
             {
                 box.Location = editBoxDto.Location;
             }
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(ct);
             return Result.Success(true);
         }
         catch (Exception ex)
@@ -157,26 +161,28 @@ public class BoxService : IBoxService
         }
     }
 
-    public async Task<Result<bool>> DeleteBoxById(int boxId, CancellationToken cancellationToken)
+    public async Task<Result<bool>> DeleteBoxById(int boxId, CancellationToken ct)
     {
         if (boxId <= 0)
             return Result.Failure<bool>(BoxErrors.Failure("El Id debe ser mayor que cero."));
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             var box = await _context.Boxes
-                .FirstOrDefaultAsync(b => b.Id == boxId, cancellationToken);
+                .FirstOrDefaultAsync(b => b.Id == boxId, ct);
 
             if (box is null)
                 return Result.Failure<bool>(BoxErrors.NotFound(boxId));
 
-            if(box.Products.Count > 0)
+            if (box.Products.Count > 0)
             {
                 return Result.Failure<bool>(BoxErrors.Failure("No se puede borrar una caja que contiene productos."));
             }
 
             _context.Boxes.Remove(box);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(ct);
             return Result.Success(true);
         }
         catch (Exception ex)

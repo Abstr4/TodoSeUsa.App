@@ -1,9 +1,6 @@
-﻿@using TodoSeUsa.Application.Common.Models
-@using TodoSeUsa.Application.Features.Products.DTOs
+﻿@using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 @using TodoSeUsa.Application.Features.Products.Services
-@using TodoSeUsa.BlazorServer.Helpers
-@using TodoSeUsa.Domain.Enums
 
 @inject IProductService ProductService;
 
@@ -102,7 +99,6 @@
     private int count;
     private bool isLoading;
     private string errorMessage = string.Empty;
-    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
 
     private async Task LoadData(LoadDataArgs args)
     {
@@ -110,7 +106,7 @@
 
         isLoading = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
         var result = await ProductService.GetByConsignmentIdAsync(request, ConsignmentId, CancellationToken.None);
         if (result.IsSuccess)
         {

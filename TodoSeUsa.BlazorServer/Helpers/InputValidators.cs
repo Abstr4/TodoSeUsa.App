@@ -1,6 +1,4 @@
-﻿using System.Net.Mail;
-using System.Text.RegularExpressions;
-using TodoSeUsa.Domain.Validators;
+﻿using TodoSeUsa.Domain.Validators;
 
 namespace TodoSeUsa.BlazorServer.Helpers;
 

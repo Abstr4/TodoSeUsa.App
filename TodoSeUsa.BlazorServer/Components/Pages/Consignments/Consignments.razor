@@ -1,11 +1,10 @@
 ﻿@page "/consignaciones"
 
-@using TodoSeUsa.Application.Common.Models
 @using TodoSeUsa.Application.Features.Consignments.DTOs
 @using TodoSeUsa.Application.Features.Consignments.Interfaces
-@using TodoSeUsa.BlazorServer.Helpers
 
 @inject IConsignmentService consignmentService;
+
 @inject DialogService DialogService;
 @inject NavigationManager NavigationManager;
 @inject SimpleNotifications SimpleNotifications;
@@ -113,7 +112,7 @@
         {
             isLoading = true;
 
-            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
 
             var result = await consignmentService.GetAllAsync(request, CancellationToken.None);
             if (result.IsSuccess)

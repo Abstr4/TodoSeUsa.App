@@ -5,19 +5,21 @@ namespace TodoSeUsa.Application.Features.Payments.Services;
 
 public sealed class PaymentService : IPaymentService
 {
-    private readonly IApplicationDbContext _context;
+    private readonly IApplicationDbContextFactory _contextFactory;
     private readonly ILogger<PaymentService> _logger;
 
-    public PaymentService(IApplicationDbContext context, ILogger<PaymentService> logger)
+    public PaymentService(IApplicationDbContextFactory contextFactory, ILogger<PaymentService> logger)
     {
-        _context = context;
+        _contextFactory = contextFactory;
         _logger = logger;
     }
 
-    public async Task<Result<PagedItems<PaymentDto>>> GetPaymentsWithPagination(QueryItem request, CancellationToken cancellationToken)
+    public async Task<Result<PagedItems<PaymentDto>>> GetPaymentsWithPagination(QueryItem request, CancellationToken ct)
     {
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             IQueryable<Payment> query = _context.Payments
                 .AsQueryable()
                 .AsNoTracking();
@@ -25,7 +27,7 @@ public sealed class PaymentService : IPaymentService
             query = query.ApplyFilter(request.Filter);
             // query = query.ApplySorting(request.OrderBy);
 
-            var count = await query.CountAsync(cancellationToken);
+            var count = await query.CountAsync(ct);
 
             var paymentsDtos = await query
                 .Skip(request.Skip)
@@ -39,7 +41,7 @@ public sealed class PaymentService : IPaymentService
                     SaleId = b.SaleId,
                     CreatedAt = b.CreatedAt
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync(ct);
 
             var pagedItems = new PagedItems<PaymentDto>() { Items = paymentsDtos, Count = count };
 

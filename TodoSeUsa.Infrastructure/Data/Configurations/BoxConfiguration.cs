@@ -4,7 +4,6 @@ namespace TodoSeUsa.Infrastructure.Data.Configurations;
 
 public class BoxConfiguration : IEntityTypeConfiguration<Box>
 {
-
     public void Configure(EntityTypeBuilder<Box> builder)
     {
         builder.UseTpcMappingStrategy();

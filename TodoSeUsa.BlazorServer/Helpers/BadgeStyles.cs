@@ -17,6 +17,7 @@ public static class BadgeStyles
             _ => BadgeStyle.Base
         };
     }
+
     public static BadgeStyle GetBadgeStyleFromStringProductStatus(string status)
     {
         return status switch

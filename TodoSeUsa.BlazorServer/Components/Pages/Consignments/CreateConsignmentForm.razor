@@ -1,12 +1,9 @@
-﻿@using System.Text.Json
-@using System.Text.RegularExpressions
-@using TodoSeUsa.Application.Features.Consignments.DTOs
+﻿@using TodoSeUsa.Application.Features.Consignments.DTOs
 @using TodoSeUsa.Application.Features.Consignments.Interfaces
-@using TodoSeUsa.BlazorServer.Helpers
-@using TodoSeUsa.Domain.Enums
+
+@inject IConsignmentService ConsignmentService;
 
 @inject DialogService DialogService;
-@inject IConsignmentService ConsignmentService;
 
 
 <RadzenTemplateForm TItem="CreateConsignmentDto" Data=@createConsignmentDto Submit=@OnSubmit>
@@ -19,7 +16,7 @@
                             <RadzenLabel Component="ProviderId">
                                 ID del proveedor <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenNumeric Name="ProviderId" @bind-Value=@createConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" Change="@OnProviderIdChanged" Disabled="@(ProviderId != null)"/>
+                            <RadzenNumeric Name="ProviderId" @bind-Value=@createConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" Disabled="@(ProviderId != null)"/>
                             <RadzenRequiredValidator Component="ProviderId" Text="El ID del proveedor es requerido." />
                             <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El ID del proveedor debe ser mayor a cero."/>
                         </RadzenStack>
@@ -34,7 +31,7 @@
 
                             <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
-                                <RadzenDatePicker Max="DateTime.Now" Name="DateIssued" @bind-Value=@createConsignmentDto.DateIssued Style="flex-grow: 1;" Change="@OnDateIssuedChanged" Placeholder="Fecha de emisión..." />
+                                <RadzenDatePicker Max="DateTime.Now" Name="DateIssued" @bind-Value=@createConsignmentDto.DateIssued Style="flex-grow: 1;" Placeholder="Fecha de emisión..." />
 
                                 <RadzenButton Icon="alarm" Click="@(() => createConsignmentDto.DateIssued = DateTime.Now)" Text="Ahora" />
                             </RadzenStack>
@@ -47,18 +44,19 @@
                             <RadzenLabel Component="Notes">
                                 Notas <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenTextBox Name="Notes" @bind-Value=@createConsignmentDto.Notes Style="width: 100%;" Change="@OnNotesChanged" Placeholder="Notas..." />
+                            <RadzenTextBox MaxLength="250" Name="Notes" @bind-Value=@createConsignmentDto.Notes Style="width: 100%;" Change="@OnNotesChanged" Placeholder="Notas..." />
 
-                            <RadzenRegexValidator Component="Notes"
-                                                  Pattern="^(?=.*[A-Za-z0-9]).{1,250}$"
-                                                  Text="Las notas deben tener entre 1 y 250 caracteres válidos (no solo espacios o símbolos)." />
+                            <RadzenCustomValidator Component="Notes"
+                                                  Validator="(() => InputValidators.IsNullOrEmptyOrMatchesAlphanumericPattern(createConsignmentDto.Notes))"
+                                                  Text="Las notas no pueden ser solo espacios o símbolos." />
+                            <RadzenLengthValidator Min="1" Max="250" Text="Las notas deben tener entre 1 y 250 carácteres." />
                         </RadzenStack>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenStack>
         </RadzenFieldset>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton IsBusy="@busy" BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@IsSaveDisabled />
+            <RadzenButton IsBusy="@busy" BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" />
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
@@ -68,12 +66,6 @@
     [Parameter] public int? ProviderId { get; set; }
 
     private bool busy;
-
-    private bool IsSaveDisabled => !(IsProviderIdValid && IsNotesValid && IsDateIssuedValid);
-
-    private bool IsProviderIdValid => createConsignmentDto.ProviderId > 0;
-    private bool IsDateIssuedValid => createConsignmentDto.DateIssued <= DateTime.Now;
-    private bool IsNotesValid => IsEmptyOrMatchesAlphanumericPattern(createConsignmentDto.Notes);
 
     private CreateConsignmentDto createConsignmentDto = new();
 
@@ -98,39 +90,10 @@
         DialogService.Close(result);
     }
 
-    private void OnProviderIdChanged(int value)
-    {
-        createConsignmentDto.ProviderId = value;
-        StateHasChanged();
-    }
-
     private void OnNotesChanged(string? value)
     {
         createConsignmentDto.Notes = value == "" ? null : value;
         StateHasChanged();
-    }
-
-
-
-    bool IsEmptyOrMatchesAlphanumericPattern(string? input)
-    {
-        if (string.IsNullOrEmpty(input))
-            return true;
-
-        return Regex.IsMatch(input, "^(?=.*[A-Za-z0-9]).{1,250}$");
-    }
-
-    private void OnDateIssuedChanged(DateTime? value)
-    {
-        if (value != null)
-        {
-            createConsignmentDto.DateIssued = value.Value;
-            StateHasChanged();
-        }
-        else
-        {
-            createConsignmentDto.DateIssued = DateTime.Now;
-        }
     }
 }
 

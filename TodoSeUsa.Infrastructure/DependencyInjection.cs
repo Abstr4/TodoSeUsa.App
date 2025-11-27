@@ -17,15 +17,12 @@ public static class DependencyInjection
 
         builder.Services.AddScoped<SoftDeleteInterceptor>();
 
-        builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
         {
-            var interceptor = sp.GetRequiredService<SoftDeleteInterceptor>();
-
-            options
-                .UseSqlServer(connectionString)
-                .AddInterceptors(interceptor);
+            options.UseSqlServer(connectionString)
+                   .AddInterceptors(builder.Services.BuildServiceProvider().GetRequiredService<SoftDeleteInterceptor>());
         });
 
-        builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        builder.Services.AddScoped<IApplicationDbContextFactory, ApplicationDbContextFactory>();
     }
 }

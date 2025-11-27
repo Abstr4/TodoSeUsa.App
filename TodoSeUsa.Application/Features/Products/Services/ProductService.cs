@@ -1,5 +1,4 @@
 ﻿using TodoSeUsa.Application.Common.Enums;
-using TodoSeUsa.Application.Common.Interfaces;
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Products.Interfaces;
@@ -10,16 +9,14 @@ namespace TodoSeUsa.Application.Features.Products.Services;
 
 public class ProductService : IProductService
 {
-
-    readonly ILogger<ProductService> logger;
-    readonly IDbContextFactory<ApplicationDbContext> factory;
+    private readonly ILogger<ProductService> _logger;
+    private readonly IApplicationDbContextFactory _contextFactory;
 
     public ProductService(
-        ILogger<ProductService> logger,
-        IDbContextFactory<ApplicationDbContext> factory)
+        ILogger<ProductService> logger, IApplicationDbContextFactory contextFactory)
     {
-        this.logger = logger;
-        this.factory = factory;
+        _logger = logger;
+        _contextFactory = contextFactory;
     }
 
     public async Task<Result<PagedItems<ProductDto>>> GetByBoxIdAsync(
@@ -27,6 +24,8 @@ public class ProductService : IProductService
     int boxId,
     CancellationToken ct)
     {
+        var _context = await _contextFactory.CreateDbContextAsync(ct);
+
         var query = _context.Products
             .Include(p => p.Consignment)
                 .ThenInclude(c => c.Provider)
@@ -72,7 +71,6 @@ public class ProductService : IProductService
                 ProviderLastName = p.Consignment.Provider.Person.LastName,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
-
             })
         .ToListAsync(ct);
 
@@ -88,6 +86,8 @@ public class ProductService : IProductService
     int consignmentId,
     CancellationToken ct)
     {
+        var _context = await _contextFactory.CreateDbContextAsync(ct);
+
         var query = _context.Products
             .Include(p => p.Consignment)
                 .ThenInclude(c => c.Provider)
@@ -133,7 +133,6 @@ public class ProductService : IProductService
                 ProviderLastName = p.Consignment.Provider.Person.LastName,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
-
             })
         .ToListAsync(ct);
 
@@ -149,6 +148,8 @@ public class ProductService : IProductService
         int providerId,
         CancellationToken ct)
     {
+        var _context = await _contextFactory.CreateDbContextAsync(ct);
+
         var query = _context.Products
             .Include(p => p.Consignment)
                 .ThenInclude(c => c.Provider)
@@ -204,6 +205,8 @@ public class ProductService : IProductService
     QueryRequest request,
     CancellationToken ct)
     {
+        var _context = await _contextFactory.CreateDbContextAsync(ct);
+
         var query = _context.Products
             .Include(p => p.Consignment)
                 .ThenInclude(c => c.Provider)
@@ -268,6 +271,8 @@ public class ProductService : IProductService
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             var productDto = await _context.Products
                 .AsNoTracking()
                 .Where(p => p.Id == productId)
@@ -333,6 +338,8 @@ public class ProductService : IProductService
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             await _context.Products.AddAsync(product, ct);
             await _context.SaveChangesAsync(ct);
             return Result.Success(true);
@@ -350,6 +357,8 @@ public class ProductService : IProductService
             return Result.Failure<bool>(ProductErrors.Failure("El Id debe ser mayor que cero."));
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             var product = await _context.Products
                 .FirstOrDefaultAsync(b => b.Id == productId, ct);
 
@@ -380,6 +389,8 @@ public class ProductService : IProductService
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             Product? product = await _context.Products.FirstOrDefaultAsync(b => b.Id == productId, ct);
             if (product == null)
             {
@@ -462,7 +473,6 @@ public class ProductService : IProductService
         var property = sort.Property;
         var isDescending = sort.SortOrder == SortOrder.Descending;
 
-
         if (sort.Property == nameof(ProductDto.ProviderInfo))
         {
             return isDescending
@@ -474,6 +484,5 @@ public class ProductService : IProductService
         return isDescending
             ? query.OrderByDescending(e => EF.Property<object>(e, property))
             : query.OrderBy(e => EF.Property<object>(e, property));
-
     }
 }

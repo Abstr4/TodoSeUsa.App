@@ -17,4 +17,3 @@ public class CreateConsignmentDtoValidator : AbstractValidator<CreateConsignment
             .MaximumLength(250).WithMessage("Las notas deben tener menos que 250 carácteres.");
     }
 }
-

@@ -5,7 +5,7 @@ namespace TodoSeUsa.BlazorServer.Helpers;
 
 public static class QueryRequestHelper
 {
-    public static QueryRequest ConvertToQueryRequest(LoadDataArgs args, LogicalFilterOperator logicalFilterOperator)
+    public static QueryRequest ConvertToQueryRequest(LoadDataArgs args)
     {
         return new QueryRequest
         {
@@ -14,7 +14,7 @@ public static class QueryRequestHelper
             OrderBy = args.OrderBy,
             Filters = args.Filters?.Select(MapFilterDescriptor).ToList(),
             Sorts = args.Sorts?.Select(MapSortDescriptor).ToList(),
-            LogicalFilterOperator = RadzenFilterMapper.Map(logicalFilterOperator)
+            LogicalFilterOperator = RadzenFilterMapper.Map(RadzenDataGridDefaults.FilterOperator)
         };
     }
 

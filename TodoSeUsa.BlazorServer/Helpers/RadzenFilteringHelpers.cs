@@ -15,5 +15,4 @@ public static class RadzenFilteringHelpers
         new { Text = "Distingue mayúsculas/minúsculas", Value = FilterCaseSensitivity.Default },
         new { Text = "No distingue mayúsculas/minúsculas", Value = FilterCaseSensitivity.CaseInsensitive }
     ];
-
 }

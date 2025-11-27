@@ -9,12 +9,12 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
         if (eventData.Context is null)
         {
             return base.SavingChangesAsync(
-                eventData, result, cancellationToken);
+                eventData, result, ct);
         }
 
         IEnumerable<EntityEntry<ISoftDelete>> entries = eventData
@@ -32,6 +32,6 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
             softDeletableEntity.State = EntityState.Modified;
             delete.DeletedAt = DateTime.Now;
         }
-        return base.SavingChangesAsync(eventData, result, cancellationToken);
+        return base.SavingChangesAsync(eventData, result, ct);
     }
 }

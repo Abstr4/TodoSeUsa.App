@@ -1,9 +1,6 @@
-﻿@using TodoSeUsa.Application.Common.Models
-@using TodoSeUsa.Application.Features.Products.DTOs
+﻿@using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 @using TodoSeUsa.Application.Features.Products.Services
-@using TodoSeUsa.BlazorServer.Helpers
-@using TodoSeUsa.Domain.Enums
 
 @inject IProductService ProductService;
 
@@ -97,12 +94,12 @@
     [Parameter] public int ConsignmentId { get; set; }
 
     private IEnumerable<ProductDto>? products;
-    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} records)";
     private int pageSize = 3;
     private int count;
     private bool isLoading;
+
+    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} records)";
     private string errorMessage = string.Empty;
-    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
 
     private async Task LoadData(LoadDataArgs args)
     {
@@ -110,7 +107,7 @@
 
         isLoading = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
         var result = await ProductService.GetByConsignmentIdAsync(request, ConsignmentId, CancellationToken.None);
         if (result.IsSuccess)
         {

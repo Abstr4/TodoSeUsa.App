@@ -1,15 +1,15 @@
 ﻿@page "/productos/{ProductId:int}"
 
-@using TodoSeUsa.Application.Common.Models
 @using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 @using TodoSeUsa.Application.Features.Products.Services
-@using TodoSeUsa.BlazorServer.Helpers
 
 @inject IProductService ProductService;
+
 @inject DialogService DialogService;
 @inject SimpleNotifications SimpleNotifications;
 @inject NavigationManager NavigationManager;
+@inject IJSRuntime JS;
 
 <style>
     .product-table {
@@ -35,7 +35,7 @@
 
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Style="margin-bottom: 1rem">
 
-                    <RadzenButton Click="@GoBack" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+                    <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
 
                     <RadzenStack Orientation="Orientation.Horizontal">
                         <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditProduct(product))" />

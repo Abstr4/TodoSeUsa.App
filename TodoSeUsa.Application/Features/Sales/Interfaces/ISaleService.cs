@@ -4,5 +4,5 @@ namespace TodoSeUsa.Application.Features.Sales.Interfaces;
 
 public interface ISaleService
 {
-    Task<Result<PagedItems<SaleDto>>> GetSalesWithPagination(QueryItem request, CancellationToken cancellationToken);
+    Task<Result<PagedItems<SaleDto>>> GetSalesWithPagination(QueryItem request, CancellationToken ct);
 }

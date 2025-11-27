@@ -2,6 +2,7 @@
 using TodoSeUsa.Application.Common.Enums;
 
 namespace TodoSeUsa.Application.Common.Services;
+
 public static class PredicateBuilder
 {
     public static Expression<Func<T, bool>> BuildPredicate<T>(QueryRequest request)
@@ -42,7 +43,6 @@ public static class PredicateBuilder
                     {
                         if (underlyingType.IsEnum && filterValue is int intValue)
                             filterValue = Enum.ToObject(underlyingType, intValue);
-
                         else if (filterValue.GetType() != underlyingType)
                             filterValue = Convert.ChangeType(filterValue, underlyingType);
                     }
@@ -99,5 +99,4 @@ public static class PredicateBuilder
             _ => throw new NotSupportedException($"Operator {op} not supported"),
         };
     }
-
 }

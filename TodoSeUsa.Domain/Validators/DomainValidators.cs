@@ -5,7 +5,7 @@ namespace TodoSeUsa.Domain.Validators;
 
 public static class DomainValidators
 {
-    /* Matches: 
+    /* Matches:
                 123
                 123 456
                 123-456
@@ -13,6 +13,7 @@ public static class DomainValidators
                 12 34-56 78
                 000-000 000
     */
+
     public static bool PhoneValidator(string phone)
     {
         return Regex.IsMatch(phone, @"^[0-9]+([ -][0-9]+)*$");
@@ -26,6 +27,7 @@ public static class DomainValidators
                 user+tag@domain
                 u@d
      */
+
     public static bool EmailValidator(string email)
     {
         int index = email.IndexOf('@');
@@ -51,5 +53,4 @@ public static class DomainValidators
     {
         return Regex.IsMatch(input, @"^(?=.*[A-Za-z0-9]).+$");
     }
-
 }

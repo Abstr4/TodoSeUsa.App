@@ -7,26 +7,27 @@ namespace TodoSeUsa.Application.Features.Sales.Services;
 public sealed class SaleService : ISaleService
 {
     private readonly ILogger<SaleService> _logger;
-    private readonly IApplicationDbContext _context;
-    public SaleService(ILogger<SaleService> logger, IApplicationDbContext context)
+    private readonly IApplicationDbContextFactory _contextFactory;
+
+    public SaleService(ILogger<SaleService> logger, IApplicationDbContextFactory contextFactory)
     {
         _logger = logger;
-        _context = context;
+        _contextFactory = contextFactory;
     }
 
-    public async Task<Result<PagedItems<SaleDto>>> GetSalesWithPagination(QueryItem request, CancellationToken cancellationToken)
+    public async Task<Result<PagedItems<SaleDto>>> GetSalesWithPagination(QueryItem request, CancellationToken ct)
     {
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             IQueryable<Sale> query = _context.Sales
                 .AsQueryable()
                 .AsNoTracking();
 
-
             query = query.ApplyFilter(request.Filter);
-            // query = query.ApplySorting(request.OrderBy, ApplyCustomSorting);
 
-            var count = await query.CountAsync(cancellationToken);
+            var count = await query.CountAsync(ct);
 
             var boxesDtos = await query
                 .Skip(request.Skip)
@@ -46,7 +47,7 @@ public sealed class SaleService : ISaleService
                     Notes = s.Notes,
                     CreatedAt = s.CreatedAt
                 })
-                .ToListAsync(cancellationToken);
+                .ToListAsync(ct);
 
             var pagedItems = new PagedItems<SaleDto>()
             {

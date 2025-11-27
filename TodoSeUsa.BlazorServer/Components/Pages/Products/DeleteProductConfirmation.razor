@@ -1,8 +1,9 @@
 ﻿@using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 
-@inject DialogService DialogService
 @inject IProductService ProductService
+
+@inject DialogService DialogService
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
     <RadzenText TextStyle="TextStyle.H6">¿Estás seguro que deseas borrar el producto: '@ProductDto.Category - @ProductDto.Description' ID: @ProductDto.Id ?</RadzenText>

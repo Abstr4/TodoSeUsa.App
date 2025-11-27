@@ -1,11 +1,10 @@
 ﻿@page "/proveedores"
 
-@using TodoSeUsa.Application.Common.Models
 @using TodoSeUsa.Application.Features.Providers.DTOs
 @using TodoSeUsa.Application.Features.Providers.Interfaces
-@using TodoSeUsa.BlazorServer.Helpers
 
 @inject IProviderService providerService;
+
 @inject DialogService DialogService;
 @inject NavigationManager NavigationManager;
 @inject SimpleNotifications SimpleNotifications;
@@ -133,7 +132,7 @@
 
         isLoading = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
 
         var result = await providerService.GetAllAsync(request, CancellationToken.None);
         if (result.IsSuccess)

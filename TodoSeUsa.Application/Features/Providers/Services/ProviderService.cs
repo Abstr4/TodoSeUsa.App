@@ -11,18 +11,20 @@ namespace TodoSeUsa.Application.Features.Providers.Services;
 public class ProviderService : IProviderService
 {
     private readonly ILogger<ProviderService> _logger;
-    private readonly IApplicationDbContext _context;
+    private readonly IApplicationDbContextFactory _contextFactory;
     private readonly IPersonService _personService;
 
-    public ProviderService(ILogger<ProviderService> logger, IApplicationDbContext context, IPersonService personService)
+    public ProviderService(ILogger<ProviderService> logger, IApplicationDbContextFactory contextFactory, IPersonService personService)
     {
         _logger = logger;
-        _context = context;
+        _contextFactory = contextFactory;
         _personService = personService;
     }
 
-    public async Task<Result<PagedItems<ProviderDto>>> GetAllAsync(QueryRequest request, CancellationToken cancellationToken)
+    public async Task<Result<PagedItems<ProviderDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
     {
+        var _context = await _contextFactory.CreateDbContextAsync(ct);
+
         var query = _context.Providers
             .Include(p => p.Person)
             .Include(p => p.Consignments)
@@ -43,12 +45,12 @@ public class ProviderService : IProviderService
             query = query.OrderBy(x => x.Id);
         }
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        var totalCount = await query.CountAsync(ct);
 
         query = query.Skip(request.Skip).Take(request.Take);
 
         var items = await query
-            .Select( p => new ProviderDto
+            .Select(p => new ProviderDto
             {
                 Id = p.Id,
                 CommissionPercent = p.CommissionPercent,
@@ -62,7 +64,7 @@ public class ProviderService : IProviderService
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt
             })
-        .ToListAsync(cancellationToken);
+        .ToListAsync(ct);
 
         return Result.Success(new PagedItems<ProviderDto>
         {
@@ -71,20 +73,22 @@ public class ProviderService : IProviderService
         });
     }
 
-    public async Task<Result<int>> CreateAsync(CreateProviderDto createProviderDto, CancellationToken cancellationToken)
+    public async Task<Result<int>> CreateAsync(CreateProviderDto createProviderDto, CancellationToken ct)
     {
         var dtoValidator = new CreateProviderDtoValidator();
-        var dtoValidationResult = await dtoValidator.ValidateAsync(createProviderDto, cancellationToken);
+        var dtoValidationResult = await dtoValidator.ValidateAsync(createProviderDto, ct);
 
         if (!dtoValidationResult.IsValid)
             return Result.Failure<int>(ProviderErrors.Failure(dtoValidationResult.ToString()));
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             var person = await _personService.GetByContactInfoAsync(
                 createProviderDto.EmailAddress,
                 createProviderDto.PhoneNumber,
-                cancellationToken);
+                ct);
 
             if (person == null)
             {
@@ -99,7 +103,7 @@ public class ProviderService : IProviderService
 
                 try
                 {
-                    person = await _personService.CreateAsync(newPerson, cancellationToken);
+                    person = await _personService.CreateAsync(newPerson, ct);
                 }
                 catch (ValidationException ex)
                 {
@@ -108,7 +112,7 @@ public class ProviderService : IProviderService
             }
 
             var existingProvider = await _context.Providers
-                .AnyAsync(p => p.PersonId == person.Id, cancellationToken);
+                .AnyAsync(p => p.PersonId == person.Id, ct);
 
             if (existingProvider)
                 return Result.Failure<int>(ProviderErrors.Failure("Esta persona ya es un proveedor."));
@@ -119,8 +123,8 @@ public class ProviderService : IProviderService
                 PersonId = person.Id
             };
 
-            var entry = await _context.Providers.AddAsync(provider, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            var entry = await _context.Providers.AddAsync(provider, ct);
+            await _context.SaveChangesAsync(ct);
 
             return Result.Success(entry.Entity.Id);
         }
@@ -129,16 +133,17 @@ public class ProviderService : IProviderService
             _logger.LogError(ex, "An error occurred while trying to create the provider.");
             return Result.Failure<int>(ProviderErrors.Failure($"Ocurrió un error inesperado al intentar crear el proveedor."));
         }
-
     }
 
-    public async Task<Result<ProviderDto>> GetByIdAsync(int providerId, CancellationToken cancellationToken)
+    public async Task<Result<ProviderDto>> GetByIdAsync(int providerId, CancellationToken ct)
     {
         if (providerId <= 0)
             return Result.Failure<ProviderDto>(ProviderErrors.Failure("El Id debe ser mayor que cero."));
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             var providerDto = await _context.Providers
                 .Where(p => p.Id == providerId)
                 .Select(p => new ProviderDto
@@ -156,7 +161,7 @@ public class ProviderService : IProviderService
                     UpdatedAt = p.UpdatedAt
                 })
                 .AsNoTracking()
-                .FirstOrDefaultAsync(cancellationToken);
+                .FirstOrDefaultAsync(ct);
 
             if (providerDto == null)
                 return Result.Failure<ProviderDto>(ProviderErrors.NotFound(providerId));
@@ -170,15 +175,17 @@ public class ProviderService : IProviderService
         }
     }
 
-    public async Task<Result<bool>> DeleteByIdAsync(int providerId, CancellationToken cancellationToken)
+    public async Task<Result<bool>> DeleteByIdAsync(int providerId, CancellationToken ct)
     {
         if (providerId <= 0)
             return Result.Failure<bool>(ProviderErrors.Failure("El Id debe ser mayor que cero."));
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             var provider = await _context.Providers
-                .FirstOrDefaultAsync(b => b.Id == providerId, cancellationToken);
+                .FirstOrDefaultAsync(b => b.Id == providerId, ct);
 
             if (provider is null)
                 return Result.Failure<bool>(ProviderErrors.NotFound(providerId));
@@ -189,9 +196,9 @@ public class ProviderService : IProviderService
                 ));
 
             _context.Providers.Remove(provider);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(ct);
 
-            await _personService.DeletePersonIfNoRolesAsync(provider.PersonId, cancellationToken);
+            await _personService.DeletePersonIfNoRolesAsync(provider.PersonId, ct);
 
             return Result.Success(true);
         }
@@ -207,21 +214,23 @@ public class ProviderService : IProviderService
         }
     }
 
-    public async Task<Result<bool>> EditByIdAsync(int providerId, EditProviderDto dto, CancellationToken cancellationToken)
+    public async Task<Result<bool>> EditByIdAsync(int providerId, EditProviderDto dto, CancellationToken ct)
     {
         if (providerId <= 0)
             return Result.Failure<bool>(ProviderErrors.Failure("El Id debe ser mayor que cero."));
 
         var dtoValidator = new EditProviderDtoValidator();
-        var dtoValidation = await dtoValidator.ValidateAsync(dto, cancellationToken);
+        var dtoValidation = await dtoValidator.ValidateAsync(dto, ct);
 
         if (!dtoValidation.IsValid)
             return Result.Failure<bool>(ProviderErrors.Failure(dtoValidation.ToString()));
 
         try
         {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
             var provider = await _context.Providers
-                .FirstOrDefaultAsync(p => p.Id == providerId, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Id == providerId, ct);
 
             if (provider == null)
                 return Result.Failure<bool>(ProviderErrors.NotFound(providerId));
@@ -235,7 +244,7 @@ public class ProviderService : IProviderService
 
             try
             {
-                await _personService.UpdateAsync(provider.Person, cancellationToken);
+                await _personService.UpdateAsync(provider.Person, ct);
             }
             catch (ValidationException ex)
             {
@@ -285,7 +294,6 @@ public class ProviderService : IProviderService
         return isDescending
             ? query.OrderByDescending(e => EF.Property<object>(e, property))
             : query.OrderBy(e => EF.Property<object>(e, property));
-
     }
 
     public static IQueryable<Provider> ApplyCustomFilter(IQueryable<Provider> query, QueryRequest request)
@@ -306,8 +314,8 @@ public class ProviderService : IProviderService
                     var val = filter.FilterValue.ToString();
                     query = query.Where(c =>
                         EF.Functions.Like(c.Person.FirstName, $"%{val}%") ||
-                        EF.Functions.Like(c.Person.LastName, $"%{val}%") 
-                        // || EF.Functions.Like(EF.Property<int>(c, "ProviderId").ToString(), $"%{val}%")
+                        EF.Functions.Like(c.Person.LastName, $"%{val}%")
+                    // || EF.Functions.Like(EF.Property<int>(c, "ProviderId").ToString(), $"%{val}%")
                     );
                     break;
 

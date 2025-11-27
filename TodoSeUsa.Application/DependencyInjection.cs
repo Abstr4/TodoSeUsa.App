@@ -21,7 +21,6 @@ public static class DependencyInjection
 {
     public static void AddApplicationServices(this IHostApplicationBuilder builder)
     {
-
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         builder.Services.AddScoped<IBoxService, BoxService>();
@@ -32,6 +31,5 @@ public static class DependencyInjection
         builder.Services.AddScoped<ISaleService, SaleService>();
         builder.Services.AddScoped<IPersonService, PersonService>();
         builder.Services.AddScoped<IProviderService, ProviderService>();
-
     }
 }

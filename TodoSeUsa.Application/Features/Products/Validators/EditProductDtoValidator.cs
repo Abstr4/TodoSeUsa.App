@@ -10,4 +10,3 @@ public class EditProductDtoValidator : AbstractValidator<EditProductDto>
             .MaximumLength(250).WithMessage("La longitud de la ubicación debe ser menor que 250 carácteres.");
     }
 }
-

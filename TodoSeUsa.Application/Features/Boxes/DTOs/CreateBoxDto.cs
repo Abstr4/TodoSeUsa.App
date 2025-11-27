@@ -4,4 +4,3 @@ public record CreateBoxDto
 {
     public string Location { get; set; } = string.Empty;
 }
-

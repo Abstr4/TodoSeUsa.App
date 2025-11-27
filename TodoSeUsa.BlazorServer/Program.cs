@@ -1,6 +1,4 @@
-using CurrieTechnologies.Razor.SweetAlert2;
 using Microsoft.EntityFrameworkCore;
-using Radzen;
 using TodoSeUsa.Application;
 using TodoSeUsa.BlazorServer;
 using TodoSeUsa.BlazorServer.Components;
@@ -36,7 +34,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 
 app.UseAntiforgery();
 

@@ -9,6 +9,7 @@ public static class PersonErrors
     public static Error Failure() => Error.Failure(
     "Persons.Failure",
     "Ocurrió un error inesperado.");
+
     public static Error Failure(string message) => Error.Failure(
     "Persons.Failure",
     message);

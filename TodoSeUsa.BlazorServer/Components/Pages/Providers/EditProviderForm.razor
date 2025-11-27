@@ -1,12 +1,7 @@
-﻿@using System.Text.Json
-@using System.Text.RegularExpressions
-@using TodoSeUsa.Application.Features.Providers.DTOs
+﻿@using TodoSeUsa.Application.Features.Providers.DTOs
 @using TodoSeUsa.Application.Features.Providers.Interfaces
-@using TodoSeUsa.BlazorServer.Helpers
-@using TodoSeUsa.Domain.Enums
-@using TodoSeUsa.Domain.Validators
 
-@inject IProviderService ProviderService;
+@inject IProviderService providerService;
 
 @inject DialogService DialogService;
 @inject SimpleNotifications SimpleNotifications;
@@ -76,10 +71,13 @@
             </RadzenFieldset>
 
             <RadzenFieldset Text="Información de contacto">
+
                 <HeaderTemplate>
                     <RadzenIcon Style="margin-left: 4px" class="filled-icon" Icon="info" IconColor="@Colors.Warning" MouseEnter="@(args => ShowTooltip(args))" />
                 </HeaderTemplate>
+
                 <ChildContent>
+
                     <RadzenRow Gap="1rem">
 
                         <RadzenColumn Size="6" id="emailAddress-column">
@@ -138,21 +136,12 @@
                             </RadzenStack>
                         </RadzenColumn>
                     </RadzenRow>
+
+                    <RadzenStack AlignItems="AlignItems.End" JustifyContent="JustifyContent.End" class="rz-mt-4">
+                        <RadzenButton Icon="reset_settings" Click="@ResetEditToOriginal" Text="Resetear" />
+                    </RadzenStack>
                 </ChildContent>
             </RadzenFieldset>
-            <RadzenRow>
-                <RadzenColumn Size="12" SizeSM="12" id="refresh-button">
-
-                    <RadzenStack Style="height: 100%" Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
-
-                        <RadzenButton Click="@ResetToOriginal">
-
-                            <RadzenIcon Icon="reset_settings"></RadzenIcon>
-
-                        </RadzenButton>
-                    </RadzenStack>
-                </RadzenColumn>
-            </RadzenRow>
         </RadzenStack>
 
 
@@ -181,29 +170,10 @@
         SetEditDtoToOriginal();
     }
 
-    private void ResetToOriginal()
-    {
-        SetEditDtoToOriginal();
-        StateHasChanged();
-    }
-
-    private void SetEditDtoToOriginal()
-    {
-        editProviderDto = new EditProviderDto
-        {
-            FirstName = ProviderDto.FirstName,
-            LastName = ProviderDto.LastName,
-            EmailAddress = ProviderDto.EmailAddress,
-            PhoneNumber = ProviderDto.PhoneNumber,
-            Address = ProviderDto.Address,
-            CommissionPercent = ProviderDto.CommissionPercent
-        };
-    }
-
     async Task OnSubmit(EditProviderDto editProviderDto)
     {
         busy = true;
-        var result = await ProviderService.EditByIdAsync(ProviderDto.Id, editProviderDto, CancellationToken.None);
+        var result = await providerService.EditByIdAsync(ProviderDto.Id, editProviderDto, CancellationToken.None);
         busy = false;
         DialogService.Close(result);
     }
@@ -224,6 +194,25 @@
     {
         editProviderDto.PhoneNumber = value == "" ? null : value;
         StateHasChanged();
+    }
+
+    private void ResetEditToOriginal()
+    {
+        SetEditDtoToOriginal();
+        StateHasChanged();
+    }
+
+    private void SetEditDtoToOriginal()
+    {
+        editProviderDto = new EditProviderDto
+        {
+            FirstName = ProviderDto.FirstName,
+            LastName = ProviderDto.LastName,
+            EmailAddress = ProviderDto.EmailAddress,
+            PhoneNumber = ProviderDto.PhoneNumber,
+            Address = ProviderDto.Address,
+            CommissionPercent = ProviderDto.CommissionPercent
+        };
     }
 
     private bool HasChanges()

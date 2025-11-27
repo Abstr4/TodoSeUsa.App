@@ -1,4 +1,5 @@
 ﻿namespace TodoSeUsa.Application.Features.Consignments;
+
 public sealed class ConsignmentErrors
 {
     public static Error NotFound(int Id) => Error.NotFound(

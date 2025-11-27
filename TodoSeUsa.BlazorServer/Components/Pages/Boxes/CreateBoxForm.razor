@@ -1,9 +1,9 @@
-﻿@using System.Text.Json
-@using TodoSeUsa.Application.Features.Boxes.DTOs
+﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
 
-@inject DialogService DialogService;
 @inject IBoxService BoxService;
+
+@inject DialogService DialogService;
 
 
 <RadzenTemplateForm TItem="CreateBoxDto" Data=@createBoxDto Submit=@OnSubmit >
@@ -13,31 +13,23 @@
                 <RadzenLabel Component="Location">
                     Ubicación Física <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                 </RadzenLabel>
-                <RadzenTextBox Name="Location" @bind-Value=@createBoxDto.Location Style="width: 100%; max-width: 400px;" Change=@OnFieldChanged />
+                <RadzenTextBox Name="Location" @bind-Value=@createBoxDto.Location Style="width: 100%; max-width: 400px;" />
                 <RadzenRequiredValidator Component="Location" Text="La ubicación física es requerida." />
                 <RadzenLengthValidator Min="1" Max="250" Component="Location" Text="La ubicación física debe entre 1 y 250 carácteres."></RadzenLengthValidator>
             </RadzenStack>
         </RadzenFieldset>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@isSaveDisabled />
+            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" />
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
 
 @code {
-    bool isSaveDisabled = true;
-
     private CreateBoxDto createBoxDto = new();
 
     async Task OnSubmit(CreateBoxDto createBoxDto)
     {
         var result = await BoxService.CreateAsync(createBoxDto, CancellationToken.None);
         DialogService.Close(result);
-    }
-
-    private void OnFieldChanged()
-    {
-        isSaveDisabled = createBoxDto.Location == string.Empty;
-        StateHasChanged();
     }
 }

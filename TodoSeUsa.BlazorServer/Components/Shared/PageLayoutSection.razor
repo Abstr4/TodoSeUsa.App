@@ -2,9 +2,12 @@
 
 @inject NavigationManager NavigationManager;
 
+@inject IJSRuntime JS;
+
+
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Style="width: 100%; padding: 0.5rem 0;">
     <div style="flex: 0 0 auto;">
-        <RadzenButton Click="@GoBack" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+        <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
     </div>
 
     <div style="flex: 1; text-align: center;">

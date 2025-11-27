@@ -32,7 +32,7 @@ public static class QueryableExtensions
 
             config.CustomTypeProvider = new DefaultDynamicLinqCustomTypeProvider(
                 config,
-                [ typeof(ProductStatus), typeof(ProductQuality), typeof(Season), typeof(PaymentStatus), typeof(PaymentMethod), typeof(LoanedProductStatus), typeof(LoanNoteStatus), typeof(ReservationStatus) ]
+                [typeof(ProductStatus), typeof(ProductQuality), typeof(Season), typeof(PaymentStatus), typeof(PaymentMethod), typeof(LoanedProductStatus), typeof(LoanNoteStatus), typeof(ReservationStatus)]
             );
 
             query = query.Where(config, filter);
@@ -40,5 +40,4 @@ public static class QueryableExtensions
 
         return query;
     }
-
 }

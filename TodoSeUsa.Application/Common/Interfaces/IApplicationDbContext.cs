@@ -22,5 +22,5 @@ public interface IApplicationDbContext
 
     DbSet<Person> Persons { get; }
 
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    Task<int> SaveChangesAsync(CancellationToken ct);
 }

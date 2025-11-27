@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-using System.Text.RegularExpressions;
-using TodoSeUsa.Application.Features.Providers.DTOs;
+﻿using TodoSeUsa.Application.Features.Providers.DTOs;
 using TodoSeUsa.Domain.Validators;
 
 namespace TodoSeUsa.Application.Features.Providers.Validators;

@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using TodoSeUsa.Domain.Validators;
+﻿using TodoSeUsa.Domain.Validators;
 
 namespace TodoSeUsa.Application.Common.Validators;
 

@@ -18,14 +18,6 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.EmailAddress).HasMaxLength(100);
         builder.Property(p => p.PhoneNumber).HasMaxLength(20);
 
-        builder.HasIndex(p => p.EmailAddress)
-            .IsUnique()
-            .HasFilter("[EmailAddress] IS NOT NULL");
-
-        builder.HasIndex(p => p.PhoneNumber)
-            .IsUnique()
-            .HasFilter("[PhoneNumber] IS NOT NULL");
-
         builder.HasOne(p => p.Client)
             .WithOne(c => c.Person)
             .HasForeignKey<Client>(c => c.PersonId)

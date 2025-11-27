@@ -1,10 +1,9 @@
-﻿@using System.Text.Json
-@using TodoSeUsa.Application.Features.Boxes.DTOs
+﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
-@using TodoSeUsa.BlazorServer.Helpers
 
-@inject Radzen.DialogService DialogService;
 @inject IBoxService BoxService;
+
+@inject DialogService DialogService;
 @inject SimpleNotifications SimpleNotifications;
 
 
@@ -15,55 +14,63 @@
                 <RadzenLabel Component="Location">
                     Ubicación física
                 </RadzenLabel>
-                <RadzenTextBox Name="Location" @bind-Value=@editBoxDto.Location  Change=@OnFieldChanged />
+                <RadzenTextBox Name="Location" @bind-Value=@editBoxDto.Location />
                 <RadzenLengthValidator Min="1" Max="250" Component="Location" Text="La ubicación debe entre 1 y 250 carácteres."></RadzenLengthValidator>
+            </RadzenStack>
+
+            <RadzenStack AlignItems="AlignItems.End" JustifyContent="JustifyContent.End" class="rz-mt-4">
+                <RadzenButton  Icon="reset_settings" Click="@ResetEditToOriginal" Text="Resetear"/>
             </RadzenStack>
         </RadzenFieldset>
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=@isSaveDisabled />
+            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled="!HasChanges()" />
             <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
 
 
-@code {
+@code
+{
+    [Parameter] public BoxDto BoxDto { get; set; } = null!;
 
-    [Parameter] public int BoxId { get; set; }
-
-    private BoxDto originalDto = new();
     private EditBoxDto editBoxDto = new();
-    private bool isSaveDisabled = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        var result = await BoxService.GetByIdAsync(BoxId, CancellationToken.None);
-        if (result.IsSuccess)
+        if (BoxDto is not null)
         {
-            originalDto = result.Value;
-
-            editBoxDto = new EditBoxDto
-            {
-                Location = originalDto.Location
-            };
+            SetEditToOriginal();
         }
         else
         {
             DialogService.Close();
-            SimpleNotifications.Error(result.Error.ToString());
         }
-    }
-
-    private void OnFieldChanged()
-    {
-        isSaveDisabled = string.Equals(editBoxDto.Location, originalDto.Location, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(editBoxDto.Location);
-        StateHasChanged();
     }
 
     async Task OnSubmit(EditBoxDto editBoxDto)
     {
-        var result = await BoxService.EditBoxById(BoxId, editBoxDto, CancellationToken.None);
+        var result = await BoxService.EditBoxById(BoxDto.Id, editBoxDto, CancellationToken.None);
         DialogService.Close(result);
+    }
+
+    private bool HasChanges()
+    {
+        return !string.Equals(editBoxDto.Location, BoxDto.Location, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ResetEditToOriginal()
+    {
+        SetEditToOriginal();
+        StateHasChanged();
+    }
+
+    private void SetEditToOriginal()
+    {
+        editBoxDto = new EditBoxDto
+        {
+            Location = BoxDto.Location
+        };
     }
 }

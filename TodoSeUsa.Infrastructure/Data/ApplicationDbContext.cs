@@ -43,10 +43,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
         UpdateAuditableEntities();
-        return await base.SaveChangesAsync(cancellationToken);
+        return await base.SaveChangesAsync(ct);
     }
 
     private void UpdateAuditableEntities()
