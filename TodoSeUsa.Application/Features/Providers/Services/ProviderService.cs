@@ -1,6 +1,7 @@
 ﻿using System.Linq.Dynamic.Core;
 using TodoSeUsa.Application.Common.Enums;
 using TodoSeUsa.Application.Common.Errors;
+using TodoSeUsa.Application.Common.Helpers;
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Providers.DTOs;
 using TodoSeUsa.Application.Features.Providers.Interfaces;
@@ -36,14 +37,8 @@ public class ProviderService : IProviderService
         {
             query = ApplyCustomFilter(query, request);
         }
-        if (request.Sorts != null && request.Sorts.Count > 0)
-        {
-            query = ApplyCustomSorting(query, request.Sorts);
-        }
-        else
-        {
-            query = query.OrderBy(x => x.Id);
-        }
+
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProviderSorts);
 
         var totalCount = await query.CountAsync(ct);
 

@@ -1,5 +1,6 @@
 ﻿using System.Linq.Dynamic.Core;
 using TodoSeUsa.Application.Common.Enums;
+using TodoSeUsa.Application.Common.Helpers;
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Consignments.DTOs;
 using TodoSeUsa.Application.Features.Consignments.Interfaces;
@@ -31,14 +32,8 @@ public sealed class ConsignmentService : IConsignmentService
         {
             query = ApplyCustomFilter(query, request);
         }
-        if (request.Sorts != null && request.Sorts.Count > 0)
-        {
-            query = ApplyCustomSorting(query, request.Sorts);
-        }
-        else
-        {
-            query = query.OrderBy(x => x.Id);
-        }
+
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ConsignmentSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -79,14 +74,8 @@ public sealed class ConsignmentService : IConsignmentService
         {
             query = ApplyCustomFilter(query, request);
         }
-        if (request.Sorts != null && request.Sorts.Count > 0)
-        {
-            query = ApplyCustomSorting(query, request.Sorts);
-        }
-        else
-        {
-            query = query.OrderBy(x => x.Id);
-        }
+
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ConsignmentSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -253,33 +242,6 @@ public sealed class ConsignmentService : IConsignmentService
             _logger.LogError(ex, "An error occurred while trying to edit the consignment with ID {consignmentId}.", consignmentId);
             return Result.Failure<bool>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar editar la consignación."));
         }
-    }
-
-    public static IQueryable<Consignment> ApplyCustomSorting(IQueryable<Consignment> query, IEnumerable<SortDescriptor>? sorts)
-    {
-        var sort = sorts?.FirstOrDefault();
-        if (sort == null || string.IsNullOrWhiteSpace(sort.Property))
-            return query;
-
-        var property = sort.Property;
-        var isDescending = sort.SortOrder == SortOrder.Descending;
-
-        if (property.Equals("TotalProducts", StringComparison.OrdinalIgnoreCase))
-        {
-            return isDescending
-                ? query.OrderByDescending(b => b.Products.Count)
-                : query.OrderBy(b => b.Products.Count);
-        }
-        if (sort.Property == "ProviderFullName")
-        {
-            return isDescending
-                 ? query.OrderByDescending(c => c.Provider.Person.FirstName).ThenByDescending(c => c.Provider.Person.LastName)
-                 : query.OrderBy(c => c.Provider.Person.FirstName).ThenBy(c => c.Provider.Person.LastName);
-        }
-
-        return isDescending
-            ? query.OrderByDescending(e => EF.Property<object>(e, property))
-            : query.OrderBy(e => EF.Property<object>(e, property));
     }
 
     public static IQueryable<Consignment> ApplyCustomFilter(IQueryable<Consignment> query, QueryRequest request)

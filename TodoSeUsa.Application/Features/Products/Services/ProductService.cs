@@ -1,4 +1,5 @@
 ﻿using TodoSeUsa.Application.Common.Enums;
+using TodoSeUsa.Application.Common.Helpers;
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Products.Interfaces;
@@ -28,22 +29,16 @@ public class ProductService : IProductService
 
         var query = _context.Products
             .Include(p => p.Consignment)
-                .ThenInclude(c => c.Provider)
-                    .ThenInclude(pr => pr.Person)
+                    .ThenInclude(c => c.Provider)
+                        .ThenInclude(pr => pr.Person)
             .Where(p => p.BoxId == boxId);
 
         if (request.Filters != null && request.Filters.Count > 0)
         {
             query = ApplyCustomFilter(query, request);
         }
-        if (request.Sorts != null && request.Sorts.Count > 0)
-        {
-            query = ApplyCustomSorting(query, request.Sorts);
-        }
-        else
-        {
-            query = query.OrderBy(x => x.Id);
-        }
+
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProductSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -98,14 +93,8 @@ public class ProductService : IProductService
         {
             query = ApplyCustomFilter(query, request);
         }
-        if (request.Sorts != null && request.Sorts.Count > 0)
-        {
-            query = ApplyCustomSorting(query, request.Sorts);
-        }
-        else
-        {
-            query = query.OrderBy(x => x.Id);
-        }
+
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProductSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -160,14 +149,8 @@ public class ProductService : IProductService
         {
             query = ApplyCustomFilter(query, request);
         }
-        if (request.Sorts != null && request.Sorts.Count > 0)
-        {
-            query = ApplyCustomSorting(query, request.Sorts);
-        }
-        else
-        {
-            query = query.OrderBy(x => x.Id);
-        }
+
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProductSorts);
 
         var total = await query.CountAsync(ct);
 
@@ -213,18 +196,9 @@ public class ProductService : IProductService
                     .ThenInclude(pr => pr.Person)
             .AsQueryable();
 
-        if (request.Filters != null && request.Filters.Count > 0)
-        {
-            query = ApplyCustomFilter(query, request);
-        }
-        if (request.Sorts != null && request.Sorts.Count > 0)
-        {
-            query = ApplyCustomSorting(query, request.Sorts);
-        }
-        else
-        {
-            query = query.OrderBy(x => x.Id);
-        }
+        query = ApplyCustomFilter(query, request);
+
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProductSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -464,25 +438,26 @@ public class ProductService : IProductService
         return query;
     }
 
-    public static IQueryable<Product> ApplyCustomSorting(IQueryable<Product> query, IEnumerable<SortDescriptor>? sorts)
+    public static IQueryable<Product> ApplyCustomSorting(IQueryable<Product> query, QueryRequest request)
     {
-        var sort = sorts?.FirstOrDefault();
-        if (sort == null || string.IsNullOrWhiteSpace(sort.Property))
-            return query;
+        var sort = request.Sorts?.FirstOrDefault();
 
-        var property = sort.Property;
+        if (sort == null || string.IsNullOrWhiteSpace(sort.Property))
+            return query.OrderBy(p => p.CreatedAt).ThenBy(p => p.Id);
+
         var isDescending = sort.SortOrder == SortOrder.Descending;
 
         if (sort.Property == nameof(ProductDto.ProviderInfo))
         {
             return isDescending
                  ? query.OrderByDescending(p => p.Consignment.Provider.Person.FirstName)
-                            .ThenByDescending(p => p.Consignment.Provider.Person.LastName)
-                 : query.OrderBy(p => p.Consignment.Provider.Person.FirstName).ThenBy(p => p.Consignment.Provider.Person.LastName);
+                        .ThenByDescending(p => p.Consignment.Provider.Person.LastName)
+                 : query.OrderBy(p => p.Consignment.Provider.Person.FirstName)
+                        .ThenBy(p => p.Consignment.Provider.Person.LastName);
         }
 
         return isDescending
-            ? query.OrderByDescending(e => EF.Property<object>(e, property))
-            : query.OrderBy(e => EF.Property<object>(e, property));
+            ? query.OrderByDescending(e => EF.Property<object>(e, sort.Property))
+            : query.OrderBy(e => EF.Property<object>(e, sort.Property));
     }
 }

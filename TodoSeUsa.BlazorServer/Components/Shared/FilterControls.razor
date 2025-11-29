@@ -1,8 +1,11 @@
 ﻿@using TodoSeUsa.BlazorServer.Helpers
 
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1.5rem" Wrap="FlexWrap.Wrap">
+
     <RadzenButton Text="Resetear filtros" Click="@OnClicked" Icon="refresh" />
+
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+
         <RadzenLabel Text="Filtro lógico: " Component="operator" />
         <RadzenDropDown @bind-Value="LogicalFilterValue"
                         TextProperty="Text"
@@ -13,7 +16,8 @@
     </RadzenStack>
 </RadzenStack>
 
-@code{
+@code
+{
     [Parameter] public EventCallback ResetButtonClicked { get; set; }
 
     [Parameter] public LogicalFilterOperator LogicalFilterValue { get; set; }

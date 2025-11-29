@@ -1,9 +1,11 @@
-﻿using System.Linq.Dynamic.Core;
-using TodoSeUsa.Application.Common.Enums;
+﻿using System.Linq;
+using System.Linq.Dynamic.Core;
+using TodoSeUsa.Application.Common.Helpers;
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Boxes.DTOs;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
 using TodoSeUsa.Application.Features.Boxes.Validators;
+using TodoSeUsa.Application.Features.Products;
 
 namespace TodoSeUsa.Application.Features.Boxes.Services;
 public class BoxService : IBoxService
@@ -31,14 +33,7 @@ public class BoxService : IBoxService
             query = query.Where(predicate);
         }
 
-        if (request.Sorts != null && request.Sorts.Count != 0)
-        {
-            query = ApplyCustomSorting(query, request.Sorts);
-        }
-        else
-        {
-            query = query.OrderBy(x => x.Id);
-        }
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.BoxCustomSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -54,7 +49,7 @@ public class BoxService : IBoxService
                 CreatedAt = b.CreatedAt,
                 UpdatedAt = b.UpdatedAt,
             })
-        .ToListAsync(ct);
+            .ToListAsync(ct);
 
         return Result.Success(new PagedItems<BoxDto>
         {
@@ -95,6 +90,41 @@ public class BoxService : IBoxService
         {
             _logger.LogError(ex, "An error occurred while trying to retrieve the box with ID {boxId}.", boxId);
             return Result.Failure<BoxDto>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar recuperar la caja."));
+        }
+    }
+
+    public async Task<Result<bool>> AddProductsToBoxAsync(int boxId, List<int> productIds, CancellationToken ct)
+    {
+        try
+        {
+            var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var box = await context.Boxes
+                .FirstOrDefaultAsync(b => b.Id == boxId, ct);
+
+            if (box is null)
+                return Result.Failure<bool>(BoxErrors.NotFound(boxId));
+
+            var products = await context.Products
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync(ct);
+
+            if (products is null || products.Count == 0)
+                return Result.Failure<bool>(ProductErrors.Failure("No se encontraron productos."));
+
+            foreach (var product in products)
+            {
+                // product.BoxId = boxId;
+            }
+
+            await context.SaveChangesAsync(ct);
+
+            return Result.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while trying to add products to the box Id {boxId}.", boxId);
+            return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar agregar productos a la caja con ID {boxId}."));
         }
     }
 
@@ -192,30 +222,4 @@ public class BoxService : IBoxService
         }
     }
 
-    public static IQueryable<Box> ApplyCustomSorting(IQueryable<Box> query, IEnumerable<SortDescriptor>? sorts)
-    {
-        var sort = sorts?.FirstOrDefault();
-        if (sort == null || string.IsNullOrWhiteSpace(sort.Property))
-            return query;
-
-        var property = sort.Property;
-        var isDescending = sort.SortOrder == SortOrder.Descending;
-
-        if (property.Equals("BoxCode", StringComparison.OrdinalIgnoreCase))
-        {
-            return isDescending
-                ? query.OrderByDescending(b => b.Id)
-                : query.OrderBy(b => b.Id);
-        }
-
-        if (property.Equals("TotalProducts", StringComparison.OrdinalIgnoreCase))
-        {
-            return isDescending
-                ? query.OrderByDescending(b => b.Products.Count)
-                : query.OrderBy(b => b.Products.Count);
-        }
-        return isDescending
-            ? query.OrderByDescending(e => EF.Property<object>(e, property))
-            : query.OrderBy(e => EF.Property<object>(e, property));
-    }
 }
