@@ -1,7 +1,7 @@
 ﻿using System.Linq.Dynamic.Core;
-using System.Linq.Dynamic.Core.CustomTypeProviders;
+using System.Linq.Expressions;
 using TodoSeUsa.Application.Common.Enums;
-using TodoSeUsa.Domain.Enums;
+using TodoSeUsa.Application.Common.Services;
 
 namespace TodoSeUsa.Application.Common.Extensions;
 
@@ -9,9 +9,11 @@ public static class QueryableExtensions
 {
     public static IQueryable<T> ApplyCustomSorting<T>(
         IQueryable<T> query,
-        SortDescriptor? sort,
+        List<SortDescriptor>? sorts,
         Dictionary<string, Func<IQueryable<T>, bool, IQueryable<T>>>? customSorts = null)
     {
+        var sort = sorts?.FirstOrDefault();
+
         var isDescending = sort?.SortOrder == SortOrder.Descending;
 
         if (sort == null || string.IsNullOrWhiteSpace(sort.Property))
@@ -26,6 +28,19 @@ public static class QueryableExtensions
         return isDescending
             ? query.OrderByDescending(e => EF.Property<object>(e!, sort.Property))
             : query.OrderBy(e => EF.Property<object>(e!, sort.Property));
+    }
+
+    public static IQueryable<T> ApplyCustomFiltering<T>(
+    IQueryable<T> query,
+    List<FilterDescriptor>? filters,
+    LogicalFilterOperator logicalFilterOperator,
+    Dictionary<string, Func<string, Expression<Func<T, bool>>>>? customFilters = null)
+    {
+        if (filters == null || filters.Count == 0)
+            return query;
+
+        var predicate = PredicateBuilder.BuildPredicate(filters, logicalFilterOperator, customFilters);
+        return query.Where(predicate);
     }
 }
 

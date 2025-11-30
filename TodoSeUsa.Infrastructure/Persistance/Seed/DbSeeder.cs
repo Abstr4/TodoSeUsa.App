@@ -93,14 +93,14 @@ public static class DbSeeder
 
         var products = new List<Product>
         {
-            new() { Price = 100.00m, Category = "Electronics", Description = "Wireless Mouse", Quality = ProductQuality.New, ConsignmentId = consignment.Id, BoxId = box.Id, Size = "S", Quantity = 1 },
-            new() { Price = 250.50m, Category = "Home", Description = "Blender", Quality = ProductQuality.Good, ConsignmentId = consignment.Id, BoxId = box.Id, Quantity = 5, Body = Body.Male, Size = "XS" },
-            new() { Price = 800.00m, Category = "Clothing", Description = "Jacket", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Quantity = 2, Body = Body.Female, Size = "XXXL" },
-            new() { Price = 2000.00m, Category = "CategoryTest1", Description = "DescriptionTest1", Quality = ProductQuality.New, ConsignmentId = consignment.Id, BoxId = box.Id, Quantity = 5, Body = Body.Female, Size = "XXXXXXL" },
-            new() { Price = 4030.75m, Category = "CategoryTest2", Description = "DescriptionTest2", Quality = ProductQuality.Poor, ConsignmentId = consignment.Id, BoxId = box.Id, Quantity = 5, Body = Body.Female, Size = "XXXXXXXXXXXXXXL" },
-            new() { Price = 6050.75m, Category = "CategoryTest3", Description = "DescriptionTest3", Quality = ProductQuality.LikeNew, ConsignmentId = consignment.Id, BoxId = box.Id, Quantity= 1, Size = "L" },
-            new() { Price = 12980.75m, Category = "CategoryTest4", Description = "DescriptionTest4", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Quantity = 1, Body = Body.Male, Size = "XL" },
-            new() { Price = 8130.75m, Category = "CategoryTest5", Description = "DescriptionTest5", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Quantity= 1, Body = Body.Unisex, Size = "XXL" }
+            new() { Price = 100.00m, Category = "Electronics", Description = "Wireless Mouse", Quality = ProductQuality.New, ConsignmentId = consignment.Id, BoxId = box.Id, Size = "S"},
+            new() { Price = 250.50m, Category = "Home", Description = "Blender", Quality = ProductQuality.Good, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Male, Size = "XS" },
+            new() { Price = 800.00m, Category = "Clothing", Description = "Jacket", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "XXXL" },
+            new() { Price = 2000.00m, Category = "CategoryTest1", Description = "DescriptionTest1", Quality = ProductQuality.New, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "XXXXXXL" },
+            new() { Price = 4030.75m, Category = "CategoryTest2", Description = "DescriptionTest2", Quality = ProductQuality.Poor, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "XXXXXXXXXXXXXXL" },
+            new() { Price = 6050.75m, Category = "CategoryTest3", Description = "DescriptionTest3", Quality = ProductQuality.LikeNew, ConsignmentId = consignment.Id, BoxId = box.Id, Size = "L" },
+            new() { Price = 12980.75m, Category = "CategoryTest4", Description = "DescriptionTest4", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Male, Size = "XL" },
+            new() { Price = 8130.75m, Category = "CategoryTest5", Description = "DescriptionTest5", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Unisex, Size = "XXL" }
         };
 
         await context.Products.AddRangeAsync(products);
