@@ -66,6 +66,59 @@ public static class PredicateBuilder
         }
     }
 
+    public static Expression<Func<T, bool>> BuildPredicate<T>(
+    List<FilterDescriptor>? filters,
+    LogicalFilterOperator logicalOperator,
+    Dictionary<string, Func<string, Expression<Func<T, bool>>>>? customFilters = null)
+    {
+        if (filters == null || filters.Count == 0)
+            return x => true;
+
+        var param = Expression.Parameter(typeof(T), "x");
+        Expression? finalExpr = null;
+
+        foreach (var filter in filters)
+        {
+            if (string.IsNullOrWhiteSpace(filter.Property) || filter.FilterValue == null)
+                continue;
+
+            Expression filterExpr;
+
+            // Use custom filter if available
+            if (customFilters != null && customFilters.TryGetValue(filter.Property, out var handler))
+            {
+                var expr = handler(filter.FilterValue.ToString()!);
+                filterExpr = Expression.Invoke(expr, param);
+            }
+            else
+            {
+                // Default filter building
+                var member = Expression.Property(param, filter.Property);
+                var memberType = member.Type;
+                var underlyingType = Nullable.GetUnderlyingType(memberType) ?? memberType;
+                var filterValue = filter.FilterValue;
+
+                if (underlyingType.IsEnum && filterValue is int intValue)
+                    filterValue = Enum.ToObject(underlyingType, intValue);
+                else if (filterValue.GetType() != underlyingType)
+                    filterValue = Convert.ChangeType(filterValue, underlyingType);
+
+                var constant = Expression.Constant(filterValue, memberType);
+                filterExpr = BuildFilterExpression(member, constant, filter.FilterOperator);
+            }
+
+            finalExpr = finalExpr == null
+                ? filterExpr
+                : logicalOperator == LogicalFilterOperator.And
+                    ? Expression.AndAlso(finalExpr, filterExpr)
+                    : Expression.OrElse(finalExpr, filterExpr);
+        }
+
+        return finalExpr == null
+            ? x => true
+            : Expression.Lambda<Func<T, bool>>(finalExpr, param);
+    }
+
     private static Expression BuildFilterExpression(Expression member, Expression constant, FilterOperator op)
     {
         return op switch
