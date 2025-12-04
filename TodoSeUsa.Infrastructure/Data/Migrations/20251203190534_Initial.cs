@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -51,7 +52,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     Location = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -66,17 +67,18 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [PersonSequence]"),
                     FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    EmailAddress = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    EmailAddress = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_People", x => x.Id);
+                    table.CheckConstraint("CK_Person_EmailOrPhone", "[EmailAddress] IS NOT NULL OR [PhoneNumber] IS NOT NULL");
                 });
 
             migrationBuilder.CreateTable(
@@ -87,7 +89,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     PersonId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -110,7 +112,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     PersonId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -135,7 +137,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     ClientId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -160,7 +162,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     ClientId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -179,15 +181,15 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [SaleSequence]"),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    AmountPaid = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Method = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateIssued = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     ClientId = table.Column<int>(type: "int", nullable: true),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -206,11 +208,11 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [ConsignmentSequence]"),
                     DateIssued = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     ProviderId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -229,13 +231,13 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [PaymentSequence]"),
-                    Amount = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Method = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SaleId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -250,24 +252,52 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SaleItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Size = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    Quality = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SaleId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SaleItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SaleItems_Sales_SaleId",
+                        column: x => x.SaleId,
+                        principalTable: "Sales",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [ProductSequence]"),
-                    Price = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Size = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Category = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     Quality = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RefurbishmentCost = table.Column<int>(type: "int", nullable: true),
-                    Season = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Season = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
+                    RefurbishmentCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
                     ConsignmentId = table.Column<int>(type: "int", nullable: false),
                     SaleId = table.Column<int>(type: "int", nullable: true),
                     BoxId = table.Column<int>(type: "int", nullable: true),
                     ReservationId = table.Column<int>(type: "int", nullable: true),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -306,7 +336,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     LoanedProductStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
@@ -358,18 +388,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 column: "SaleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_People_EmailAddress",
-                table: "People",
-                column: "EmailAddress",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_People_PhoneNumber",
-                table: "People",
-                column: "PhoneNumber",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Products_BoxId",
                 table: "Products",
                 column: "BoxId");
@@ -401,6 +419,11 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 column: "ClientId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SaleItems_SaleId",
+                table: "SaleItems",
+                column: "SaleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sales_ClientId",
                 table: "Sales",
                 column: "ClientId");
@@ -414,6 +437,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Payments");
+
+            migrationBuilder.DropTable(
+                name: "SaleItems");
 
             migrationBuilder.DropTable(
                 name: "LoanNotes");

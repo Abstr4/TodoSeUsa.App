@@ -12,8 +12,8 @@ using TodoSeUsa.Infrastructure.Data;
 namespace TodoSeUsa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251105184538_Initial")]
-    partial class Initial
+    [Migration("20251204193509_SaleItemAndPaymentRefundProperties")]
+    partial class SaleItemAndPaymentRefundProperties
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -70,7 +70,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<Guid>("PublicIdentifier")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -101,7 +101,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<Guid>("PublicIdentifier")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -133,7 +133,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
@@ -143,7 +142,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<Guid>("PublicIdentifier")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -186,7 +185,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -226,7 +225,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<Guid>("PublicIdentifier")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -249,8 +248,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseSequence(b.Property<int>("Id"));
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("int");
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -268,10 +268,16 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<Guid>("PublicIdentifier")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("RefundReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("SaleId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -302,7 +308,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EmailAddress")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -317,25 +322,21 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<Guid>("PublicIdentifier")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmailAddress")
-                        .IsUnique();
-
-                    b.HasIndex("PhoneNumber")
-                        .IsUnique();
-
-                    b.ToTable("People", (string)null);
+                    b.ToTable("People", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Person_EmailOrPhone", "[EmailAddress] IS NOT NULL OR [PhoneNumber] IS NOT NULL");
+                        });
 
                     b.UseTpcMappingStrategy();
                 });
@@ -348,6 +349,10 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasDefaultValueSql("NEXT VALUE FOR [ProductSequence]");
 
                     SqlServerPropertyBuilderExtensions.UseSequence(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("BoxId")
                         .HasColumnType("int");
@@ -371,8 +376,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("PublicIdentifier")
                         .HasColumnType("uniqueidentifier");
@@ -381,8 +387,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RefurbishmentCost")
-                        .HasColumnType("int");
+                    b.Property<decimal?>("RefurbishmentCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ReservationId")
                         .HasColumnType("int");
@@ -391,13 +398,19 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Season")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -440,7 +453,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<Guid>("PublicIdentifier")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -484,7 +497,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -505,6 +518,10 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseSequence(b.Property<int>("Id"));
 
+                    b.Property<decimal>("AmountPaid")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int?>("ClientId")
                         .HasColumnType("int");
 
@@ -517,15 +534,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Method")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
@@ -536,7 +545,11 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -546,6 +559,63 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.ToTable("Sales", (string)null);
 
                     b.UseTpcMappingStrategy();
+                });
+
+            modelBuilder.Entity("TodoSeUsa.Domain.Entities.SaleItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Quality")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReturnReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReturnedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("SaleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SaleId");
+
+                    b.ToTable("SaleItems", (string)null);
                 });
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Client", b =>
@@ -628,7 +698,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasForeignKey("ReservationId");
 
                     b.HasOne("TodoSeUsa.Domain.Entities.Sale", "Sale")
-                        .WithMany("Products")
+                        .WithMany()
                         .HasForeignKey("SaleId");
 
                     b.Navigation("Box");
@@ -667,6 +737,13 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasForeignKey("ClientId");
 
                     b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("TodoSeUsa.Domain.Entities.SaleItem", b =>
+                {
+                    b.HasOne("TodoSeUsa.Domain.Entities.Sale", null)
+                        .WithMany("Items")
+                        .HasForeignKey("SaleId");
                 });
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Box", b =>
@@ -710,9 +787,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Sale", b =>
                 {
-                    b.Navigation("Payments");
+                    b.Navigation("Items");
 
-                    b.Navigation("Products");
+                    b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618
         }

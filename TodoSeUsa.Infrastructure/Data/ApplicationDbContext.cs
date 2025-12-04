@@ -3,12 +3,8 @@ using TodoSeUsa.Application.Common.Interfaces;
 
 namespace TodoSeUsa.Infrastructure.Data;
 
-public class ApplicationDbContext : DbContext, IApplicationDbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<Box> Boxes => Set<Box>();
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Consignment> Consignments => Set<Consignment>();
@@ -19,6 +15,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Provider> Providers => Set<Provider>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<Sale> Sales => Set<Sale>();
+    public DbSet<SaleItem> SaleItems => Set<SaleItem>();
     public DbSet<Person> Persons => Set<Person>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -56,7 +53,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             if (entry.State == EntityState.Added)
             {
                 entry.Entity.CreatedAt = DateTime.Now;
-                entry.Entity.UpdatedAt = DateTime.Now;
             }
             else if (entry.State == EntityState.Modified)
             {
