@@ -35,4 +35,12 @@
     <ProjectReference Include="..\TodoSeUsa.Infrastructure\TodoSeUsa.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="E:\Desktop\TodoSeUsa.App\TodoSeUsa.BlazorServer\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="E:\Desktop\TodoSeUsa.App\TodoSeUsa.BlazorServer\.editorconfig" />
+  </ItemGroup>
+
 </Project>
