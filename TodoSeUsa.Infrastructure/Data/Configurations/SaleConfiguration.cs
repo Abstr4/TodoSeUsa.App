@@ -11,21 +11,23 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
 
         builder.HasKey(s => s.Id);
 
-        builder.Property(s => s.Method)
-        .HasConversion(
-            v => v.ToString(),
-            v => Enum.Parse<PaymentMethod>(v)
-        );
+        builder.ToTable("Sales")
+            .HasQueryFilter(s => !s.DeletedAt.HasValue);
 
         builder.Property(s => s.Status)
-    .HasConversion(
-        v => v.ToString(),
-        v => Enum.Parse<PaymentStatus>(v)
-    );
+        .HasConversion(
+            v => v.ToString(),
+            v => Enum.Parse<SaleStatus>(v)
+        );
 
         builder.Property(s => s.Notes).HasMaxLength(250);
 
-        builder.ToTable("Sales")
-            .HasQueryFilter(s => !s.DeletedAt.HasValue);
+        builder.Property(p => p.TotalAmount)
+        .IsRequired()
+        .HasPrecision(18, 2);
+
+        builder.Property(p => p.AmountPaid)
+        .IsRequired()
+        .HasPrecision(18, 2);
     }
 }
