@@ -12,5 +12,5 @@ public class Reservation : BaseAuditableEntity
 
     public Client Client { get; set; } = null!;
 
-    public virtual ICollection<Product> Products { get; set; } = [];
+    public ICollection<Product> Products { get; set; } = [];
 }

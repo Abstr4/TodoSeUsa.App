@@ -8,7 +8,7 @@ public class Client : BaseAuditableEntity, IPerson
 
     public Person Person { get; set; } = null!;
 
-    public virtual ICollection<Sale> Sales { get; set; } = [];
+    public ICollection<Sale> Sales { get; set; } = [];
 
-    public virtual ICollection<LoanNote> LoanNotes { get; set; } = [];
+    public ICollection<LoanNote> LoanNotes { get; set; } = [];
 }

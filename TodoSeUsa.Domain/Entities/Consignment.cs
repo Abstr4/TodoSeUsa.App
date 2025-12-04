@@ -8,7 +8,7 @@ public class Consignment : BaseAuditableEntity
 
     public int ProviderId { get; set; }
 
-    public virtual Provider Provider { get; set; } = null!;
+    public Provider Provider { get; set; } = null!;
 
-    public virtual ICollection<Product> Products { get; set; } = [];
+    public ICollection<Product> Products { get; set; } = [];
 }

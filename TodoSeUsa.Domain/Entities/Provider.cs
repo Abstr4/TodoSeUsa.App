@@ -10,5 +10,5 @@ public class Provider : BaseAuditableEntity, IPerson
 
     public Person Person { get; set; } = null!;
 
-    public virtual ICollection<Consignment> Consignments { get; set; } = [];
+    public ICollection<Consignment> Consignments { get; set; } = [];
 }

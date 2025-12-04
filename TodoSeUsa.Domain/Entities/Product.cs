@@ -16,17 +16,17 @@ public class Product : BaseAuditableEntity
 
     public Body Body { get; set; }
 
-    public Season? Season { get; set; }
+    public string? Season { get; set; }
 
     public decimal? RefurbishmentCost { get; set; }
 
     public int ConsignmentId { get; set; }
 
-    public virtual Consignment Consignment { get; set; } = null!;
+    public Consignment Consignment { get; set; } = null!;
 
     public int? SaleId { get; set; }
 
-    public virtual Sale? Sale { get; set; }
+    public Sale? Sale { get; set; }
 
     public int? BoxId { get; set; }
 

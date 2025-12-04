@@ -12,5 +12,5 @@ public class LoanNote : BaseAuditableEntity
 
     public Client Client { get; set; } = null!;
 
-    public virtual ICollection<LoanedProduct> LoanedProducts { get; set; } = [];
+    public ICollection<LoanedProduct> LoanedProducts { get; set; } = [];
 }
