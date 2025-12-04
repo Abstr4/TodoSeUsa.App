@@ -1,14 +1,20 @@
-﻿namespace TodoSeUsa.Infrastructure.Data.Configurations;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TodoSeUsa.Domain.Entities;
+namespace TodoSeUsa.Infrastructure.Data.Configurations;
 
 public class PersonConfiguration : IEntityTypeConfiguration<Person>
 {
     public void Configure(EntityTypeBuilder<Person> builder)
     {
         builder.UseTpcMappingStrategy();
+
+        builder.ToTable("People", t =>
+        {
+            t.HasCheckConstraint(
+                "CK_Person_EmailOrPhone",
+                "[EmailAddress] IS NOT NULL OR [PhoneNumber] IS NOT NULL");
+        })
+        .HasQueryFilter(b => !b.DeletedAt.HasValue);
 
         builder.HasKey(p => p.Id);
 
@@ -27,13 +33,5 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
             .WithOne(pr => pr.Person)
             .HasForeignKey<Provider>(pr => pr.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.ToTable("People", t =>
-        {
-            t.HasCheckConstraint(
-                "CK_Person_EmailOrPhone",
-                "[EmailAddress] IS NOT NULL OR [PhoneNumber] IS NOT NULL");
-        })
-        .HasQueryFilter(b => !b.DeletedAt.HasValue);
     }
 }

@@ -8,11 +8,11 @@ public class ConsignmentConfiguration : IEntityTypeConfiguration<Consignment>
     {
         builder.UseTpcMappingStrategy();
 
+        builder.ToTable("Consignments")
+            .HasQueryFilter(b => !b.DeletedAt.HasValue);
+
         builder.HasKey(c => c.Id);
 
         builder.Property(c => c.Notes).HasMaxLength(250);
-
-        builder.ToTable("Consignments")
-            .HasQueryFilter(b => !b.DeletedAt.HasValue);
     }
 }

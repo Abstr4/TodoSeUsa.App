@@ -8,9 +8,9 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
     {
         builder.UseTpcMappingStrategy();
 
-        builder.HasKey(c => c.Id);
-
         builder.ToTable("Reservations")
             .HasQueryFilter(b => !b.DeletedAt.HasValue);
+
+        builder.HasKey(c => c.Id);
     }
 }

@@ -9,6 +9,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
     {
         builder.UseTpcMappingStrategy();
 
+        builder.ToTable("Products")
+            .HasQueryFilter(b => !b.DeletedAt.HasValue);
+
         builder.HasKey(c => c.Id);
 
         builder.Property(p => p.RefurbishmentCost)
@@ -39,17 +42,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             v => Enum.Parse<Body>(v)
         );
 
-        builder.Property(v => v.Season)
-            .HasConversion(
-                v => v.HasValue ? v.Value.ToString() : null,
-                v => v != null ? Enum.Parse<Season>(v) : null
-            );
-
         builder.Property(c => c.Category).IsRequired().HasMaxLength(100);
 
         builder.Property(c => c.Description).HasMaxLength(250);
 
-        builder.ToTable("Products")
-            .HasQueryFilter(b => !b.DeletedAt.HasValue);
+        builder.Property(c => c.Season).HasMaxLength(250);
     }
 }
