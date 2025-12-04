@@ -5,5 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="E:\Desktop\TodoSeUsa.App\TodoSeUsa.Domain\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="E:\Desktop\TodoSeUsa.App\TodoSeUsa.Domain\.editorconfig" />
+  </ItemGroup>
 	
 </Project>
