@@ -16,15 +16,14 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 
         RuleFor(x => x.Description)
             .NotEmpty().WithMessage("La descripción es obligatoria.")
-            .MaximumLength(250).WithMessage("La longitud de la descripción debe ser menor que 100 carácteres.");
+            .MaximumLength(250).WithMessage("La longitud de la descripción debe ser menor que 250 carácteres.");
+
+        RuleFor(x => x.Season)
+            .MaximumLength(250).WithMessage("La longitud de la temporada debe ser menor que 250 carácteres.");
 
         RuleFor(x => x.Quality)
             .Must(q => Enum.IsDefined(q))
             .WithMessage("La calidad del producto no es válida.");
-
-        RuleFor(x => x.Season)
-           .IsInEnum().WithMessage("La temporada del producto no es válida.")
-           .When(x => x.Season.HasValue);
 
         RuleFor(x => x.RefurbishmentCost)
             .GreaterThan(0).WithMessage("El costo de arreglo debe ser mayor que cero.")

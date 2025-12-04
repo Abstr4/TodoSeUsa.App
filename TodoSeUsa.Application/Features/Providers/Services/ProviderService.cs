@@ -38,7 +38,7 @@ public class ProviderService : IProviderService
             query = ApplyCustomFilter(query, request);
         }
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProviderSorts);
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProviderSorts);
 
         var totalCount = await query.CountAsync(ct);
 

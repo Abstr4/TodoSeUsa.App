@@ -33,7 +33,7 @@ public class BoxService : IBoxService
             query = query.Where(predicate);
         }
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.BoxCustomSorts);
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.BoxCustomSorts);
 
         var totalCount = await query.CountAsync(ct);
 

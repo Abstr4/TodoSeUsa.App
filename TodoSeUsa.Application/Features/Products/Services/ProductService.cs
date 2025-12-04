@@ -33,12 +33,9 @@ public class ProductService : IProductService
                         .ThenInclude(pr => pr.Person)
             .Where(p => p.BoxId == boxId);
 
-        if (request.Filters != null && request.Filters.Count > 0)
-        {
-            query = ApplyCustomFilter(query, request);
-        }
+        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProductSorts);
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -49,7 +46,6 @@ public class ProductService : IProductService
             {
                 Id = p.Id,
                 Price = p.Price,
-                Quantity = p.Quantity,
                 Category = p.Category,
                 Description = p.Description,
                 Body = p.Body,
@@ -89,12 +85,9 @@ public class ProductService : IProductService
                     .ThenInclude(pr => pr.Person)
             .Where(p => p.ConsignmentId == consignmentId);
 
-        if (request.Filters != null && request.Filters.Count > 0)
-        {
-            query = ApplyCustomFilter(query, request);
-        }
+        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProductSorts);
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -105,7 +98,6 @@ public class ProductService : IProductService
             {
                 Id = p.Id,
                 Price = p.Price,
-                Quantity = p.Quantity,
                 Category = p.Category,
                 Description = p.Description,
                 Body = p.Body,
@@ -145,12 +137,9 @@ public class ProductService : IProductService
                     .ThenInclude(pr => pr.Person)
             .Where(p => p.Consignment.ProviderId == providerId);
 
-        if (request.Filters != null && request.Filters.Count > 0)
-        {
-            query = ApplyCustomFilter(query, request);
-        }
+        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProductSorts);
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
 
         var total = await query.CountAsync(ct);
 
@@ -161,7 +150,6 @@ public class ProductService : IProductService
             {
                 Id = p.Id,
                 Price = p.Price,
-                Quantity = p.Quantity,
                 Category = p.Category,
                 Description = p.Description,
                 Body = p.Body,
@@ -196,9 +184,9 @@ public class ProductService : IProductService
                     .ThenInclude(pr => pr.Person)
             .AsQueryable();
 
-        query = ApplyCustomFilter(query, request);
+        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ProductSorts);
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -209,7 +197,6 @@ public class ProductService : IProductService
             {
                 Id = p.Id,
                 Price = p.Price,
-                Quantity = p.Quantity,
                 Category = p.Category,
                 Description = p.Description,
                 Body = p.Body,
@@ -254,7 +241,6 @@ public class ProductService : IProductService
                 {
                     Id = p.Id,
                     Price = p.Price,
-                    Quantity = p.Quantity,
                     Category = p.Category,
                     Description = p.Description,
                     Body = p.Body,
@@ -297,7 +283,6 @@ public class ProductService : IProductService
         Product product = new()
         {
             Price = productDto.Price,
-            Quantity = productDto.Quantity,
             Category = productDto.Category,
             Description = productDto.Description,
             Body = productDto.Body,
@@ -322,6 +307,37 @@ public class ProductService : IProductService
         {
             _logger.LogError(ex, "An error occurred while trying to create the product.");
             return Result.Failure<bool>(ProductErrors.Failure($"Ocurrió un error inesperado al intentar crear el producto."));
+        }
+    }
+
+    public async Task<Result<bool>> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct)
+    {
+        if (productDtos == null || productDtos.Count == 0)
+            return Result.Failure<bool>(ProductErrors.Failure("No products provided."));
+
+        var validator = new CreateProductDtoValidator();
+
+        var validationErrors = ValidateOriginalDtos(productDtos, validator, ct);
+        if (validationErrors.Count > 0)
+            return Result.Failure<bool>(ProductErrors.Failure(string.Join("; ", validationErrors)));
+
+        var expandedDtos = ExpandByQuantity(productDtos).ToList();
+
+        try
+        {
+            var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var products = expandedDtos.Select(MapToEntity).ToList();
+
+            await context.Products.AddRangeAsync(products, ct);
+            await context.SaveChangesAsync(ct);
+
+            return Result.Success(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while trying to create the products.");
+            return Result.Failure<bool>(ProductErrors.Failure("Ocurrió un error inesperado creando los productos."));
         }
     }
 
@@ -372,7 +388,6 @@ public class ProductService : IProductService
             }
 
             product.Price = editProductDto.Price;
-            product.Quantity = editProductDto.Quantity;
             product.Description = editProductDto.Description;
             product.Category = editProductDto.Category;
             product.Body = editProductDto.Body;
@@ -395,69 +410,39 @@ public class ProductService : IProductService
         }
     }
 
-    public static IQueryable<Product> ApplyCustomFilter(IQueryable<Product> query, QueryRequest request)
+    private static List<string> ValidateOriginalDtos(IEnumerable<CreateProductDto> dtos, CreateProductDtoValidator validator, CancellationToken ct)
     {
-        if (request.Filters == null || request.Filters.Count == 0)
-            return query;
+        var errors = new List<string>();
 
-        var remainingFilters = new List<FilterDescriptor>();
-
-        foreach (var filter in request.Filters)
+        foreach (var dto in dtos)
         {
-            if (string.IsNullOrWhiteSpace(filter.Property) || filter.FilterValue == null)
-                continue;
-
-            switch (filter.Property)
-            {
-                case "ProviderInfo":
-                    var val = filter.FilterValue.ToString();
-                    query = query.Where(c =>
-                        EF.Functions.Like(c.Consignment.Provider.Person.FirstName, $"%{val}%") ||
-                        EF.Functions.Like(c.Consignment.Provider.Person.LastName, $"%{val}%") ||
-                        EF.Functions.Like(c.Consignment.ProviderId.ToString(), $"%{val}%")
-                    );
-                    break;
-
-                default:
-                    remainingFilters.Add(filter);
-                    break;
-            }
+            var result = validator.ValidateAsync(dto, ct).Result;
+            if (!result.IsValid)
+                errors.Add(result.ToString());
         }
 
-        if (remainingFilters.Count > 0)
-        {
-            var subRequest = new QueryRequest
-            {
-                Filters = remainingFilters,
-                LogicalFilterOperator = request.LogicalFilterOperator
-            };
-            var predicate = PredicateBuilder.BuildPredicate<Product>(subRequest);
-            query = query.Where(predicate);
-        }
-
-        return query;
+        return errors;
     }
 
-    public static IQueryable<Product> ApplyCustomSorting(IQueryable<Product> query, QueryRequest request)
+    private static IEnumerable<CreateProductDto> ExpandByQuantity(IEnumerable<CreateProductDto> dtos)
     {
-        var sort = request.Sorts?.FirstOrDefault();
-
-        if (sort == null || string.IsNullOrWhiteSpace(sort.Property))
-            return query.OrderBy(p => p.CreatedAt).ThenBy(p => p.Id);
-
-        var isDescending = sort.SortOrder == SortOrder.Descending;
-
-        if (sort.Property == nameof(ProductDto.ProviderInfo))
-        {
-            return isDescending
-                 ? query.OrderByDescending(p => p.Consignment.Provider.Person.FirstName)
-                        .ThenByDescending(p => p.Consignment.Provider.Person.LastName)
-                 : query.OrderBy(p => p.Consignment.Provider.Person.FirstName)
-                        .ThenBy(p => p.Consignment.Provider.Person.LastName);
-        }
-
-        return isDescending
-            ? query.OrderByDescending(e => EF.Property<object>(e, sort.Property))
-            : query.OrderBy(e => EF.Property<object>(e, sort.Property));
+        foreach (var dto in dtos)
+            for (int i = 0; i < dto.Quantity; i++)
+                yield return dto;
     }
+
+    private Product MapToEntity(CreateProductDto dto) => new()
+    {
+        Price = dto.Price,
+        Category = dto.Category,
+        Description = dto.Description,
+        Body = dto.Body,
+        Size = dto.Size,
+        Quality = dto.Quality,
+        Status = ProductStatus.Available,
+        Season = dto.Season,
+        RefurbishmentCost = dto.RefurbishmentCost,
+        ConsignmentId = dto.ConsignmentId,
+        BoxId = dto.BoxId
+    };
 }

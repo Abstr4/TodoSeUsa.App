@@ -2,13 +2,11 @@
 
 namespace TodoSeUsa.Application.Features.Products.DTOs;
 
-public record ProductDto
+public record ProductSimpleDto
 {
     public int Id { get; init; }
 
     public decimal Price { get; init; }
-
-    public int Quantity { get; init; }
 
     public string Category { get; init; } = string.Empty;
 
@@ -26,21 +24,5 @@ public record ProductDto
 
     public decimal? RefurbishmentCost { get; init; }
 
-    public int ConsignmentId { get; init; }
-
-    public int? SaleId { get; init; }
-
-    public int? BoxId { get; init; }
-
-    public int ProviderId { get; init; }
-
-    public string ProviderFirstName { get; init; } = string.Empty;
-
-    public string ProviderLastName { get; init; } = string.Empty;
-
-    public string ProviderInfo => ProviderFirstName + ' ' + ProviderLastName + " - ID: " + ProviderId.ToString();
-
     public DateTime CreatedAt { get; init; }
-
-    public DateTime? UpdatedAt { get; init; }
 }

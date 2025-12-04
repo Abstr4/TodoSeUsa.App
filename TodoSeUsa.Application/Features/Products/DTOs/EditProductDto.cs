@@ -20,7 +20,7 @@ public record EditProductDto
 
     public ProductQuality Quality { get; set; }
 
-    public Season? Season { get; set; }
+    public string? Season { get; set; }
 
     public decimal? RefurbishmentCost { get; set; }
 

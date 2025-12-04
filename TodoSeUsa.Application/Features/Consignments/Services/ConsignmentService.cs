@@ -33,7 +33,7 @@ public sealed class ConsignmentService : IConsignmentService
             query = ApplyCustomFilter(query, request);
         }
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ConsignmentSorts);
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ConsignmentSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -75,7 +75,7 @@ public sealed class ConsignmentService : IConsignmentService
             query = ApplyCustomFilter(query, request);
         }
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts?.FirstOrDefault(), QuerySortingCases.ConsignmentSorts);
+        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ConsignmentSorts);
 
         var totalCount = await query.CountAsync(ct);
 
@@ -154,8 +154,8 @@ public sealed class ConsignmentService : IConsignmentService
             ProviderId = createConsignmentDto.ProviderId,
             DateIssued = createConsignmentDto.DateIssued,
             Notes = createConsignmentDto.Notes,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
         };
 
         try

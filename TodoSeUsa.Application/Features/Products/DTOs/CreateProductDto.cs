@@ -6,8 +6,6 @@ public record CreateProductDto
 {
     public decimal Price { get; set; }
 
-    public int Quantity { get; set; }
-
     public string Category { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
@@ -18,11 +16,13 @@ public record CreateProductDto
 
     public ProductQuality Quality { get; set; }
 
-    public Season? Season { get; set; }
+    public int ConsignmentId { get; set; }
+
+    public int Quantity { get; set; } = 1;
+
+    public string? Season { get; set; }
 
     public decimal? RefurbishmentCost { get; set; }
-
-    public int ConsignmentId { get; set; }
 
     public int? BoxId { get; set; }
 }

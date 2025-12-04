@@ -22,7 +22,7 @@ public record ProviderDto
 
     public DateTime CreatedAt { get; init; }
 
-    public DateTime UpdatedAt { get; init; }
+    public DateTime? UpdatedAt { get; init; }
 
     public string FullName => $"{FirstName} {LastName}";
 
