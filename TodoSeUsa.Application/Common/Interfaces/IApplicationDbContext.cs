@@ -16,6 +16,8 @@ public interface IApplicationDbContext
 
     DbSet<Sale> Sales { get; }
 
+    DbSet<SaleItem> SaleItems { get; }
+
     DbSet<LoanNote> LoanNotes { get; }
 
     DbSet<Reservation> Reservations { get; }
