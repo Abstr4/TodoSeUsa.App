@@ -97,8 +97,6 @@
 
             <RadzenDataGridColumn Property="CreatedAt" Title="Creado el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" Width="160px"/>
 
-            <RadzenDataGridColumn Property="UpdatedAt" Title="Última actualización" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" Width="180px"/>
-
             <RadzenDataGridColumn Filterable="false" Sortable="false" TItem="ProviderDto" Title="Acciones" MinWidth="200px" Width="160px">
 
                 <Template Context="provider">
@@ -107,7 +105,7 @@
 
                     <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleDeleteProvider(provider))" />
 
-                    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewProvider(provider.Id))" />
+                    <RadzenButton Icon="read_more" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewProvider(provider.Id))" />
 
                 </Template>
             </RadzenDataGridColumn>
@@ -132,7 +130,7 @@
 
         isLoading = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
 
         var result = await providerService.GetAllAsync(request, CancellationToken.None);
         if (result.IsSuccess)
@@ -230,20 +228,6 @@
         }
     }
 
-    // public async Task ShowProviderProducts(int providerId)
-    // {
-    //     await DialogService.OpenAsync<ProviderProducts>($"Productos en la proveedor ID: {providerId}",
-    //            new Dictionary<string, object>() { { "ProviderId", providerId } },
-    //            new DialogOptions()
-    //            {
-    //                Width = "75%",
-    //                Height = "90%",
-    //                CloseDialogOnOverlayClick = true
-    //            }
-    //     );
-
-    // }
-
     private async Task OnSplitButtonClick(RadzenSplitButtonItem item, ProviderDto provider)
     {
         if (provider == null)
@@ -275,10 +259,5 @@
     {
         grid.Reset(true);
         await grid.FirstPage(true);
-    }
-
-    void GoBack()
-    {
-        NavigationManager.NavigateTo("/");
     }
 }

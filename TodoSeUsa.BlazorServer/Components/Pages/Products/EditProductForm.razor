@@ -207,9 +207,9 @@
         StateHasChanged();
     }
 
-    private void OnSeasonChanged(object? value)
+    private void OnNotesChanged(string? value)
     {
-        editProductDto.Season = (Season?)value;
+        editProductDto.Season = value == "" ? null : value;
         StateHasChanged();
     }
 
@@ -230,13 +230,6 @@
     {
         editProductDto.RefurbishmentCost = null;
         OnRefurbishmentCostChanged(null);
-        StateHasChanged();
-    }
-
-    private void ClearSeason()
-    {
-        editProductDto.Season = null;
-        OnSeasonChanged(null);
         StateHasChanged();
     }
 

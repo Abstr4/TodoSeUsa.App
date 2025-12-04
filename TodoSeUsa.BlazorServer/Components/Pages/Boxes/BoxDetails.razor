@@ -42,7 +42,7 @@ else if (originalBox != null)
 
         <RadzenStack Gap="1rem">
 
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" id="action-buttons">
+            <RadzenStack id="top-action-buttons" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
 
                 <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
 
@@ -58,7 +58,7 @@ else if (originalBox != null)
 
             <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important" Text="Detalles de caja" />
 
-            <RadzenTable Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
+            <RadzenTable id="box-details-t" Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
                 <RadzenTableHeader>
                     <RadzenTableHeaderRow>
                         <RadzenTableHeaderCell style="width: 40%; font-weight:bold;" >
@@ -121,21 +121,13 @@ else if (originalBox != null)
                             <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizada el" style="font-weight:bold;" />
                         </RadzenTableCell>
                         <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.UpdatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")" />
                         </RadzenTableCell>
                     </RadzenTableRow>
                 </RadzenTableBody>
             </RadzenTable>
 
-            @if (originalBox.TotalProducts == 0)
-            {
-                <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter">
-                    Ésta caja no contiene productos.
-                </RadzenAlert>
-            }
-            else
-            {
-                <RadzenFieldset AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
+            <RadzenFieldset id="box-products-fs" AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
 
                     <HeaderTemplate>
 
@@ -146,7 +138,7 @@ else if (originalBox != null)
 
                     <ChildContent>
 
-                        <ProductsDataGrid OnLoad="@LoadProductsByBox" ShowBoxId=false></ProductsDataGrid>
+                        <ProductsDataGrid OnLoad="@LoadProductsByBox" IsMainPage=false></ProductsDataGrid>
                     </ChildContent>
 
                     <SummaryTemplate>
@@ -156,7 +148,7 @@ else if (originalBox != null)
                         </RadzenCard>
                     </SummaryTemplate>
                 </RadzenFieldset>
-            }
+
         </RadzenStack>
     </RadzenCard>
 }
@@ -180,6 +172,9 @@ else
 
     private string? errorMessage;
 
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+
     protected override async Task OnInitializedAsync()
     {
         if (isLoading) return;
@@ -200,7 +195,7 @@ else
 
     private async Task<Result<PagedItems<ProductDto>>> LoadProductsByBox(LoadDataArgs args)
     {
-        var request = QueryRequestHelper.ConvertToQueryRequest(args);
+        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
         return await ProductService.GetByBoxIdAsync(request, Id, CancellationToken.None);
     }
 

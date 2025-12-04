@@ -50,8 +50,8 @@
 
             <RadzenStack Gap="1rem">
 
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
-                    JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap" id="control-buttons">
+                <RadzenStack id="top-action-buttons" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
+                    JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
 
                     <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
 
@@ -70,7 +70,7 @@
 
                 <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important">Detalles del proveedor </RadzenText>
 
-                <RadzenTable Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
+                <RadzenTable id="provider-details-t" Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
 
                     <RadzenTableHeader id="property-value-header">
                         <RadzenTableHeaderRow>
@@ -156,16 +156,13 @@
                                 <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizado el" style="font-weight:bold;" />
                             </RadzenTableCell>
                             <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.UpdatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")" />
                             </RadzenTableCell>
                         </RadzenTableRow>
                     </RadzenTableBody>
-
                 </RadzenTable>
 
-                @if (provider.TotalProducts > 0)
-                {
-                    <RadzenFieldset AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
+                <RadzenFieldset id="provider-products-fs" AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
 
                     <HeaderTemplate>
                         <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
@@ -174,7 +171,7 @@
                     </HeaderTemplate>
 
                     <ChildContent>
-                        <ProductsDataGrid OnLoad="LoadProductsByProvider" ShowProviderId=false/>
+                        <ProductsDataGrid OnLoad="LoadProductsByProvider" IsMainPage=false/>
                     </ChildContent>
 
                     <SummaryTemplate>
@@ -184,38 +181,28 @@
                     </SummaryTemplate>
 
                 </RadzenFieldset>
-                }
-                else
-                {
-                    <RadzenAlert Text="Éste proveedor no registra productos." AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter"/>
-                }
-                @if (provider.TotalConsignments > 0)
-                {
-                    <RadzenFieldset AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
 
-                        <HeaderTemplate>
-                            <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
-                                <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Consignaciones del proveedor</b>
-                            </RadzenText>
-                        </HeaderTemplate>
+                <RadzenFieldset id="provider-consignments-fs" AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
 
-                        <ChildContent>
+                    <HeaderTemplate>
+                        <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
+                            <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Consignaciones del proveedor</b>
+                        </RadzenText>
+                    </HeaderTemplate>
 
-                        </ChildContent>
+                    <ChildContent>
+
+                    </ChildContent>
 
 
-                        <SummaryTemplate>
-                            <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
-                                <b>@provider.TotalConsignments Consignaciones</b>
-                            </RadzenCard>
-                        </SummaryTemplate>
+                    <SummaryTemplate>
+                        <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                            <b>@provider.TotalConsignments Consignaciones</b>
+                        </RadzenCard>
+                    </SummaryTemplate>
 
-                    </RadzenFieldset>
-                }
-                else
-                {
-                    <RadzenAlert Text="Éste proveedor no registra consignaciones." AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter" />
-                }
+                </RadzenFieldset>
+
             </RadzenStack>
         </RadzenCard>
     }
@@ -243,6 +230,8 @@
 
     string? errorMessage;
 
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -260,7 +249,7 @@
 
     private async Task<Result<PagedItems<ProductDto>>> LoadProductsByProvider(LoadDataArgs args)
     {
-        var request = QueryRequestHelper.ConvertToQueryRequest(args);
+        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
         return await ProductService.GetByProviderIdAsync(request, Id, CancellationToken.None);
     }
 
@@ -269,7 +258,7 @@
         if (isLoadingConsignments) return;
         isLoadingConsignments = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
 
         var result = await ConsignmentService.GetByProviderIdAsync(request, Id, CancellationToken.None);
 

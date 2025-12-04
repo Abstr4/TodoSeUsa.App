@@ -50,8 +50,6 @@
 
             <RadzenDataGridColumn Property="@nameof(BoxDto.CreatedAt)" Title="Creada el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="120px"/>
 
-            <RadzenDataGridColumn Property="@nameof(BoxDto.UpdatedAt)" Title="Última actualización" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="120px"/>
-
             <RadzenDataGridColumn Sortable="false" TItem="BoxDto" Title="Acciones" MinWidth="120px" Width="120px">
                 <Template Context="box">
                     <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditBox(box))" />
@@ -84,7 +82,7 @@
 
         isLoading = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
 
         var result = await boxService.GetAllAsync(request, CancellationToken.None);
         if (result.IsSuccess)

@@ -33,7 +33,7 @@
                         <RadzenText> <b>@product.Size</b></RadzenText>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Temporada" />
-                        <RadzenText> <b>@EnumTranslate.TranslateSeason(product.Season)</b> </RadzenText>
+                        <RadzenText> <b>@product.Season</b> </RadzenText>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Caja ID" />
                         <RadzenText> <b>@(product.BoxId != null ? $"{product.BoxId}" : "-")</b> </RadzenText>
@@ -66,7 +66,7 @@
                         </RadzenText>
 
                         <RadzenText class="rz-display-flex rz-mb-0" Text="Actualizado el" />
-                        <RadzenText> <b>@(product.UpdatedAt.ToString(format: "yyyy/MM/dd HH:mm"))</b> </RadzenText>
+                        <RadzenText> <b>@(product.UpdatedAt?.ToString(format: "yyyy/MM/dd HH:mm"))</b> </RadzenText>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenStack>
@@ -100,13 +100,15 @@
     private bool isLoading;
     private string errorMessage = string.Empty;
 
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
     private async Task LoadData(LoadDataArgs args)
     {
         if (isLoading) return;
 
         isLoading = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args);
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
         var result = await ProductService.GetByConsignmentIdAsync(request, ConsignmentId, CancellationToken.None);
         if (result.IsSuccess)
         {

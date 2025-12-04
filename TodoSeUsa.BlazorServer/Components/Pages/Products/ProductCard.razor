@@ -2,8 +2,11 @@
 @using TodoSeUsa.Application.Features.Products.DTOs
 
 <RadzenCard Style="min-width: auto: max-width: 300px; max-height: 400px">
+
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem" class="rz-p-4">
+
         <RadzenImage Style="width: 100px; height: 100px; border-radius: 50%;" />
+
         <RadzenStack Gap="0">
             <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Categoría</RadzenText>
             <RadzenText TextStyle="TextStyle.Body1"><b>@(productDto.Category)</b></RadzenText>
@@ -12,11 +15,18 @@
             <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Precio</RadzenText>
             <RadzenText TextStyle="TextStyle.Body1"><b>@productDto.Price</b></RadzenText>
         </RadzenStack>
+
     </RadzenStack>
+
+
     <RadzenCard class="rz-background-color-primary-light rz-shadow-0 rz-bproductDto-radius-0 rz-p-8" style="margin: 1rem calc(-1 * var(--rz-card-padding));">
+
         <RadzenText TextStyle="TextStyle.H6" class="rz-color-on-primary-light"><strong>Delivery Information</strong></RadzenText>
+
         <RadzenRow RowGap="0">
+
             <RadzenColumn SizeSM="4">
+
                 <RadzenText TextStyle="TextStyle.Overline" class="rz-color-on-primary-light rz-display-flex rz-mt-4 rz-mb-0">Estado</RadzenText>
                 <RadzenText TextStyle="TextStyle.Body1" class="rz-color-on-primary-light"><b>@(productDto.Status)</b></RadzenText>
                 <RadzenText TextStyle="TextStyle.Overline" class="rz-color-on-primary-light rz-display-flex rz-mt-4 rz-mb-0">Calidad</RadzenText>
@@ -27,6 +37,7 @@
                     <RadzenText TextStyle="TextStyle.Body1" class="rz-color-on-primary-light"><b>@(productDto.Season)</b></RadzenText>
                 }
             </RadzenColumn>
+
             <RadzenColumn SizeSM="8">
                 @if(productDto.RefurbishmentCost is not null)
                 {
@@ -48,6 +59,7 @@
                 <RadzenText TextStyle="TextStyle.Overline" class="rz-color-on-primary-light rz-display-flex rz-mt-4 rz-mb-0">Creado el</RadzenText>
                 <RadzenText TextStyle="TextStyle.Body1" class="rz-color-on-primary-light"><b>@(productDto.CreatedAt)</b></RadzenText>
             </RadzenColumn>
+
         </RadzenRow>
     </RadzenCard>
 </RadzenCard>

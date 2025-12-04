@@ -49,9 +49,15 @@
 
                 <RadzenText class="rz-mb-2" Style="text-align: center; width: 100%" TextStyle="TextStyle.H4">@product.Category - @product.Description</RadzenText>
 
-                <RadzenImage Path="" Style="width: 250px; min-width:250px; height: 250px; border-radius: 5%; border: 1px solid;" />
+                <RadzenRow>
 
-                <table class="table product-table">
+                    <RadzenColumn Style="display: flex;">
+
+                        <RadzenImage Path="" Style="width: 250px; min-width:250px; height: 250px; border-radius: 5%; border: 1px solid;" />
+                    </RadzenColumn>
+
+                    <RadzenColumn>
+                        <table class="table product-table">
                     <thead>
                         <tr>
                             <th scope="col">Propiedad</th>
@@ -90,6 +96,9 @@
                         </tr>
                     </tbody>
                 </table>
+                    </RadzenColumn>
+                </RadzenRow>
+
 
             </RadzenStack>
 
@@ -111,7 +120,7 @@
                     <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Temporada</RadzenText>
-                        <RadzenText><b>@EnumTranslate.TranslateSeason(product.Season)</b></RadzenText>
+                        <RadzenText><b>@product.Season</b></RadzenText>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Costo del arreglo</RadzenText>
                         <RadzenText><b>@(product.RefurbishmentCost != null ? "$ " + product.RefurbishmentCost.ToString() : '-')</b></RadzenText>
@@ -152,7 +161,7 @@
 
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Actualizado el</RadzenText>
-                        <RadzenText><b>@(product.UpdatedAt.ToString(format: "yyyy/MM/dd HH:mm"))</b></RadzenText>
+                        <RadzenText><b>@(product.UpdatedAt?.ToString(format: "yyyy/MM/dd HH:mm"))</b></RadzenText>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenCard>
@@ -204,7 +213,7 @@
     private async Task HandleEditProduct(ProductDto product)
     {
         var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
-               new Dictionary<string, object>() { { "ProductId", product.Id } },
+               new Dictionary<string, object>() { { "ProductDto", product } },
                new DialogOptions()
                {
                    Width = "50%",

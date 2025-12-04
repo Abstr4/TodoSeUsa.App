@@ -148,39 +148,35 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizada el" style="font-weight:bold;" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.UpdatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")" />
                                 </RadzenTableCell>
                             </RadzenTableRow>
                         </RadzenTableBody>
 
                     </RadzenTable>
 
-                    @if (consignment.TotalProducts > 0)
-                    {
-                        <RadzenFieldset AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
 
-                        <HeaderTemplate>
-                            <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
-                                <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos en la consignación</b>
-                            </RadzenText>
-                        </HeaderTemplate>
+                    <RadzenFieldset AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
 
-                        <ChildContent>
-                            <ProductsDataGrid @ref="productsGrid" OnLoad="@LoadProductsByConsignment" ShowConsignmentId=false />
-                        </ChildContent>
+                    <HeaderTemplate>
+                        <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
+                            <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos en la consignación</b>
+                        </RadzenText>
+                    </HeaderTemplate>
 
-                        <SummaryTemplate>
-                            <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
-                                <b>@consignment.TotalProducts Productos</b>
-                            </RadzenCard>
-                        </SummaryTemplate>
+                    <ChildContent>
+                        <ProductsDataGrid @ref="productsGrid" OnLoad="@LoadProductsByConsignment" IsMainPage=false />
+                    </ChildContent>
 
-                    </RadzenFieldset>
-                    }
-                    else
-                    {
-                        <RadzenAlert Text="Ésta consignación no contiene productos." AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter"/>
-                    }
+                    <SummaryTemplate>
+                        <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                            <b>@consignment.TotalProducts Productos</b>
+                        </RadzenCard>
+                    </SummaryTemplate>
+
+                </RadzenFieldset>
+                    
+
                 </RadzenStack>
         </RadzenCard>
     }
@@ -202,6 +198,8 @@
 
     private string? errorMessage;
 
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
@@ -219,7 +217,7 @@
 
     private async Task<Result<PagedItems<ProductDto>>> LoadProductsByConsignment(LoadDataArgs args)
     {
-        var request = QueryRequestHelper.ConvertToQueryRequest(args);
+        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
         return await ProductService.GetByConsignmentIdAsync(request, Id, CancellationToken.None);
     }
 

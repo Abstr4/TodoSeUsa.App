@@ -7,10 +7,11 @@
 @inject SimpleNotifications SimpleNotifications;
 @inject NavigationManager NavigationManager;
 
-<RadzenDataGrid @ref="productsGrid" IsLoading="@isLoading" TItem="ProductDto" Data="@products" Count="@count" LoadData="@LoadData"
+<RadzenDataGrid @ref="productsGrid" TItem="ProductDto" Data="@products" LoadData="@LoadData"
+                IsLoading="@isLoading" Count="@count" EmptyText="@GridMessage"
                 FilterMode="FilterMode.Simple" AllowSorting="true" AllowFiltering="true" AllowPaging="true"
                 AllowColumnResize=true GridLines=DataGridGridLines.Both PageSize="5"
-                PagerHorizontalAlign="HorizontalAlign.Center" EmptyText="@GridMessage" ClearFilterText="Limpiar"
+                PagerHorizontalAlign="HorizontalAlign.Center"  ClearFilterText="Limpiar"
                 ApplyFilterText="Aplicar" FilterText="Filtro" ContainsText="Contiene" EqualsText="Equivale"
                 AndOperatorText="Y" OrOperatorText="O">
 
@@ -27,23 +28,24 @@
 
     <Columns>
 
-        <RadzenDataGridColumn TItem="ProductDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
-            <Template Context="product">
-                <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, product)) Icon="visibility">
-                    <ChildContent>
-                        <RadzenSplitButtonItem Text="Ver producto" Value="view" Icon="visibility" />
-                        <RadzenSplitButtonItem Text="Editar producto" Value="edit" Icon="edit" />
-                        <RadzenSplitButtonItem Text="Eliminar producto" Value="delete" Icon="delete" Visible="IsMainPage" />
-                    </ChildContent>
-                </RadzenSplitButton>
-            </Template>
-        </RadzenDataGridColumn>
+        @if (IsMainPage)
+        {
+            <RadzenDataGridColumn TItem="ProductDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+                <Template Context="product">
+                    <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, product)) Icon="visibility">
+                        <ChildContent>
+                            <RadzenSplitButtonItem Text="Ver producto" Value="view" Icon="read_more" />
+                            <RadzenSplitButtonItem Text="Editar producto" Value="edit" Icon="edit" />
+                            <RadzenSplitButtonItem Text="Eliminar producto" Value="delete" Icon="delete" Visible="IsMainPage" />
+                        </ChildContent>
+                    </RadzenSplitButton>
+                </Template>
+            </RadzenDataGridColumn>
+        }
 
         <RadzenDataGridColumn Filterable="false" Property="Id" Title="ID" Width="80px" MinWidth="80px" />
 
         <RadzenDataGridColumn Property="Price" Title="Precio" MinWidth="100px" Width="100px" />
-
-        <RadzenDataGridColumn Property="Quantity" Title="Cantidad" MinWidth="80px" Width="100px" />
 
         <RadzenDataGridColumn Property="Category" Title="Categoría" MinWidth="200px" Width="200px" />
 
@@ -99,62 +101,36 @@
             </FilterTemplate>
         </RadzenDataGridColumn>
 
-        <RadzenDataGridColumn Property="Season" Title="Temporada" FilterValue="@selectedSeason" MinWidth="120px" Width="120px">
-            <Template Context="s">
-                @EnumTranslate.TranslateSeason(s.Season)
-            </Template>
-            <FilterTemplate>
-                <RadzenDropDown @bind-Value="@selectedSeason"
-                                Placeholder="Seleccionar..."
-                                Data="@EnumFilterLists.seasons"
-                                TextProperty="Text"
-                                ValueProperty="Value"
-                                AllowClear="true"
-                                Style="width:100%;">
-                </RadzenDropDown>
-            </FilterTemplate>
-        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="Season" Title="Temporada" MinWidth="200px" Width="200px" />
 
         <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo del arreglo" MinWidth="100px" Width="160px" />
 
-        <RadzenDataGridColumn Property="SaleId" Title="Venta ID" MinWidth="80px" Width="100px" Visible="ShowSaleId"/>
-
-        <RadzenDataGridColumn Property="BoxId" Title="Caja ID" MinWidth="80px" Width="100px" Visible="ShowBoxId"/>
-
-        <RadzenDataGridColumn Property="ConsignmentId" Title="Consignación ID" MinWidth="120px" Width="140px" Visible="ShowConsignmentId"/>
-
-        <RadzenDataGridColumn Property="ProviderInfo" Title="Proveedor" MinWidth="200px" Width="240px" />
-
         <RadzenDataGridColumn Property="CreatedAt" Title="Creado el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" Width="140px" />
 
-        <RadzenDataGridColumn Property="UpdatedAt" Title="Actualizado el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="140px" />
+        @if (IsMainPage)
+        {
+            <RadzenDataGridColumn Sortable="false" TItem="ProductDto" Title="Acciones" MinWidth="160px" Width="160px">
+                <Template Context="product">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditProduct(product))" />
 
-        <RadzenDataGridColumn Sortable="false" TItem="ProductDto" Title="Acciones" MinWidth="160px" Width="160px">
-            <Template Context="product">
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditProduct(product))" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleDeleteProduct(product))" />
 
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleDeleteProduct(product))" />
-
-                <RadzenButton Icon="read_more" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewProduct(product.Id))" />
-            </Template>
-        </RadzenDataGridColumn>
+                    <RadzenButton Icon="read_more" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewProduct(product.Id))" />
+                </Template>
+            </RadzenDataGridColumn>
+        }
     </Columns>
 </RadzenDataGrid>
 
 @code
 {
     [Parameter]
-    public Func<LoadDataArgs, Task<Result<PagedItems<ProductDto>>>>? OnLoad { get; set; }
+    public required Func<LoadDataArgs, Task<Result<PagedItems<ProductDto>>>>? OnLoad { get; set; }
+
+    [Parameter]
+    public required bool IsMainPage { get; set; }
 
     private RadzenDataGrid<ProductDto> productsGrid = null!;
-
-    [Parameter] public bool ShowBoxId { get; set; } = true;
-    [Parameter] public bool ShowSaleId { get; set; } = true;
-    [Parameter] public bool ShowConsignmentId { get; set; } = true;
-    [Parameter] public bool ShowProviderId { get; set; } = true;
-
-    private bool IsMainPage => ShowBoxId && ShowSaleId && ShowConsignmentId && ShowProviderId;
-
 
     private IEnumerable<ProductDto>? products;
     private int count;
@@ -162,7 +138,6 @@
     private string GridMessage = "No hay productos para mostrar.";
 
     private ProductQuality? selectedQuality = null;
-    private Season? selectedSeason = null;
     private ProductStatus? selectedStatus = null;
     private Body? selectedBody = null;
 
@@ -203,7 +178,7 @@
 
     private async Task LoadDefault(LoadDataArgs args)
     {
-        var request = QueryRequestHelper.ConvertToQueryRequest(args);
+        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
         var result = await ProductService.GetAllAsync(request, CancellationToken.None);
 
         if (result.IsSuccess)
@@ -360,9 +335,5 @@
         }
     }
 
-    void GoBack()
-    {
-        NavigationManager.NavigateTo("/");
-    }
 }
 
