@@ -1,8 +1,9 @@
 ﻿namespace TodoSeUsa.Domain.Enums;
 
-public enum PaymentStatus
+public enum SaleStatus
 {
-    Unpaid,
+    Pending,
     PartiallyPaid,
-    Paid
+    Paid,
+    Cancelled
 }
