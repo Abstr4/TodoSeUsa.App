@@ -24,4 +24,12 @@
     <ProjectReference Include="..\TodoSeUsa.Domain\TodoSeUsa.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="E:\Desktop\TodoSeUsa.App\TodoSeUsa.Infrastructure\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="E:\Desktop\TodoSeUsa.App\TodoSeUsa.Infrastructure\.editorconfig" />
+  </ItemGroup>
+
 </Project>

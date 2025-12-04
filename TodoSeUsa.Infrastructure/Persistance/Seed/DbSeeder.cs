@@ -13,10 +13,9 @@ public static class DbSeeder
         await SeedProvidersAsync(context);
         await SeedConsignmentsAsync(context);
         await SeedProductsAsync(context);
-        await SeedClientsAsync(context);
         await SeedSalesAsync(context);
-        await SeedPaymentsAsync(context);
-        await SeedReservationsAsync(context);
+        // await SeedClientsAsync(context);
+        // await SeedReservationsAsync(context);
     }
 
     private static async Task SeedBoxesAsync(ApplicationDbContext context)
@@ -107,82 +106,98 @@ public static class DbSeeder
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedClientsAsync(ApplicationDbContext context)
-    {
-        if (await context.Clients.AnyAsync())
-            return;
-
-        var person = await context.People.Skip(1).FirstAsync(); // different person than provider
-
-        var client = new Client
-        {
-            PersonId = person.Id
-        };
-
-        await context.Clients.AddAsync(client);
-        await context.SaveChangesAsync();
-    }
-
     private static async Task SeedSalesAsync(ApplicationDbContext context)
     {
         if (await context.Sales.AnyAsync())
             return;
 
-        var client = await context.Clients.FirstAsync();
-        var products = await context.Products.Take(2).ToListAsync();
-
-        var sale = new Sale
-        {
-            Status = PaymentStatus.Paid,
-            Method = PaymentMethod.Cash,
-            ClientId = client.Id,
-            Notes = "Test sale",
-            DateIssued = DateTime.Now,
-            DueDate = DateTime.Now.AddDays(30),
-            Products = products
-        };
-
-        await context.Sales.AddAsync(sale);
-        await context.SaveChangesAsync();
-    }
-
-    private static async Task SeedPaymentsAsync(ApplicationDbContext context)
+        var sales = new List<Sale>
     {
-        if (await context.Payments.AnyAsync())
-            return;
-
-        var sale = await context.Sales.FirstAsync();
-
-        var payment = new Payment
+        new()
         {
-            Amount = 350m,
-            Date = DateTime.Now,
-            Method = PaymentMethod.Cash,
-            SaleId = sale.Id
-        };
-
-        await context.Payments.AddAsync(payment);
-        await context.SaveChangesAsync();
-    }
-
-    private static async Task SeedReservationsAsync(ApplicationDbContext context)
-    {
-        if (await context.Reservations.AnyAsync())
-            return;
-
-        var client = await context.Clients.FirstAsync();
-        var product = await context.Products.Skip(1).FirstAsync();
-
-        var reservation = new Reservation
-        {
-            ClientId = client.Id,
             DateIssued = DateTime.Now,
-            ExpiresAt = DateTime.Now.AddDays(7),
-            Status = ReservationStatus.Active,
-            Products = [product]
-        };
+            Notes = "Sample sale 1",
+            Items =
+            {
+                new()
+                {
+                    ProductId = 10,
+                    Price = 100,
+                    Size = "M",
+                    Category = "Shirt",
+                    Description = "Blue shirt",
+                    Quality = ProductQuality.Good,
+                    Body = Body.Male,
+                    CreatedAt = DateTime.Now
+                },
+                new()
+                {
+                    ProductId = 11,
+                    Price = 200,
+                    Size = "L",
+                    Category = "Pants",
+                    Description = "Black pants",
+                    Quality = ProductQuality.Fair,
+                    Body = Body.Female,
+                    CreatedAt = DateTime.Now
+                }
+            },
+            Payments =
+            {
+                new()
+                {
+                    Amount = 150,
+                    Method = PaymentMethod.Cash,
+                    Date = DateTime.Now
+                }
+            }
+        },
 
-        await context.Reservations.AddAsync(reservation);
+        new()
+        {
+            DateIssued = DateTime.Now,
+            Notes = "Sample sale 2",
+            Items =
+            {
+                new()
+                {
+                    ProductId = 12,
+                    Price = 500,
+                    Size = "S",
+                    Category = "Dress",
+                    Description = "Red dress",
+                    Quality = ProductQuality.Good,
+                    Body = Body.Unisex,
+                    CreatedAt = DateTime.Now
+                }
+            },
+            Payments =
+            {
+                new()
+                {
+                    Amount = 500,
+                    Method = PaymentMethod.CreditCard,
+                    Date = DateTime.Now
+                }
+            }
+        }
+    };
+
+        foreach (var sale in sales)
+        {
+            sale.TotalAmount = sale.Items.Sum(i => i.Price);
+            sale.AmountPaid = sale.Payments.Sum(p => p.Amount);
+            if (sale.AmountPaid == 0)
+                sale.Status = SaleStatus.Pending;
+            else if (sale.AmountPaid < sale.TotalAmount)
+                sale.Status = SaleStatus.PartiallyPaid;
+            else
+                sale.Status = SaleStatus.Paid;
+
+        }
+
+        await context.Sales.AddRangeAsync(sales);
         await context.SaveChangesAsync();
     }
+
 }
