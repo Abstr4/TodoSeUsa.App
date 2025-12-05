@@ -10,11 +10,15 @@ public class Product : BaseAuditableEntity
 
     public string Description { get; set; } = string.Empty;
 
+    public string ProductCode { get; set; } = string.Empty;
+
     public ProductQuality Quality { get; set; }
 
     public ProductStatus Status { get; set; }
 
     public Body Body { get; set; }
+
+    public string? Brand { get; set; } = string.Empty;
 
     public string? Season { get; set; }
 

@@ -13,10 +13,19 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
             t.HasCheckConstraint(
                 "CK_Person_EmailOrPhone",
                 "[EmailAddress] IS NOT NULL OR [PhoneNumber] IS NOT NULL");
-        })
-        .HasQueryFilter(b => !b.DeletedAt.HasValue);
+        }).HasQueryFilter(b => !b.DeletedAt.HasValue);
 
         builder.HasKey(p => p.Id);
+
+        builder.Property(p => p.FullName)
+            .HasComputedColumnSql("[FirstName] + ' ' + [LastName]", stored: false);
+
+        builder.Property(p => p.ContactInfo)
+            .HasComputedColumnSql(
+                "CONCAT_WS(' | ', EmailAddress, PhoneNumber, Address)",
+                stored: false
+            );
+
 
         builder.Property(p => p.FirstName).IsRequired().HasMaxLength(100);
         builder.Property(p => p.LastName).IsRequired().HasMaxLength(100);
