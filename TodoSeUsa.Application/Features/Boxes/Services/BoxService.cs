@@ -60,7 +60,7 @@ public class BoxService : IBoxService
 
     public async Task<Result<BoxDto>> GetByIdAsync(int boxId, CancellationToken ct)
     {
-        if (boxId <= 0)
+        if (boxId < 1)
             return Result.Failure<BoxDto>(BoxErrors.Failure("El Id debe ser mayor que cero."));
 
         try
@@ -93,48 +93,64 @@ public class BoxService : IBoxService
         }
     }
 
-    public async Task<Result<bool>> AddProductsToBoxAsync(int boxId, List<int> productIds, CancellationToken ct)
+    public async Task<Result> AddProductsToBoxAsync(int boxId, List<int> productIds, CancellationToken ct)
     {
+        if (boxId < 1)
+        {
+            _logger.LogError("Box ID: '{boxId}' is invalid.", boxId);
+            return Result.Failure<BoxDto>(BoxErrors.Failure("El Id debe ser mayor que cero."));
+        }
+
+        if (productIds.Any(id => id < 1))
+        {
+            _logger.LogError("Product IDs: '{productsIds}' are invalid.", string.Join(", ", productIds));
+            return Result.Failure<BoxDto>(BoxErrors.Failure("Ids de producto inválido."));
+        }
+
         try
         {
             var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var box = await context.Boxes
-                .FirstOrDefaultAsync(b => b.Id == boxId, ct);
+                .SingleOrDefaultAsync(b => b.Id == boxId, ct);
 
             if (box is null)
-                return Result.Failure<bool>(BoxErrors.NotFound(boxId));
+                return Result.Failure(BoxErrors.NotFound(boxId));
 
             var products = await context.Products
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync(ct);
 
             if (products is null || products.Count == 0)
-                return Result.Failure<bool>(ProductErrors.Failure("No se encontraron productos."));
+                return Result.Failure(ProductErrors.Failure("No se encontraron productos."));
 
             foreach (var product in products)
             {
-                // product.BoxId = boxId;
+                product.Box = box;
             }
 
-            await context.SaveChangesAsync(ct);
+            var saved = await context.SaveChangesAsync(ct);
+            if (saved > 0)
+            {
+                return Result.Success();
+            }
 
-            return Result.Success(true);
+            return Result.Failure(BoxErrors.Failure("No se pudieron agregar los productos a la caja."));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to add products to the box Id {boxId}.", boxId);
-            return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar agregar productos a la caja con ID {boxId}."));
+            return Result.Failure(BoxErrors.Failure($"Ocurrió un error inesperado al intentar agregar productos a la caja con ID {boxId}."));
         }
     }
 
-    public async Task<Result<bool>> CreateAsync(CreateBoxDto boxDto, CancellationToken ct)
+    public async Task<Result<int>> CreateAsync(CreateBoxDto boxDto, CancellationToken ct)
     {
         var validator = new CreateBoxDtoValidator();
         var validationResult = await validator.ValidateAsync(boxDto, ct);
 
         if (!validationResult.IsValid)
-            return Result.Failure<bool>(BoxErrors.Failure(validationResult.ToString()));
+            return Result.Failure<int>(BoxErrors.Failure(validationResult.ToString()));
 
         Box box = new()
         {
@@ -145,27 +161,32 @@ public class BoxService : IBoxService
         {
             var _context = await _contextFactory.CreateDbContextAsync(ct);
 
-            await _context.Boxes.AddAsync(box, ct);
-            await _context.SaveChangesAsync(ct);
-            return Result.Success(true);
+            var entity = await _context.Boxes.AddAsync(box, ct);
+            var saved = await _context.SaveChangesAsync(ct);
+
+            if (saved > 0)
+            {
+                return Result.Success(entity.Entity.Id);
+            }
+            return Result.Failure<int>(BoxErrors.Failure("No se pudo crear la caja."));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to create the box.");
-            return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar crear la caja."));
+            return Result.Failure<int>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar crear la caja."));
         }
     }
 
-    public async Task<Result<bool>> EditBoxById(int boxId, EditBoxDto editBoxDto, CancellationToken ct)
+    public async Task<Result> EditBoxById(int boxId, EditBoxDto editBoxDto, CancellationToken ct)
     {
         if (boxId <= 0)
-            return Result.Failure<bool>(BoxErrors.Failure("El Id debe ser mayor que cero."));
+            return Result.Failure(BoxErrors.Failure("El Id debe ser mayor que cero."));
 
         var validator = new EditBoxDtoValidator();
         var validationResult = await validator.ValidateAsync(editBoxDto, ct);
 
         if (!validationResult.IsValid)
-            return Result.Failure<bool>(BoxErrors.Failure(validationResult.ToString()));
+            return Result.Failure(BoxErrors.Failure(validationResult.ToString()));
 
         try
         {
@@ -175,26 +196,26 @@ public class BoxService : IBoxService
 
             if (box == null)
             {
-                return Result.Failure<bool>(BoxErrors.NotFound(boxId));
+                return Result.Failure(BoxErrors.NotFound(boxId));
             }
             if (!string.IsNullOrWhiteSpace(editBoxDto.Location))
             {
                 box.Location = editBoxDto.Location;
             }
             await _context.SaveChangesAsync(ct);
-            return Result.Success(true);
+            return Result.Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to edit the box with ID {boxId}.", boxId);
-            return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar editar la caja."));
+            return Result.Failure(BoxErrors.Failure($"Ocurrió un error inesperado al intentar editar la caja."));
         }
     }
 
-    public async Task<Result<bool>> DeleteBoxById(int boxId, CancellationToken ct)
+    public async Task<Result> DeleteBoxById(int boxId, CancellationToken ct)
     {
         if (boxId <= 0)
-            return Result.Failure<bool>(BoxErrors.Failure("El Id debe ser mayor que cero."));
+            return Result.Failure(BoxErrors.Failure("El Id debe ser mayor que cero."));
 
         try
         {
@@ -204,22 +225,21 @@ public class BoxService : IBoxService
                 .FirstOrDefaultAsync(b => b.Id == boxId, ct);
 
             if (box is null)
-                return Result.Failure<bool>(BoxErrors.NotFound(boxId));
+                return Result.Failure(BoxErrors.NotFound(boxId));
 
             if (box.Products.Count > 0)
             {
-                return Result.Failure<bool>(BoxErrors.Failure("No se puede borrar una caja que contiene productos."));
+                return Result.Failure(BoxErrors.Failure("No se puede borrar una caja que contiene productos."));
             }
 
             _context.Boxes.Remove(box);
             await _context.SaveChangesAsync(ct);
-            return Result.Success(true);
+            return Result.Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to delete the box with ID {boxId}", boxId);
-            return Result.Failure<bool>(BoxErrors.Failure($"Ocurrió un error inesperado al intentar borrar la caja."));
+            return Result.Failure(BoxErrors.Failure($"Ocurrió un error inesperado al intentar borrar la caja."));
         }
     }
-
 }

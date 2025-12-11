@@ -8,11 +8,11 @@ public interface IBoxService
 
     Task<Result<BoxDto>> GetByIdAsync(int boxId, CancellationToken ct);
 
-    Task<Result<bool>> AddProductsToBoxAsync(int boxId, List<int> productIds, CancellationToken ct);
+    Task<Result> AddProductsToBoxAsync(int boxId, List<int> productIds, CancellationToken ct);
 
-    Task<Result<bool>> CreateAsync(CreateBoxDto createBoxDto, CancellationToken ct);
+    Task<Result<int>> CreateAsync(CreateBoxDto createBoxDto, CancellationToken ct);
 
-    Task<Result<bool>> EditBoxById(int boxId, EditBoxDto editBoxDto, CancellationToken ct);
+    Task<Result> EditBoxById(int boxId, EditBoxDto editBoxDto, CancellationToken ct);
 
-    Task<Result<bool>> DeleteBoxById(int boxId, CancellationToken ct);
+    Task<Result> DeleteBoxById(int boxId, CancellationToken ct);
 }

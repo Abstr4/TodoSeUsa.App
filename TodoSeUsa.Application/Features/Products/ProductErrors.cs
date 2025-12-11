@@ -6,6 +6,10 @@ public static class ProductErrors
     "Products.NotFound",
     $"El producto con el Id = '{Id}' no se encontró.");
 
+    public static Error NotFound(string Code) => Error.NotFound(
+    "Products.NotFound",
+    $"El producto con código = '{Code}' no se encontró.");
+
     public static Error Failure() => Error.Failure(
     "Products.Failure",
     "Ocurrió un error inesperado.");

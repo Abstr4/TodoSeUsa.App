@@ -14,6 +14,8 @@ public interface IProductService
 
     Task<Result<ProductDto>> GetByIdAsync(int productId, CancellationToken ct);
 
+    Task<Result<ProductDto>> GetByCodeAsync(string productCode, CancellationToken ct);
+
     Task<Result<bool>> CreateAsync(CreateProductDto productDto, CancellationToken ct);
 
     Task<Result<bool>> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct);

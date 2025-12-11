@@ -2,7 +2,7 @@
 
 namespace TodoSeUsa.Application.Features.Payments.DTOs;
 
-public class CreatePaymentDto
+public record CreatePaymentDto
 {
     public decimal Amount { get; set; }
 

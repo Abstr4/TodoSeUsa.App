@@ -1,6 +1,5 @@
-﻿using TodoSeUsa.Application.Common.Enums;
+﻿using System.Text.RegularExpressions;
 using TodoSeUsa.Application.Common.Helpers;
-using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Products.Interfaces;
 using TodoSeUsa.Application.Features.Products.Validators;
@@ -8,7 +7,7 @@ using TodoSeUsa.Domain.Enums;
 
 namespace TodoSeUsa.Application.Features.Products.Services;
 
-public class ProductService : IProductService
+public partial class ProductService : IProductService
 {
     private readonly ILogger<ProductService> _logger;
     private readonly IApplicationDbContextFactory _contextFactory;
@@ -25,51 +24,64 @@ public class ProductService : IProductService
     int boxId,
     CancellationToken ct)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
-
-        var query = _context.Products
-            .Include(p => p.Consignment)
-                    .ThenInclude(c => c.Provider)
-                        .ThenInclude(pr => pr.Person)
-            .Where(p => p.BoxId == boxId);
-
-        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
-
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
-
-        var totalCount = await query.CountAsync(ct);
-
-        query = query.Skip(request.Skip).Take(request.Take);
-
-        var items = await query
-            .Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Price = p.Price,
-                Category = p.Category,
-                Description = p.Description,
-                Body = p.Body,
-                Size = p.Size,
-                Quality = p.Quality,
-                Status = p.Status,
-                RefurbishmentCost = p.RefurbishmentCost,
-                Season = p.Season,
-                ConsignmentId = p.ConsignmentId,
-                SaleId = p.SaleId,
-                BoxId = boxId,
-                ProviderId = p.Consignment.ProviderId,
-                ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                ProviderLastName = p.Consignment.Provider.Person.LastName,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
-            })
-        .ToListAsync(ct);
-
-        return Result.Success(new PagedItems<ProductDto>
+        if (boxId < 1)
         {
-            Items = items,
-            Count = totalCount
-        });
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("El Id de la caja debe ser mayor que cero."));
+        }
+        try
+        {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var query = _context.Products
+                .Include(p => p.Consignment)
+                        .ThenInclude(c => c.Provider)
+                            .ThenInclude(pr => pr.Person)
+                .Where(p => p.BoxId == boxId);
+
+            query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
+
+            query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
+
+            var totalCount = await query.CountAsync(ct);
+
+            query = query.Skip(request.Skip).Take(request.Take);
+
+            var items = await query
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Price = p.Price,
+                    Category = p.Category,
+                    Description = p.Description,
+                    Body = p.Body,
+                    Size = p.Size,
+                    Quality = p.Quality,
+                    Status = p.Status,
+                    RefurbishmentCost = p.RefurbishmentCost,
+                    Season = p.Season,
+                    ConsignmentId = p.ConsignmentId,
+                    SaleId = p.SaleId,
+                    BoxId = boxId,
+                    ProviderId = p.Consignment.ProviderId,
+                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
+                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
+            .ToListAsync(ct);
+
+            return Result.Success(new PagedItems<ProductDto>
+            {
+                Items = items,
+                Count = totalCount
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving products for box ID {boxId}.", boxId);
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos de la caja."));
+        }
+
     }
 
     public async Task<Result<PagedItems<ProductDto>>> GetByConsignmentIdAsync(
@@ -77,51 +89,63 @@ public class ProductService : IProductService
     int consignmentId,
     CancellationToken ct)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
-
-        var query = _context.Products
-            .Include(p => p.Consignment)
-                .ThenInclude(c => c.Provider)
-                    .ThenInclude(pr => pr.Person)
-            .Where(p => p.ConsignmentId == consignmentId);
-
-        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
-
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
-
-        var totalCount = await query.CountAsync(ct);
-
-        query = query.Skip(request.Skip).Take(request.Take);
-
-        var items = await query
-            .Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Price = p.Price,
-                Category = p.Category,
-                Description = p.Description,
-                Body = p.Body,
-                Size = p.Size,
-                Quality = p.Quality,
-                Status = p.Status,
-                RefurbishmentCost = p.RefurbishmentCost,
-                Season = p.Season,
-                ConsignmentId = p.ConsignmentId,
-                SaleId = p.SaleId,
-                BoxId = p.BoxId,
-                ProviderId = p.Consignment.ProviderId,
-                ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                ProviderLastName = p.Consignment.Provider.Person.LastName,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
-            })
-        .ToListAsync(ct);
-
-        return Result.Success(new PagedItems<ProductDto>
+        if (consignmentId < 1)
         {
-            Items = items,
-            Count = totalCount
-        });
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("El Id de la consignación debe ser mayor que cero."));
+        }
+        try
+        {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var query = _context.Products
+                .Include(p => p.Consignment)
+                    .ThenInclude(c => c.Provider)
+                        .ThenInclude(pr => pr.Person)
+                .Where(p => p.ConsignmentId == consignmentId);
+
+            query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
+
+            query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
+
+            var totalCount = await query.CountAsync(ct);
+
+            query = query.Skip(request.Skip).Take(request.Take);
+
+            var items = await query
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Price = p.Price,
+                    Category = p.Category,
+                    Description = p.Description,
+                    Body = p.Body,
+                    Size = p.Size,
+                    Quality = p.Quality,
+                    Status = p.Status,
+                    RefurbishmentCost = p.RefurbishmentCost,
+                    Season = p.Season,
+                    ConsignmentId = p.ConsignmentId,
+                    SaleId = p.SaleId,
+                    BoxId = p.BoxId,
+                    ProviderId = p.Consignment.ProviderId,
+                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
+                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
+            .ToListAsync(ct);
+
+            return Result.Success(new PagedItems<ProductDto>
+            {
+                Items = items,
+                Count = totalCount
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving products for consignment ID {boxId}.", consignmentId);
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos de la consignación."));
+        }
     }
 
     public async Task<Result<PagedItems<ProductDto>>> GetByProviderIdAsync(
@@ -129,107 +153,126 @@ public class ProductService : IProductService
         int providerId,
         CancellationToken ct)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+        if (providerId < 1)
+        {
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("El Id del proveedor debe ser mayor que cero."));
+        }
+        try
+        {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
 
-        var query = _context.Products
-            .Include(p => p.Consignment)
-                .ThenInclude(c => c.Provider)
-                    .ThenInclude(pr => pr.Person)
-            .Where(p => p.Consignment.ProviderId == providerId);
+            var query = _context.Products
+                .Include(p => p.Consignment)
+                    .ThenInclude(c => c.Provider)
+                        .ThenInclude(pr => pr.Person)
+                .Where(p => p.Consignment.ProviderId == providerId);
 
-        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
+            query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
 
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
+            query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
 
-        var total = await query.CountAsync(ct);
+            var total = await query.CountAsync(ct);
 
-        var items = await query
-            .Skip(request.Skip)
-            .Take(request.Take)
-            .Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Price = p.Price,
-                Category = p.Category,
-                Description = p.Description,
-                Body = p.Body,
-                Size = p.Size,
-                Quality = p.Quality,
-                Status = p.Status,
-                RefurbishmentCost = p.RefurbishmentCost,
-                Season = p.Season,
-                ConsignmentId = p.ConsignmentId,
-                ProviderId = p.Consignment.ProviderId,
-                ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                ProviderLastName = p.Consignment.Provider.Person.LastName,
-                SaleId = p.SaleId,
-                BoxId = p.BoxId,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
-            })
-            .ToListAsync(ct);
+            var items = await query
+                .Skip(request.Skip)
+                .Take(request.Take)
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Price = p.Price,
+                    Category = p.Category,
+                    Description = p.Description,
+                    Body = p.Body,
+                    Size = p.Size,
+                    Quality = p.Quality,
+                    Status = p.Status,
+                    RefurbishmentCost = p.RefurbishmentCost,
+                    Season = p.Season,
+                    ConsignmentId = p.ConsignmentId,
+                    ProviderId = p.Consignment.ProviderId,
+                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
+                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    SaleId = p.SaleId,
+                    BoxId = p.BoxId,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
+                .ToListAsync(ct);
 
-        return Result.Success(new PagedItems<ProductDto> { Items = items, Count = total });
+            return Result.Success(new PagedItems<ProductDto> { Items = items, Count = total });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving products for provider ID {boxId}.", providerId);
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos del proveedor."));
+        }
     }
 
     public async Task<Result<PagedItems<ProductDto>>> GetAllAsync(
     QueryRequest request,
     CancellationToken ct)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
-
-        var query = _context.Products
-            .Include(p => p.Consignment)
-                .ThenInclude(c => c.Provider)
-                    .ThenInclude(pr => pr.Person)
-            .AsQueryable();
-
-        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
-
-        query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
-
-        var totalCount = await query.CountAsync(ct);
-
-        query = query.Skip(request.Skip).Take(request.Take);
-
-        var items = await query
-            .Select(p => new ProductDto
-            {
-                Id = p.Id,
-                Price = p.Price,
-                Category = p.Category,
-                Description = p.Description,
-                Body = p.Body,
-                Size = p.Size,
-                Quality = p.Quality,
-                Status = p.Status,
-                RefurbishmentCost = p.RefurbishmentCost,
-                Season = p.Season,
-                ConsignmentId = p.ConsignmentId,
-                SaleId = p.SaleId,
-                BoxId = p.BoxId,
-                ProviderId = p.Consignment.ProviderId,
-                ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                ProviderLastName = p.Consignment.Provider.Person.LastName,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
-            })
-        .ToListAsync(ct);
-
-        return Result.Success(new PagedItems<ProductDto>
+        try
         {
-            Items = items,
-            Count = totalCount
-        });
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var query = _context.Products
+                .Include(p => p.Consignment)
+                    .ThenInclude(c => c.Provider)
+                        .ThenInclude(pr => pr.Person)
+                .AsQueryable();
+
+            query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
+
+            query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProductSorts);
+
+            var totalCount = await query.CountAsync(ct);
+
+            query = query.Skip(request.Skip).Take(request.Take);
+
+            var items = await query
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Price = p.Price,
+                    Category = p.Category,
+                    Description = p.Description,
+                    Body = p.Body,
+                    Size = p.Size,
+                    Quality = p.Quality,
+                    Status = p.Status,
+                    RefurbishmentCost = p.RefurbishmentCost,
+                    Season = p.Season,
+                    ConsignmentId = p.ConsignmentId,
+                    SaleId = p.SaleId,
+                    BoxId = p.BoxId,
+                    ProviderId = p.Consignment.ProviderId,
+                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
+                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
+            .ToListAsync(ct);
+
+            return Result.Success(new PagedItems<ProductDto>
+            {
+                Items = items,
+                Count = totalCount
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving products.");
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos."));
+        }
     }
 
     public async Task<Result<ProductDto>> GetByIdAsync(int productId, CancellationToken ct)
     {
-        if (productId <= 0)
+        if (productId < 1)
         {
             return Result.Failure<ProductDto>(ProductErrors.Failure("El Id debe ser mayor que cero."));
         }
-
         try
         {
             var _context = await _contextFactory.CreateDbContextAsync(ct);
@@ -240,6 +283,7 @@ public class ProductService : IProductService
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
+                    ProductCode = p.ProductCode,
                     Price = p.Price,
                     Category = p.Category,
                     Description = p.Description,
@@ -269,6 +313,64 @@ public class ProductService : IProductService
         {
             _logger.LogError(ex, "An error occurred while retrieving product ID {productId}.", productId);
             return Result.Failure<ProductDto>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar el producto."));
+        }
+    }
+
+    public async Task<Result<ProductDto>> GetByCodeAsync(string productCode, CancellationToken ct)
+    {
+        productCode = NormalizeProductCode(productCode);
+
+        if (!Regex.IsMatch(productCode, @"^TSU-\d+$"))
+        {
+            return Result.Failure<ProductDto>(
+                ProductErrors.Failure("El código es inválido, debe comenzar con 'TSU-' y continuar con números.")
+            );
+        }
+
+        try
+        {
+            var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var product = await context.Products
+                .AsNoTracking()
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    ProductCode = p.ProductCode,
+                    Price = p.Price,
+                    Category = p.Category,
+                    Description = p.Description,
+                    Body = p.Body,
+                    Size = p.Size,
+                    Quality = p.Quality,
+                    Status = p.Status,
+                    RefurbishmentCost = p.RefurbishmentCost,
+                    Season = p.Season,
+                    ConsignmentId = p.ConsignmentId,
+                    SaleId = p.SaleId,
+                    BoxId = p.BoxId,
+                    ProviderId = p.Consignment.ProviderId,
+                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
+                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
+                .Where(p => p.ProductCode == productCode)
+                .FirstOrDefaultAsync(ct);
+
+            if (product == null)
+            {
+                return Result.Failure<ProductDto>(ProductErrors.NotFound(productCode));
+            }
+
+            return Result.Success(product);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting product by code {ProductCode}", productCode);
+            return Result.Failure<ProductDto>(
+                ProductErrors.Failure("Ocurrió un error inesperado al buscar el producto.")
+            );
         }
     }
 
@@ -422,6 +524,16 @@ public class ProductService : IProductService
         }
 
         return errors;
+    }
+
+    private static string NormalizeProductCode(string code)
+    {
+        var trimmed = code.Trim();
+
+        if (trimmed.StartsWith("TSU-", StringComparison.OrdinalIgnoreCase))
+            return trimmed.ToUpperInvariant();
+
+        return $"TSU-{trimmed}";
     }
 
     private static IEnumerable<CreateProductDto> ExpandByQuantity(IEnumerable<CreateProductDto> dtos)

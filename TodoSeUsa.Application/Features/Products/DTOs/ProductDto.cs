@@ -5,6 +5,7 @@ namespace TodoSeUsa.Application.Features.Products.DTOs;
 public record ProductDto
 {
     public int Id { get; init; }
+    public string ProductCode { get; init; } = string.Empty;
 
     public decimal Price { get; init; }
 
