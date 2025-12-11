@@ -1,8 +1,9 @@
-﻿using TodoSeUsa.Domain.Validators;
+﻿using System.Text.RegularExpressions;
+using TodoSeUsa.Domain.Validators;
 
 namespace TodoSeUsa.BlazorServer.Helpers;
 
-public static class InputValidators
+public static partial class InputValidators
 {
     public static bool IsValidPhoneNumber(string? phoneNumber)
     {
@@ -28,5 +29,10 @@ public static class InputValidators
         if (string.IsNullOrEmpty(input)) return true;
 
         return DomainValidators.ContainsAlphanumeric(input);
+    }
+
+    public static bool IsProductCodeValid(string productCode)
+    {
+        return Regex.IsMatch(productCode, @"^(TSU-\d+|\d+)$");
     }
 }
