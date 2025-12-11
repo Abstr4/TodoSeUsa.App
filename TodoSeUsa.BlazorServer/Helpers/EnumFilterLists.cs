@@ -16,7 +16,7 @@ public static class EnumFilterLists
             }),
     ];
 
-    public static readonly IEnumerable<Option<ProductStatus?>> statuses =
+    public static readonly IEnumerable<Option<ProductStatus?>> productStatuses =
     [
         new Option<ProductStatus?> { Value = null, Text = "Todos" },
         .. Enum.GetValues<ProductStatus>()
@@ -24,7 +24,19 @@ public static class EnumFilterLists
             .Select(s => new Option<ProductStatus?>
             {
                 Value = s,
-                Text = EnumTranslate.TranslateStatus(s)
+                Text = EnumTranslate.TranslateProductStatus(s)
+            }),
+    ];
+
+    public static readonly IEnumerable<Option<SaleStatus?>> saleStatuses =
+[
+    new Option<SaleStatus?> { Value = null, Text = "Todos" },
+        .. Enum.GetValues<SaleStatus>()
+            .Cast<SaleStatus>()
+            .Select(s => new Option<SaleStatus?>
+            {
+                Value = s,
+                Text = EnumTranslate.TranslateSaleStatus(s)
             }),
     ];
 

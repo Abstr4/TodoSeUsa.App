@@ -37,13 +37,32 @@ public static class EnumTranslate
         };
     }
 
-    public static string TranslateStatus(ProductStatus status) => status switch
+    public static string TranslateProductStatus(ProductStatus status) => status switch
     {
         ProductStatus.Available => "Disponible",
         ProductStatus.Sold => "Vendido",
         ProductStatus.Loaned => "Prestado",
         ProductStatus.Reserved => "Reservado",
         ProductStatus.Discontinued => "Descontinuado",
+        _ => status.ToString()
+    };
+
+    public static string TranslateSaleStatus(SaleStatus status) => status switch
+    {
+        SaleStatus.Pending => "Pendiente",
+        SaleStatus.PartiallyPaid => "Parcialmente pagada",
+        SaleStatus.Paid => "Pagada",
+        SaleStatus.Cancelled => "Cancelada",
+        _ => status.ToString()
+    };
+
+    public static string TranslatePaymentMethod(PaymentMethod status) => status switch
+    {
+        PaymentMethod.Cash => "Efectivo",
+        PaymentMethod.DebitCard => "Tarjeta de débito",
+        PaymentMethod.BankTransfer => "Transferencia Bancaria",
+        PaymentMethod.CreditCard => "Tarjeta de crédito",
+        PaymentMethod.Other => "Otro",
         _ => status.ToString()
     };
 }

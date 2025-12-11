@@ -33,4 +33,14 @@ public static class EnumOptionLists
                 Text = EnumTranslate.TranslateSeason(s)
             })
         ];
+
+    public static readonly IEnumerable<Option<PaymentMethod?>> paymentMethods =
+    [.. Enum.GetValues<PaymentMethod>()
+            .Cast<PaymentMethod>()
+            .Select(s => new Option<PaymentMethod?>
+            {
+                Value = s,
+                Text = EnumTranslate.TranslatePaymentMethod(s)
+            })
+    ];
 }
