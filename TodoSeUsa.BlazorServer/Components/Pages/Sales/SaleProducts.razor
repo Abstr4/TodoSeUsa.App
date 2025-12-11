@@ -1,0 +1,128 @@
+﻿@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.Application.Features.Products.Services
+
+@inject IProductService ProductService;
+
+<RadzenDataList TItem="ProductDto"
+                PageSize=@pageSize
+                PageNumbersCount="5"
+                Data=@products
+                Count=@count
+                IsLoading=@isLoading
+                LoadData=@LoadData
+                PagerHorizontalAlign="HorizontalAlign.Right"
+                PagingSummaryFormat="@pagingSummaryFormat"
+                ShowPagingSummary="true" WrapItems="true" AllowPaging="true">
+    <Template Context="product">
+
+        <RadzenCard Style="width:300px;">
+
+            <RadzenText TextStyle="TextStyle.H5" Style="text-align: center !important; margin-bottom: 1rem;" id="header-text">
+                @($"{product.Category} - {product.Description}")
+            </RadzenText>
+
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center">
+                <RadzenRow>
+                    <RadzenImage Style="width: 200px; min-width: 200px; min-height: 200px; height: 200px; border-radius: 3px; border: solid; border-width: 1px" />
+                    <RadzenColumn>
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Cuerpo" />
+                        <RadzenText> <b>@EnumTranslate.TranslateBody(product.Body)</b> </RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Talle" />
+                        <RadzenText> <b>@product.Size</b></RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Temporada" />
+                        <RadzenText> <b>@product.Season</b> </RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0" Text="Caja ID" />
+                        <RadzenText> <b>@(product.BoxId != null ? $"{product.BoxId}" : "-")</b> </RadzenText>
+                    </RadzenColumn>
+                </RadzenRow>
+
+
+                <RadzenRow>
+
+                    <RadzenColumn>
+                        <RadzenText class="rz-display-flex rz-mb-0" Text="Venta ID" />
+                        <RadzenText id="saleid-text">
+                            <b> @(product.SaleId != null ? product.SaleId.ToString() : '-') </b>
+                            @if (product.SaleId != null)
+                            {
+                                <RadzenLink Path=@($"/ventas/{product.SaleId}") style="vertical-align: super">
+                                    <RadzenIcon Icon="info" IconStyle="IconStyle.Info" />
+                                </RadzenLink>
+                            }
+                        </RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mb-0" Text="Creado el" />
+                        <RadzenText> <b>@(product.CreatedAt.ToString(format: "yyyy/MM/dd HH:mm"))</b> </RadzenText>
+                    </RadzenColumn>
+
+                    <RadzenColumn>
+                        <RadzenText class="rz-display-flex rz-mb-0" Text="Costo del arreglo" />
+                        <RadzenText id="refurbishmentCost-text">
+                            <b>@(product.RefurbishmentCost != null ? "$ " + product.RefurbishmentCost.ToString() : '-')</b>
+                        </RadzenText>
+
+                        <RadzenText class="rz-display-flex rz-mb-0" Text="Actualizado el" />
+                        <RadzenText> <b>@(product.UpdatedAt?.ToString(format: "yyyy/MM/dd HH:mm"))</b> </RadzenText>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+
+            <hr style="border: none; background-color: rgba(0,0,0,.2); height: 1px; margin: 1rem 0;" />
+
+            <RadzenRow>
+
+                <RadzenColumn Size="8" class="rz-text-align-start" id="status-column">
+                    <RadzenBadge BadgeStyle=@BadgeStyles.GetBadgeStyleFromProductStatus(product.Status) Text=@product.Status.ToString() />
+                </RadzenColumn>
+
+                <RadzenColumn Size="4" class="rz-text-align-end" id="price-column">
+                    <RadzenBadge BadgeStyle="BadgeStyle.Secondary" Text=@($"$ {product.Price}") />
+                </RadzenColumn>
+
+            </RadzenRow>
+        </RadzenCard>
+    </Template>
+</RadzenDataList>
+
+
+@code {
+
+    [Parameter] public int ConsignmentId { get; set; }
+
+    private IEnumerable<ProductDto>? products;
+    private int pageSize = 3;
+    private int count;
+    private bool isLoading;
+
+    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} records)";
+    private string errorMessage = string.Empty;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+
+        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        var result = await ProductService.GetByConsignmentIdAsync(request, ConsignmentId, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            products = result.Value.Items;
+            count = result.Value.Count;
+        }
+        else
+        {
+            products = [];
+            count = 0;
+            errorMessage = result.Error.Description;
+        }
+
+        isLoading = false;
+    }
+}

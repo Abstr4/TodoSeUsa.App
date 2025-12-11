@@ -1,0 +1,481 @@
+﻿@page "/ventas/registrar"
+
+@using TodoSeUsa.Application.Features.Payments.DTOs
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.Application.Features.Sales.DTOs
+@using TodoSeUsa.Application.Features.Sales.Interfaces
+
+@inject IProductService _productService;
+@inject ISaleService _saleService;
+
+@inject TooltipService _tooltipService;
+@inject SimpleNotifications _simpleNotifications;
+@inject NavigationManager _navigationManager;
+
+<style> 
+    .fieldset-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+
+<RadzenCard Style="max-width: 100%; min-height: 100%">
+    <PageTitleWithBackButton Title="Registrar venta" />
+
+    <RadzenRow>
+        <RadzenColumn SizeSM="4" Size="12" id="add-product-form">
+
+            <RadzenTemplateForm TItem="string" Data="@productCode" Submit="@AddProductToSaleAsync">
+                <RadzenFieldset class="mb-4">
+
+                    <HeaderTemplate>
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Style="text-wrap: wrap;">
+                            <RadzenIcon Icon="apparel"/>
+                            <span>
+                                Agregar producto
+                                <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </span>
+                        </RadzenStack>
+
+                    </HeaderTemplate>
+
+                    <ChildContent>
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                            <RadzenLabel Component="ProductCode" Text="Código del producto" />
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+
+                                <RadzenTextBox Style="flex-grow:1" Placeholder="TSU-01234 ó 01234" Name="ProductCode" @bind-Value=@productCode />
+
+                                <RadzenButton ButtonType="ButtonType.Submit" Icon="add" Text="Agregar" />
+
+                            </RadzenStack>
+                            <RadzenCustomValidator Component="ProductCode"
+                                                    Text="Código inválido, ingrese uno completo como 'TSU-01234' o sólo los números finales '01234'."
+                                                    Validator="@(() => InputValidators.IsProductCodeValid(productCode))" />
+                        </RadzenStack>
+                    </ChildContent>
+                </RadzenFieldset>
+            </RadzenTemplateForm>
+        </RadzenColumn>
+
+        <RadzenColumn SizeSM="4"  Size="12" id="add-payment-form">
+            <RadzenTemplateForm TItem="CreatePaymentUiModel" Data="@paymentUiModel" Submit="@AddPaymentToSale">
+                <div class="@(addedProducts.Count > 0 ? "" : "fieldset-disabled")">
+
+                    <RadzenFieldset class="mb-4">
+
+                        <HeaderTemplate>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Style="text-wrap: wrap;">
+                                <RadzenIcon Icon="payments" />
+                                <span> Agregar pago (opcional) 
+                                    <RadzenIcon Style="margin-left: 4px;" Icon="info" IconColor="@Colors.Info" MouseEnter="@(args => ShowTooltip(args))" />
+                                </span>
+                            </RadzenStack>
+
+                        </HeaderTemplate>
+
+                        <ChildContent>
+
+                            <RadzenRow Gap="1rem">
+                                <RadzenColumn Size=12 id="amount-column">
+                                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                        <RadzenLabel Component="Amount">
+                                            Monto <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                        </RadzenLabel>
+
+                                        <RadzenStack Orientation="Orientation.Horizontal">
+
+                                            <RadzenNumeric Name="Amount" @bind-Value=@paymentUiModel.Amount TValue="decimal" Min="0" />
+                                            <RadzenButton Click="@PayDifference" Icon="add" Text="Monto restante" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium"/>
+                                        </RadzenStack>
+
+                                        <RadzenRequiredValidator Component="Amount" Text="El monto es requerido." />
+                                        <RadzenNumericRangeValidator Component="Amount" Min="1" Text="El monto debe ser mayor a cero." />
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeMD="6" Size="12" id="paymentMethod-column">
+
+                                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                            <RadzenLabel Component="PaymentMethod">
+                                                Método de pago
+                                                <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                            </RadzenLabel>
+
+                                            <RadzenDropDown @bind-Value="@paymentUiModel.Method"
+                                                            Placeholder="Método de pago..."
+                                                            Data="@EnumOptionLists.paymentMethods"
+                                                            TextProperty="Text"
+                                                            ValueProperty="Value"
+                                                            Style="width:100%;"
+                                                            Name="PaymentMethod">
+                                            </RadzenDropDown>
+                                            <RadzenRequiredValidator Component="PaymentMethod" Text="El método de pago es requerido." />
+                                        </RadzenStack>
+                                    </RadzenColumn>
+
+                                <RadzenColumn SizeMD="6" Size="12" id="dateIssued-column">
+
+                                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                        <RadzenLabel Component="Date">
+                                            Fecha de emisión <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                        </RadzenLabel>
+
+                                        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                                                <RadzenDatePicker Max="DateTime.Now" Name="Date" @bind-Value=@paymentUiModel.Date Style="flex-grow: 1;" Placeholder="Fecha de emisión..." />
+                                        </RadzenStack>
+
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenButton ButtonType="ButtonType.Submit" Icon="add" Text="Agregar" />
+
+                            </RadzenRow>
+
+                        </ChildContent>
+
+                    </RadzenFieldset>
+                </div>
+            </RadzenTemplateForm>
+        </RadzenColumn>
+
+        <RadzenColumn SizeSM="4"  Size="12" id="sale-details-form">
+        <RadzenTemplateForm TItem="CreateSaleDto" Data=@createSaleDto Submit=@RegisterSale>
+            <div>
+                <RadzenFieldset class="mb-4">
+
+                    <HeaderTemplate>
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Style="text-wrap: wrap;">
+                            <RadzenIcon Icon="read_more" /><span>Detalles de la venta</span>
+                        </RadzenStack>
+
+                    </HeaderTemplate>
+
+                    <ChildContent>
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+                            <RadzenRow>
+
+                                <RadzenColumn Size="6">
+                                        <RadzenLabel>Total: @totalAmount.ToString("C")</RadzenLabel>
+                                </RadzenColumn>
+
+                                <RadzenColumn Size="6">
+                                    <RadzenLabel>Abonado: @AmountPaid.ToString("C")</RadzenLabel>
+                                </RadzenColumn>
+
+                                <RadzenColumn Size="12">
+                                    <RadzenLabel>Resto a pagar: @((totalAmount - AmountPaid).ToString("C"))</RadzenLabel>
+                                </RadzenColumn>
+
+                                <RadzenColumn Size="12" id="notes-column">
+                                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+                                        <RadzenLabel Component="Notes">
+                                            Notas
+                                            <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                        </RadzenLabel>
+                                        <RadzenTextArea Rows="3" Cols="30" MaxLength="250" Name="Notes" @bind-Value=@createSaleDto.Notes Style="width: 100%;" Change="@OnNotesChanged" Placeholder="Notas..." />
+
+                                        <RadzenCustomValidator Component="Notes"
+                                                                Validator="(() => InputValidators.IsNullOrEmptyOrMatchesAlphanumericPattern(createSaleDto.Notes))"
+                                                                Text="Las notas no pueden ser solo espacios o símbolos." />
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn Size="12" id="dateIssued-column">
+                                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                        <RadzenLabel Component="DateIssued">
+                                            Fecha de emisión <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                        </RadzenLabel>
+
+                                        <RadzenDatePicker Max="DateTime.Now" Name="DateIssued" @bind-Value=@createSaleDto.DateIssued Style="flex-grow: 1;" Placeholder="Fecha de emisión..." />
+
+                                        <RadzenCustomValidator Validator="@(() => createSaleDto.DateIssued == null || createSaleDto.DateIssued < DateTime.Now)" Text="La fecha debe estar en el pasado."></RadzenCustomValidator>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+                            <RadzenTextBox @bind-Value="@saleValidatorGhost" Name="SaleGhost" Style="display:none"></RadzenTextBox>
+
+                            <RadzenCustomValidator Component="SaleGhost" Text="La venta debe contener al menos un producto." Validator=@(() => createSaleDto.ProductCodes.Count > 0) />
+
+                            <RadzenButton Text="Registrar venta" Icon="check_circle" ButtonStyle="ButtonStyle.Success" ButtonType="ButtonType.Submit" />
+                        </RadzenStack>
+
+                    </ChildContent>
+
+                </RadzenFieldset>
+            </div>
+        </RadzenTemplateForm>
+    </RadzenColumn>
+    </RadzenRow>
+
+    <RadzenRow>
+        <RadzenColumn SizeMD="6" Size="12" id="added-products-list">
+            <RadzenFieldset class="mb-4">
+
+                <HeaderTemplate>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+                        <RadzenIcon Icon="apparel"/>
+                        <span>Productos</span>
+                    </RadzenStack>
+                </HeaderTemplate>
+
+                <ChildContent>
+                    @if (addedProducts.Count == 0)
+                    {
+                        <RadzenText Text="Aún no hay productos registrados." />
+                    }
+                    else
+                    {
+                        <RadzenStack Gap="1rem">
+                            @foreach (var p in addedProducts)
+                            {
+                                <RadzenCard Style="padding:0.75rem;">
+
+                                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+
+                                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
+                                            <b>Código: @p.ProductCode</b>
+                                            <span>@p.Category - @p.Description - @p.Body - Talle @p.Size - @p.Quality</span>
+                                            <span>Precio: @p.Price.ToString("C")</span>
+                                        </RadzenStack>
+
+                                        <div class="@(addedPayments.Count == 0 ? "" : "fieldset-disabled")">
+
+                                            <RadzenButton Click="@(() => RemoveProductFromSale(p.ProductCode))" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Medium" Icon="cancel" Style="height: 40px; width: 40px;" />
+                                        </div>
+
+                                    </RadzenStack>
+                                </RadzenCard>
+                            }
+                        </RadzenStack>
+                    }
+                </ChildContent>
+
+            </RadzenFieldset>
+
+        </RadzenColumn>
+
+        <RadzenColumn SizeMD="6" Size="12" id="added-payments-list">
+            <RadzenFieldset class="mb-4">
+
+                <HeaderTemplate>
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+                        <RadzenIcon Icon="payments"/>
+                        <span>Pagos</span>
+                    </RadzenStack>
+                </HeaderTemplate>
+
+                <ChildContent>
+                    @if (addedPayments.Count == 0)
+                    {
+                        <RadzenText Text="Aún no hay pagos registrados." />
+                    }
+                    else
+                    {
+                        <RadzenStack Gap="1rem">
+                            @foreach (var p in addedPayments)
+                            {
+                                <RadzenCard Style="padding:0.75rem;">
+
+                                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+
+                                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
+                                            <b>Monto: @p.Amount</b>
+                                            <span>Método: @EnumTranslate.TranslatePaymentMethod(p.Method)</span>
+                                            <span>Notas: @(p.Notes ?? "N/A")</span>
+                                            <span>Fecha de emisión: @(p.Date?.ToString("yyyy/MM/dd HH:mm") ?? "N/A")</span>
+                                        </RadzenStack>
+
+                                        <RadzenButton Click="@(() => RemovePaymentFromSale(p.Id))" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Medium" Icon="cancel" Style="height: 40px; width: 40px;" />
+
+                                    </RadzenStack>
+                                </RadzenCard>
+                            }
+                        </RadzenStack>
+                    }
+                </ChildContent>
+            </RadzenFieldset>
+        </RadzenColumn>
+    </RadzenRow>
+
+</RadzenCard>
+
+
+@code
+{
+    public record CreatePaymentUiModel
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+
+        public decimal Amount { get; set; }
+
+        public PaymentMethod Method { get; set; }
+
+        public DateTime? Date { get; set; }
+
+        public string? Notes { get; set; }
+    }
+
+    CreateSaleDto createSaleDto = new();
+
+    decimal totalAmount;
+    decimal AmountPaid;
+
+    List<ProductDto> addedProducts = new();
+    string productCode = "";
+
+    List<CreatePaymentUiModel> addedPayments = new();
+    CreatePaymentUiModel paymentUiModel = new();
+
+    string saleValidatorGhost = "Trickery.";
+
+    bool CanAddPayments => addedProducts.Count == 0;
+
+    bool CanRemoveProducts => addedPayments.Count == 0;
+
+    async Task AddProductToSaleAsync()
+    {
+        var result = await _productService.GetByCodeAsync(productCode, CancellationToken.None);
+
+        if (result.IsSuccess)
+        {
+            var product = result.Value;
+
+            if (product.SaleId != null || product.Status == ProductStatus.Sold)
+            {
+                _simpleNotifications.Warning($"El producto con el código '{product.ProductCode}' ya fue vendido.");
+                return;
+            }
+
+            if (addedProducts.Any(p => p.ProductCode == product.ProductCode))
+            {
+                _simpleNotifications.Info($"El producto con el código '{product.ProductCode}' ya está en la lista.");
+                return;
+            }
+            totalAmount += product.Price;
+            createSaleDto.ProductCodes.Add(product.ProductCode);
+            addedProducts.Add(product);
+        }
+        else
+        {
+            _simpleNotifications.Warning($"No se encontró un producto con el código '{productCode}'.");
+        }
+        productCode = "";
+    }
+
+    void RemoveProductFromSale(string productCode)
+    {
+        var product = addedProducts.SingleOrDefault(p => p.ProductCode == productCode);
+        if (product is null)
+        {
+            _simpleNotifications.Warning($"El producto con el código '{productCode}' no está en la lista.");
+            return;
+        }
+        totalAmount -= product.Price;
+        addedProducts.Remove(product);
+        createSaleDto.ProductCodes.Remove(productCode);
+    }
+
+    void AddPaymentToSale()
+    {
+        if (paymentUiModel.Amount < 0)
+        {
+            _simpleNotifications.Warning($"Monto de pago inválido.");
+            return;
+        }
+        if (paymentUiModel.Amount + AmountPaid > totalAmount)
+        {
+            _simpleNotifications.Warning($"El monto del pago no puede exceder el total a pagar.");
+            return;
+        }
+
+        AmountPaid += paymentUiModel.Amount;
+        addedPayments.Add(paymentUiModel);
+
+        CreatePaymentDto createPaymentDto = new()
+        {
+            Amount = paymentUiModel.Amount,
+            Method = paymentUiModel.Method,
+            Date = paymentUiModel.Date,
+            Notes = paymentUiModel.Notes
+        };
+
+        createSaleDto.Payments.Add(createPaymentDto);
+
+        paymentUiModel = new();
+    }
+
+    void RemovePaymentFromSale(Guid paymentGuid)
+    {
+        var payment = addedPayments.SingleOrDefault(p => p.Id == paymentGuid);
+        if (payment is null)
+        {
+            _simpleNotifications.Warning($"El pago no está en la lista.");
+            return;
+        }
+
+        var dto = createSaleDto.Payments.FirstOrDefault(p => 
+            p.Amount == payment.Amount && 
+            p.Method == payment.Method && 
+            p.Date == payment.Date
+        );
+        if (dto is null)
+        {
+            _simpleNotifications.Warning($"El pago no está en la lista.");
+            return;
+        }
+
+        AmountPaid -= payment.Amount;
+        addedPayments.Remove(payment);
+        createSaleDto.Payments.Remove(dto);
+    }
+
+    void PayDifference()
+    {
+        if (totalAmount - AmountPaid < 0)
+        {
+            _simpleNotifications.Warning($"Datos inválidos.");
+            return;
+        }
+        paymentUiModel.Amount = totalAmount - AmountPaid;
+        StateHasChanged();
+    }
+
+    void OnNotesChanged(string? value)
+    {
+        createSaleDto.Notes = value == "" ? null : value;
+        StateHasChanged();
+    }
+
+    void ShowTooltip(ElementReference elementReference)
+    {
+        _tooltipService.Open(elementReference, "Es opcional, pero se recomienda al menos uno.");
+    }
+
+    async Task RegisterSale()
+    {
+        var result = await _saleService.CreateAsync(createSaleDto, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            _navigationManager.NavigateTo("/ventas/id");
+        }
+        else
+        {
+            _simpleNotifications.Error($"{result.Error.Description}");
+        }
+    }
+}

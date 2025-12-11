@@ -1,0 +1,425 @@
+﻿@page "/ventas/{Id:int}"
+
+@using TodoSeUsa.Application.Features.Sales.DTOs
+@using TodoSeUsa.Application.Features.Sales.Interfaces
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.BlazorServer.Components.Pages.Products
+
+@inject ISaleService _saleService
+
+@inject NavigationManager _navigationManager
+@inject DialogService _dialogService
+@inject SimpleNotifications _simpleNotifications
+@inject IJSRuntime _JS;
+
+
+<style>
+    .rz-fieldset-toggler {
+        font-weight: 800;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid;
+        border-radius: 25%;
+    }
+
+    table h6, .subtitle1 {
+        margin: 0 !important;
+    }
+</style>
+
+<RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style=" padding-bottom: 1.1rem">
+    @if (isLoading)
+    {
+        <ScreenLoading/>
+    }
+    else if (sale != null)
+    {
+        <RadzenCard class="rz-shadow-5" Style="width: 100%; min-width: calc(250px + 2*(2rem));">
+
+            <RadzenStack Gap="1rem">
+
+                    <RadzenStack id="top-action-buttons" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
+                        JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
+
+                        <RadzenButton Click="@(() => _JS.GoBackOrHomeAsync(_navigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                            <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
+                                        Click=@HandleEditSale Style="flex-grow: 1;" />
+
+                            <RadzenButton  Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger"
+                                            Click=@HandleDeleteSale Style="flex-grow: 1;"/>
+                        </RadzenStack>
+                    </RadzenStack>
+
+                    <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important" Text="Detalles de venta" />
+
+                    <RadzenTable id="sale-details-table" Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
+
+                        <RadzenTableHeader>
+                            <RadzenTableHeaderRow>
+
+                                <RadzenTableHeaderCell style="width: 40%; font-weight:bold;" id="property-header">
+                                    <RadzenText TextStyle="TextStyle.H6" Text="Propiedad" />
+                                </RadzenTableHeaderCell>
+
+                                <RadzenTableHeaderCell style="width: 60%; font-weight:bold;" id="value-header">
+                                    <RadzenText TextStyle="TextStyle.H6" Text="Valor" />
+                                </RadzenTableHeaderCell>
+                            </RadzenTableHeaderRow>
+                        </RadzenTableHeader>
+
+                        <RadzenTableBody>
+
+                            <RadzenTableRow id="id-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="ID" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@sale.Id.ToString()" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="status-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Estado de la venta" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@EnumTranslate.TranslateSaleStatus(sale.Status)" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="TotalAmount-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Monto total" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@($"$ {sale.TotalAmount}")" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="AmountPaid-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Monto abonado" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@($"$ {sale.AmountPaid}")" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="totalItems-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Productos en la venta" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@sale.TotalItems.ToString()" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="totalPayments-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Pagos en la venta" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@sale.TotalPayments.ToString()" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="issuedAt-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Emitida el" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@sale.DateIssued.ToString("dd/MM/yyyy HH:mm")" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="notes-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Notas" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@sale.Notes" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="createdAt-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creada el" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@sale.CreatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="updatedAt-row">
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizada el" style="font-weight:bold;" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@sale.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+                        </RadzenTableBody>
+                    </RadzenTable>
+
+                    <RadzenFieldset id="sale-products-fs" AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
+
+                        <HeaderTemplate>
+
+                            <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
+                                <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos en la venta</b>
+                            </RadzenText>
+
+                        </HeaderTemplate>
+
+                        <ChildContent>
+                            <RadzenDataGrid @ref="productsGrid" TItem="SaleItemDto" Data="@products" LoadData="@LoadProducts"
+                                        IsLoading="@isLoadingProducts" Count="@productsCount" EmptyText="@productsEmptyGridMessage"
+                                            FilterMode="FilterMode.Simple" AllowSorting="true" AllowFiltering="true" AllowPaging="true"
+                                            AllowColumnResize=true GridLines=DataGridGridLines.Both PageSize="5"
+                                            PagerHorizontalAlign="HorizontalAlign.Center" ClearFilterText="Limpiar"
+                                            ApplyFilterText="Aplicar" FilterText="Filtro" ContainsText="Contiene" EqualsText="Equivale"
+                                            AndOperatorText="Y" OrOperatorText="O">
+
+                                <Columns>
+                                    <RadzenDataGridColumn Property="ProductCode" Title="Código" Width="200px" MinWidth="120px" />
+                                    <RadzenDataGridColumn Property="Price" Title="Precio" Width="200px" MinWidth="120px" />
+                                    <RadzenDataGridColumn Property="Category" Title="Categoría" Width="200px" MinWidth="120px" />
+                                    <RadzenDataGridColumn Property="Description" Title="Descripción" Width="200px" MinWidth="120px" />
+                                    <RadzenDataGridColumn Property="Body" Title="Cuerpo" Width="200px" MinWidth="120px" />
+                                    <RadzenDataGridColumn Property="Size" Title="Talle" Width="200px" MinWidth="120px" />
+                                    <RadzenDataGridColumn Property="Quality" Title="Calidad" Width="200px" MinWidth="120px" />
+                                </Columns>
+
+
+                            </RadzenDataGrid>
+                        </ChildContent>
+
+                        <SummaryTemplate>
+                            <b>@products.Count() Productos</b>
+                        </SummaryTemplate>
+
+                    </RadzenFieldset>
+
+                    <RadzenFieldset id="sale-payments-fs" AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
+
+                        <HeaderTemplate>
+
+                            <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
+                                <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Pagos en la venta</b>
+                            </RadzenText>
+
+                        </HeaderTemplate>
+
+                        <ChildContent>
+                            <RadzenDataGrid @ref="paymentsGrid" TItem="PaymentDto" Data="@payments" LoadData="@LoadPayments"
+                                            IsLoading="@isLoadingPayments" Count="@paymentsCount" EmptyText="@paymentsEmptyGridMessage"
+                                            FilterMode="FilterMode.Simple" AllowSorting="true" AllowFiltering="true" AllowPaging="true"
+                                            AllowColumnResize=true GridLines=DataGridGridLines.Both PageSize="5"
+                                            PagerHorizontalAlign="HorizontalAlign.Center" ClearFilterText="Limpiar"
+                                            ApplyFilterText="Aplicar" FilterText="Filtro" ContainsText="Contiene" EqualsText="Equivale"
+                                            AndOperatorText="Y" OrOperatorText="O">
+
+                            <Columns>
+                                <RadzenDataGridColumn Property="Id" Title="ID" />
+                                <RadzenDataGridColumn Property="Amount" Title="Monto" />
+                                <RadzenDataGridColumn Property="Method" Title="Método" />
+                                <RadzenDataGridColumn Property="Date" Title="Fecha" />
+                                <RadzenDataGridColumn Property="RefundedAt" Title="Devuelto en" />
+                                <RadzenDataGridColumn Property="RefundReason" Title="Motivo" />
+                            </Columns>
+
+
+                            </RadzenDataGrid>
+                        </ChildContent>
+
+                        <SummaryTemplate>
+                            <b>@payments.Count() Pagos</b>
+                        </SummaryTemplate>
+
+                    </RadzenFieldset>
+                </RadzenStack>
+        </RadzenCard>
+    }
+    else
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Text="@errorMessage"/>
+        <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => _JS.GoBackOrHomeAsync(_navigationManager, "/"))" />
+    }
+</RadzenStack>
+
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private DetailedSaleDto? sale;
+    private bool isLoading = false;
+
+    private RadzenDataGrid<SaleItemDto> productsGrid = null!;
+    private IEnumerable<SaleItemDto> products = [];
+    private bool isLoadingProducts = false;
+    private int productsCount;
+    private string productsEmptyGridMessage = "No hay productos en ésta venta.";
+
+    private RadzenDataGrid<PaymentDto> paymentsGrid = null!;
+    private IEnumerable<PaymentDto> payments = [];
+    private bool isLoadingPayments = false;
+    private int paymentsCount;
+    private string paymentsEmptyGridMessage = "No hay pagos en ésta venta.";
+
+    private string? errorMessage;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (isLoading) return;
+        isLoading = true;
+
+        var result = await _saleService.GetByIdAsync(Id, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            sale = result.Value;
+        }
+        else
+        {
+            errorMessage = result.Error.Description;
+        }
+        isLoading = false;
+
+        StateHasChanged(); // Ensures grids are rendered
+
+        if (sale != null && productsGrid != null && paymentsGrid != null)
+        {
+            await productsGrid.Reload();
+            await paymentsGrid.Reload();
+        }
+
+    }
+
+    private async Task LoadProducts(LoadDataArgs args)
+    {
+        if (isLoadingProducts) return;
+        isLoadingProducts = true;
+
+        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        var result = await _saleService.GetItemsAsync(Id, request, CancellationToken.None);
+
+        if (result.IsSuccess)
+        {
+            products = result.Value.Items;
+            productsCount = result.Value.Count;
+        }
+        else
+        {
+            products = [];
+            productsCount = 0;
+            productsEmptyGridMessage = result.Error.Description;
+        }
+        isLoadingProducts = false;
+    }
+
+    private async Task LoadPayments(LoadDataArgs args)
+    {
+        if (isLoadingPayments) return;
+        isLoadingPayments = true;
+
+        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        var result = await _saleService.GetPaymentsAsync(Id, request, CancellationToken.None);
+
+        if (result.IsSuccess)
+        {
+            payments = result.Value.Items;
+            paymentsCount = result.Value.Count;
+        }
+        else
+        {
+            payments = [];
+            paymentsCount = 0;
+            paymentsEmptyGridMessage = result.Error.Description;
+        }
+        isLoadingPayments = false;
+    }
+
+    private void HandleAddProduct()
+    {
+        
+    }
+
+    private async Task HandleEditSale()
+    {
+        if (sale is null) return;
+
+        var result = await _dialogService.OpenAsync<EditSaleForm>($"Editar venta",
+               new Dictionary<string, object>() { { "DetailedSaleDto", sale } },
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
+        if (result is Result<bool> editResult)
+        {
+            if (editResult.IsSuccess)
+            {
+                _simpleNotifications.Success($"Consignación editada con éxito.");
+
+                var refreshed = await _saleService.GetByIdAsync(sale.Id, CancellationToken.None);
+                if (refreshed.IsSuccess)
+                {
+                    sale = refreshed.Value;
+                }
+                StateHasChanged();
+            }
+            else
+            {
+                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleDeleteSale()
+    {
+        if (sale is null) return;
+
+        var result = await _dialogService.OpenAsync<DeleteSaleConfirmation>($"Confirmar eliminación",
+        new Dictionary<string, object>() { { "DetailedSaleDto", sale } },
+        new DialogOptions()
+            {
+                CloseDialogOnOverlayClick = true
+            }
+        );
+        if (result is Result<bool> deleteResult)
+        {
+            if (deleteResult.IsSuccess)
+            {
+                _simpleNotifications.Success($"Consignación eliminada con éxito.");
+                await NavigationHelpers.GoBackOrHomeAsync(_JS, _navigationManager, "/ventas");
+            }
+            else
+            {
+                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+            }
+        }
+    }
+
+    public async Task ResetAsync()
+    {
+        if (productsGrid != null)
+        {
+            await productsGrid.Reload();
+        }
+    }
+}
