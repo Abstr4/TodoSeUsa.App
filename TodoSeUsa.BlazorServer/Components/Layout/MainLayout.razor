@@ -1,6 +1,16 @@
 ﻿@using Microsoft.Extensions.Options
+@using TodoSeUsa.BlazorServer.Components.Pages.Boxes
+@using TodoSeUsa.BlazorServer.Components.Pages.Consignments
+@using TodoSeUsa.BlazorServer.Components.Pages.Products
+@using TodoSeUsa.BlazorServer.Components.Pages.Providers
+
 @inherits LayoutComponentBase;
-@inject CookieThemeService CookieThemeService
+
+@inject NavigationManager _navigationManager;
+@inject SimpleNotifications _simpleNotifications;
+@inject DialogService _dialogService;
+@inject CookieThemeService _cookieThemeService;
+
 <RadzenComponents @rendermode="InteractiveServer" />
 
 <div class="page">
@@ -19,8 +29,121 @@
     </main>
 </div>
 
+<RadzenFabMenu Direction="Radzen.FabMenuDirection.Top">
+
+    <RadzenFabMenuItem Text="Venta" Icon="sell" Click="@HandleCreateSale" />
+    <RadzenFabMenuItem Text="Producto" Icon="apparel" Click="@HandleCreateProduct" />
+    <RadzenFabMenuItem Text="Consignación" Icon="add_notes" Click="@HandleCreateConsignment" />
+    <RadzenFabMenuItem Text="Caja" Icon="box" Click="@HandleCreateBox" />
+    <RadzenFabMenuItem Text="Proveedor" Icon="person" Click="@HandleCreateProvider" />
+     
+</RadzenFabMenu>
+
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code
+{
+    private async Task HandleCreateBox()
+    {
+        var result = await _dialogService.OpenAsync<CreateBoxForm>("Crear una nueva caja",
+            new Dictionary<string, object>(),
+            new DialogOptions()
+            {
+                CloseDialogOnOverlayClick = true
+            }
+        );
+        if (result is Result<bool> createResult)
+        {
+            if (createResult.IsSuccess)
+            {
+                _simpleNotifications.Success($"Caja creada con éxito!");
+                _navigationManager.NavigateTo($"/boxes/{createResult.Value}");
+            }
+            else
+            {
+                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleCreateConsignment()
+    {
+        var result = await _dialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
+               new Dictionary<string, object>(),
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+        if (result is Result<int> createResult)
+        {
+            if (createResult.IsSuccess)
+            {
+                _simpleNotifications.Success($"Consignación creada con éxito!");
+                _navigationManager.NavigateTo($"/consignaciones/{createResult.Value}");
+            }
+            else
+            {
+                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleCreateProduct()
+    {
+        var result = await _dialogService.OpenAsync<CreateProductForm>("Crear un producto nuevo",
+               new Dictionary<string, object>(),
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+        if (result is Result<bool> createResult)
+        {
+            if (createResult.IsSuccess)
+            {
+                _simpleNotifications.Success($"Producto creado con éxito!");
+                _navigationManager.NavigateTo($"/productos/{createResult.Value}");
+            }
+            else
+            {
+                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleCreateProvider()
+    {
+        var result = await _dialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
+               new Dictionary<string, object>(),
+               new DialogOptions()
+               {
+                   Width = "50%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+        if (result is Result<int> createResult)
+        {
+            if (createResult.IsSuccess)
+            {
+                _simpleNotifications.Success($"Proveedor creado con éxito!");
+                _navigationManager.NavigateTo($"/proveedores/{createResult.Value}");
+            }
+            else
+            {
+                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+            }
+        }
+    }
+
+    private void HandleCreateSale()
+    {
+        _navigationManager.NavigateTo($"/ventas/registrar");
+    }
+}
