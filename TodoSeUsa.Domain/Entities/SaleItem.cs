@@ -4,6 +4,9 @@ public class SaleItem
 {
     public int Id { get; set; }
 
+    public int SaleId { get; set; }
+    public Sale Sale { get; set; } = null!;
+
     // snapshot
     public int ProductId { get; set; }
 

@@ -9,10 +9,9 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
     {
         builder.UseTpcMappingStrategy();
 
-        builder.HasKey(s => s.Id);
+        builder.ToTable("Sales");
 
-        builder.ToTable("Sales")
-            .HasQueryFilter(s => !s.DeletedAt.HasValue);
+        builder.HasKey(s => s.Id);
 
         builder.Property(s => s.Status)
         .HasConversion(

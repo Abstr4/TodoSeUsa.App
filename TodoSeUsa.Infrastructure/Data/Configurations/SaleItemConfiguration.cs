@@ -11,9 +11,13 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
 
         builder.HasKey(c => c.Id);
 
+        builder.HasOne(si => si.Sale)
+            .WithMany(s => s.Items)
+            .HasForeignKey(si => si.SaleId);
+
         builder.Property(p => p.Price)
-         .IsRequired()
-        .HasPrecision(18, 2);
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.Size)
             .HasMaxLength(50);
@@ -30,8 +34,11 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
             v => Enum.Parse<Body>(v)
         );
 
-        builder.Property(c => c.Category).IsRequired().HasMaxLength(100);
+        builder.Property(c => c.Category)
+            .IsRequired()
+            .HasMaxLength(100);
 
-        builder.Property(c => c.Description).HasMaxLength(250);
+        builder.Property(c => c.Description)
+            .HasMaxLength(250);
     }
 }
