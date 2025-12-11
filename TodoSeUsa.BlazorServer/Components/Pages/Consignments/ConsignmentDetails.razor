@@ -43,7 +43,7 @@
 
             <RadzenStack Gap="1rem">
 
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
+                    <RadzenStack id="top-action-buttons" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
                         JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
 
                         <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
@@ -63,7 +63,7 @@
 
                     <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important">Detalles de consignación </RadzenText>
 
-                    <RadzenTable Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
+                    <RadzenTable id="sale-details-table" Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
 
                         <RadzenTableHeader>
 
@@ -155,7 +155,6 @@
 
                     </RadzenTable>
 
-
                     <RadzenFieldset AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
 
                     <HeaderTemplate>
@@ -223,14 +222,14 @@
 
     private async Task HandleAddProduct()
     {
-       var result = await DialogService.OpenAsync<CreateProductForm>("Crear un producto nuevo",
-           new Dictionary<string, object>() { { "ConsignmentId", Id } },
-           new DialogOptions()
+        var result = await DialogService.OpenAsync<CreateProductForm>("Crear un producto nuevo",
+            new Dictionary<string, object>() { { "ConsignmentId", Id } },
+            new DialogOptions()
            {
                Width = "50%",
                CloseDialogOnOverlayClick = true
            }
-       );
+        );
         if (result is Result<bool> createResult)
         {
             if (createResult.IsSuccess)
@@ -294,7 +293,7 @@
             if (deleteResult.IsSuccess)
             {
                 SimpleNotifications.Success($"Consignación eliminada con éxito.");
-                GoBack();
+                await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/consignments");
             }
             else
             {
@@ -302,6 +301,4 @@
             }
         }
     }
-
-    private void GoBack() => NavigationManager.NavigateTo("/consignaciones");
 }

@@ -71,7 +71,7 @@
                         </tr>
                         <tr>
                             <td>Estado</td>
-                            <td><RadzenBadge BadgeStyle="BadgeStyles.GetBadgeStyleFromProductStatus(product.Status)" Text="@EnumTranslate.TranslateStatus(product.Status)"></RadzenBadge></td>
+                            <td><RadzenBadge BadgeStyle="BadgeStyles.GetBadgeStyleFromProductStatus(product.Status)" Text="@EnumTranslate.TranslateProductStatus(product.Status)"></RadzenBadge></td>
                         </tr>
                         <tr>
                             <td>Calidad</td>
@@ -157,11 +157,11 @@
                     <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Creado el</RadzenText>
-                        <RadzenText><b>@(product.CreatedAt.ToString(format: "yyyy/MM/dd HH:mm"))</b></RadzenText>
+                        <RadzenText><b>@(product.CreatedAt.ToString("yyyy/MM/dd HH:mm"))</b></RadzenText>
 
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Actualizado el</RadzenText>
-                        <RadzenText><b>@(product.UpdatedAt?.ToString(format: "yyyy/MM/dd HH:mm"))</b></RadzenText>
+                        <RadzenText><b>@(product.UpdatedAt?.ToString("yyyy/MM/dd HH:mm"))</b></RadzenText>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenCard>
@@ -172,7 +172,7 @@
         <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
             @errorMessage
         </RadzenAlert>
-        <RadzenButton Icon="arrow_back" Text="Volver" Click=GoBack />
+        <RadzenButton Icon="arrow_back" Text="Volver" Click=@(async () => await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/productos")) />
 
     }
 </RadzenStack>
@@ -194,20 +194,18 @@
     private async Task LoadProduct()
     {
         if (isLoading) return;
-
         isLoading = true;
-        StateHasChanged();
 
         var result = await ProductService.GetByIdAsync(ProductId, CancellationToken.None);
         if (result.IsSuccess)
+        {
             product = result.Value;
+        }
         else
         {
             errorMessage = result.Error.Description;
         }
-
         isLoading = false;
-        StateHasChanged();
     }
 
     private async Task HandleEditProduct(ProductDto product)
@@ -255,11 +253,5 @@
                 SimpleNotifications.Error($"Error: {result.Error.Description}");
             }
         }
-    }
-
-
-    void GoBack()
-    {
-        NavigationManager.NavigateTo("/productos");
     }
 }

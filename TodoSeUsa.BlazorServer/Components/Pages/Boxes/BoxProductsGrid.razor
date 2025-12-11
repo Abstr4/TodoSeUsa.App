@@ -1,0 +1,21 @@
+﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.BlazorServer.Components.Pages.Products
+
+@inject IProductService ProductService; 
+
+<ProductsDataGrid IsMainPage=false OnLoad="LoadProductsByBox"/>
+
+@code {
+
+    [Parameter] public BoxDto BoxDto { get; set; } = null!;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    private async Task<Result<PagedItems<ProductDto>>> LoadProductsByBox(LoadDataArgs args)
+    {
+        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        return await ProductService.GetByBoxIdAsync(request, BoxDto.Id, CancellationToken.None);
+    }
+}

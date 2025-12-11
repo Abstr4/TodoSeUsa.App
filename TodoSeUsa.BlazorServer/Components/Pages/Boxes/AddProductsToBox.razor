@@ -1,0 +1,144 @@
+﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
+@using TodoSeUsa.Application.Features.Boxes.Interfaces
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+
+@inject IProductService _productService;
+@inject IBoxService _boxService;
+
+@inject DialogService _dialogService;
+@inject SimpleNotifications _simpleNotifications;
+
+<RadzenTemplateForm TItem="string" Data="@productCode" Submit="@AddProductToBoxAsync" class="mb-4">
+    <RadzenFieldset>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+            <RadzenLabel Component="ProductCode" Text="Código del producto" />
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+
+                <RadzenTextBox Name="ProductCode" @bind-Value="@productCode" Placeholder="'TSU-01234' o '01234'" />
+
+                <RadzenButton ButtonType="ButtonType.Submit" Icon="add" Text="Agregar" />
+
+            </RadzenStack>
+
+            <RadzenCustomValidator Component="ProductCode"
+                                   Text="Código inválido, ingrese uno completo como 'TSU-01234' o sólo los números finales '01234'."
+                                   Validator="@(() => InputValidators.IsProductCodeValid(productCode))" />
+        </RadzenStack>
+    </RadzenFieldset>
+</RadzenTemplateForm>
+
+<RadzenFieldset class="mb-4" id="addedProducts-fieldset">
+
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+            <RadzenIcon Icon="apparel" />
+            <span>Productos</span>
+        </RadzenStack>
+    </HeaderTemplate>
+
+    <ChildContent>
+        @if (addedProducts.Count == 0)
+        {
+            <RadzenText Text="Aún no seleccionaste productos para guardar en ésta caja." />
+        }
+        else
+        {
+            <RadzenStack Gap="1rem">
+                @foreach (var p in addedProducts)
+                {
+                    <RadzenCard Style="padding:0.75rem;">
+
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+
+                            <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
+                                <b>Código: @p.ProductCode</b>
+                                <span>@p.Category - @p.Description - @p.Body - Talle @p.Size - @p.Quality</span>
+                                <span>Precio: @p.Price.ToString("C")</span>
+                            </RadzenStack>
+
+                            <RadzenButton Click="@(() => RemoveProductFromBox(p.ProductCode))" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Medium" Icon="cancel" Style="height: 40px; width: 40px;" />
+
+                        </RadzenStack>
+                    </RadzenCard>
+                }
+            </RadzenStack>
+        }
+    </ChildContent>
+        
+</RadzenFieldset>
+
+<RadzenTemplateForm TItem="List<int>"  Data="productIds" Submit="@SaveProductsInBox">
+
+    <RadzenTextBox Name="GhostProductCodesValidator" @bind-Value="@ghostProductCodesValidator" hidden="true" />
+
+    <RadzenCustomValidator Component="GhostProductCodesValidator" Validator="@(() => productIds.Count > 0)" 
+                           Text="No hay productos para guardar." />
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+
+        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" ButtonStyle="ButtonStyle.Primary" Text="Guardar"/>
+
+    </RadzenStack>
+
+</RadzenTemplateForm>
+
+@code {
+
+    [Parameter] public BoxDto BoxDto { get; set; } = null!;
+
+    List<ProductDto> addedProducts = [];
+
+    List<int> productIds = [];
+
+    string productCode = string.Empty;
+
+    string ghostProductCodesValidator = "Trickery";
+
+    async Task AddProductToBoxAsync()
+    {
+        var result = await _productService.GetByCodeAsync(productCode, CancellationToken.None);
+
+        if (result.IsSuccess)
+        {
+            var product = result.Value;
+
+            if (product.SaleId != null || product.Status == ProductStatus.Sold)
+            {
+                _simpleNotifications.Warning($"El producto con el código '{product.ProductCode}' ya fue vendido.");
+                return;
+            }
+
+            if (addedProducts.Any(p => p.ProductCode == product.ProductCode))
+            {
+                _simpleNotifications.Info($"El producto con el código '{product.ProductCode}' ya está en la lista.");
+                return;
+            }
+            addedProducts.Add(product);
+            productIds.Add(product.Id);
+        }
+        else
+        {
+            _simpleNotifications.Warning($"No se encontró un producto con el código '{productCode}'.");
+        }
+        productCode = "";
+    }
+
+    void RemoveProductFromBox(string productCode)
+    {
+        var productToRemove = addedProducts.SingleOrDefault(p => p.ProductCode == productCode);
+        if (productToRemove != null)
+        {
+            addedProducts.Remove(productToRemove);
+            productIds.Remove(productToRemove.Id);
+        }
+    }
+
+    async Task SaveProductsInBox()
+    {
+        var result = await _boxService.AddProductsToBoxAsync(BoxDto.Id, productIds, CancellationToken.None);
+        _dialogService.Close(result);
+    }
+}

@@ -1,0 +1,21 @@
+﻿@using TodoSeUsa.Application.Features.Consignments.DTOs
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.BlazorServer.Components.Pages.Products
+
+@inject IProductService ProductService; 
+
+<ProductsDataGrid IsMainPage=false OnLoad="LoadProductsByConsignment"/>
+
+@code {
+
+    [Parameter] public ConsignmentDto ConsignmentDto { get; set; } = null!;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    private async Task<Result<PagedItems<ProductDto>>> LoadProductsByConsignment(LoadDataArgs args)
+    {
+        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        return await ProductService.GetByConsignmentIdAsync(request, ConsignmentDto.Id, CancellationToken.None);
+    }
+}

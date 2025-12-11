@@ -48,6 +48,9 @@ else if (originalBox != null)
 
                 <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
+                    <RadzenButton Icon="add" Text="Agregar productos a la caja" ButtonStyle="ButtonStyle.Success"
+                                  Click="@AddProductsToBox" Style="flex-grow: 1;"/>
+
                     <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
                                   Click=@HandleEditBox Style="flex-grow: 1;" />
 
@@ -139,6 +142,7 @@ else if (originalBox != null)
                     <ChildContent>
 
                         <ProductsDataGrid OnLoad="@LoadProductsByBox" IsMainPage=false></ProductsDataGrid>
+
                     </ChildContent>
 
                     <SummaryTemplate>
@@ -248,7 +252,7 @@ else
             if (deleteResult.IsSuccess)
             {
                 SimpleNotifications.Success($"Caja '{originalBox.BoxCode}' eliminada con éxito.");
-                GoBack();
+                await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/boxes");
             }
             else
             {
@@ -257,5 +261,16 @@ else
         }
     }
 
-    private void GoBack() => NavigationManager.NavigateTo("/cajas");
+    public async Task AddProductsToBox()
+    {
+        if (originalBox is null) return;
+
+        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{originalBox.BoxCode}'",
+            new Dictionary<string, object>() { { "BoxDto", originalBox } },
+            new DialogOptions()
+            {
+                CloseDialogOnOverlayClick = true
+            }
+        );
+    }
 }
