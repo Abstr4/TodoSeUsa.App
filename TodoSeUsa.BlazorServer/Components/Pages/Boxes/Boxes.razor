@@ -137,7 +137,7 @@
             }
         );
 
-        if (result is Result<bool> editResult)
+        if (result is Result editResult)
         {
             if (editResult.IsSuccess)
             {
@@ -160,7 +160,7 @@
                 CloseDialogOnOverlayClick = true
             }
         );
-        if (result is Result<bool> deleteResult)
+        if (result is Result deleteResult)
         {
             if (deleteResult.IsSuccess)
             {

@@ -32,18 +32,18 @@ public static class QueryFilteringCases
     public static readonly Dictionary<string, Func<string, Expression<Func<Provider, bool>>>> ProviderFilters =
     new()
     {
-            {
-                nameof(ProviderDto.FullName),
-                val => c =>
-                    EF.Functions.Like(c.Person.FirstName, $"%{val}%") ||
-                    EF.Functions.Like(c.Person.LastName, $"%{val}%")
-            },
-                        {
-                nameof(ProviderDto.ContactInfo),
-                val => c =>
-                    EF.Functions.Like(c.Person.EmailAddress, $"%{val}%") ||
-                    EF.Functions.Like(c.Person.PhoneNumber, $"%{val}%") ||
-                    EF.Functions.Like(c.Person.Address, $"%{val}%")
-            }
+        {
+            nameof(ProviderDto.FullName),
+            val => c =>
+                EF.Functions.Like(c.Person.FirstName, $"%{val}%") ||
+                EF.Functions.Like(c.Person.LastName, $"%{val}%")
+        },
+        {
+            nameof(ProviderDto.ContactInfo),
+            val => c =>
+                EF.Functions.Like(c.Person.EmailAddress, $"%{val}%") ||
+                EF.Functions.Like(c.Person.PhoneNumber, $"%{val}%") ||
+                EF.Functions.Like(c.Person.Address, $"%{val}%")
+        }
     };
 }

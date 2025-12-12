@@ -207,7 +207,7 @@
                        CloseDialogOnOverlayClick = true
                    }
             );
-            if (result is Result<bool> deleteResult)
+            if (result is Result deleteResult)
             {
                 if (deleteResult.IsSuccess)
                 {
@@ -240,7 +240,7 @@
                 CloseDialogOnOverlayClick = true
             }
             );
-            if (result is Result<bool> deleteResult)
+            if (result is Result deleteResult)
             {
                 if (deleteResult.IsSuccess)
                 {
@@ -272,7 +272,7 @@
                    CloseDialogOnOverlayClick = true
                }
         );
-        if (result is Result<bool> createResult)
+        if (result is Result createResult)
         {
             if (createResult.IsSuccess)
             {

@@ -23,7 +23,7 @@ public interface ISaleService
 
     Task<Result> RefundPaymentAsync(int saleId, int paymentId, decimal amount, string? reason, CancellationToken ct);
 
-    Task<Result> EditByIdAsync(int saleId, EditSaleDto editSaleDto, CancellationToken ct);
+    Task<Result> EditAsync(EditSaleDto editSaleDto, CancellationToken ct);
 
     Task<Result> DeleteByIdAsync(int saleId, CancellationToken ct);
 }

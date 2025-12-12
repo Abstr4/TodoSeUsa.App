@@ -2,7 +2,7 @@
 
 public record EditSaleDto
 {
-    public DateTime DateIssued { get; set; }
+    public int Id { get; init; }
 
     public string? Notes { get; set; }
 }

@@ -10,7 +10,7 @@ public interface IProviderService
 
     Task<Result<ProviderDto>> GetByIdAsync(int providerId, CancellationToken ct);
 
-    Task<Result<bool>> EditByIdAsync(int providerId, EditProviderDto editProviderDto, CancellationToken ct);
+    Task<Result> EditByIdAsync(int providerId, EditProviderDto editProviderDto, CancellationToken ct);
 
-    Task<Result<bool>> DeleteByIdAsync(int providerId, CancellationToken ct);
+    Task<Result> DeleteByIdAsync(int providerId, CancellationToken ct);
 }

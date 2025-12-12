@@ -374,7 +374,7 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result<bool>> CreateAsync(CreateProductDto productDto, CancellationToken ct)
+    public async Task<Result> CreateAsync(CreateProductDto productDto, CancellationToken ct)
     {
         var validator = new CreateProductDtoValidator();
         var validationResult = await validator.ValidateAsync(productDto, ct);
@@ -412,7 +412,7 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result<bool>> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct)
+    public async Task<Result> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct)
     {
         if (productDtos == null || productDtos.Count == 0)
             return Result.Failure<bool>(ProductErrors.Failure("No products provided."));
@@ -443,7 +443,7 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result<bool>> DeleteById(int productId, CancellationToken ct)
+    public async Task<Result> DeleteById(int productId, CancellationToken ct)
     {
         if (productId <= 0)
             return Result.Failure<bool>(ProductErrors.Failure("El Id debe ser mayor que cero."));
@@ -468,7 +468,7 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result<bool>> EditById(int productId, EditProductDto editProductDto, CancellationToken ct)
+    public async Task<Result> EditById(int productId, EditProductDto editProductDto, CancellationToken ct)
     {
         if (productId <= 0)
             return Result.Failure<bool>(ProductErrors.Failure("El Id debe ser mayor que cero."));

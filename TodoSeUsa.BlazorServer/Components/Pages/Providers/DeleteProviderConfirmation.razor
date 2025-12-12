@@ -18,20 +18,20 @@
 </RadzenCard>
 
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="3rem" Wrap="FlexWrap.Wrap">
-    <RadzenButton IsBusy="busy" Icon="delete" Text="Borrar" BusyText="Borrando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@(async () => await Delete(ProviderDto.Id))" />
+    <RadzenButton IsBusy="saveButtonBusy" Icon="delete" Text="Borrar" BusyText="Borrando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@(async () => await Delete(ProviderDto.Id))" />
 </RadzenStack>
 
 @code
 {
     [Parameter] public required ProviderDto ProviderDto { get; set; }
 
-    bool busy;
+    bool saveButtonBusy;
 
     async Task Delete(int consignmentId)
     {
-        busy = true;
+        saveButtonBusy = true;
         var result = await ProviderService.DeleteByIdAsync(consignmentId, CancellationToken.None);
-        busy = false;
+        saveButtonBusy = false;
         DialogService.Close(result);
     }
 }

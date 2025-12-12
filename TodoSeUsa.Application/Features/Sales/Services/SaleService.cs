@@ -452,9 +452,9 @@ public sealed class SaleService : ISaleService
         }
     }
 
-    public async Task<Result> EditByIdAsync(int saleId, EditSaleDto editSaleDto, CancellationToken ct)
+    public async Task<Result> EditAsync(EditSaleDto editSaleDto, CancellationToken ct)
     {
-        if (saleId < 1)
+        if (editSaleDto.Id < 1)
             return Result.Failure(SaleErrors.Failure("El Id debe ser mayor que cero."));
 
         var validator = new EditSaleDtoValidator();
@@ -467,13 +467,12 @@ public sealed class SaleService : ISaleService
         {
             var _context = await _contextFactory.CreateDbContextAsync(ct);
 
-            Sale? sale = await _context.Sales.FirstOrDefaultAsync(b => b.Id == saleId, ct);
+            Sale? sale = await _context.Sales.FirstOrDefaultAsync(b => b.Id == editSaleDto.Id, ct);
             if (sale == null)
             {
-                return Result.Failure(SaleErrors.NotFound(saleId));
+                return Result.Failure(SaleErrors.NotFound(editSaleDto.Id));
             }
 
-            sale.DateIssued = editSaleDto.DateIssued;
             sale.Notes = editSaleDto.Notes;
 
             var saved = await _context.SaveChangesAsync(ct);
@@ -485,7 +484,7 @@ public sealed class SaleService : ISaleService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while trying to edit the sale with ID {saleId}.", saleId);
+            _logger.LogError(ex, "An error occurred while trying to edit the sale with ID {editSaleDto.Id}.", editSaleDto.Id);
             return Result.Failure(SaleErrors.Failure($"Ocurrió un error inesperado al intentar editar la venta."));
         }
     }

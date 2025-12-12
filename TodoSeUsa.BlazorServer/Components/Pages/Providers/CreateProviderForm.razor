@@ -160,17 +160,17 @@
 
     private CreateProviderDto createProviderDto = new();
 
-    async Task OnSubmit(CreateProviderDto createProviderDto)
+    protected override void OnInitialized()
+    {
+        createProviderDto.CommissionPercent = -1m;
+    }
+
+    async Task OnSubmit()
     {
         busy = true;
         var result = await providerService.CreateAsync(createProviderDto, CancellationToken.None);
         busy = false;
         dialogService.Close(result);
-    }
-
-    protected override void OnInitialized()
-    {
-        createProviderDto.CommissionPercent = -1m;
     }
 
     private void OnEmailAddressChanged(string? value)

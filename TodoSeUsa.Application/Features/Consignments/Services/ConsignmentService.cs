@@ -178,7 +178,7 @@ public sealed class ConsignmentService : IConsignmentService
         }
     }
 
-    public async Task<Result<bool>> DeleteByIdAsync(int consignmentId, CancellationToken ct)
+    public async Task<Result> DeleteByIdAsync(int consignmentId, CancellationToken ct)
     {
         if (consignmentId <= 0)
             return Result.Failure<bool>(ConsignmentErrors.Failure("El Id debe ser mayor que cero."));
@@ -210,7 +210,7 @@ public sealed class ConsignmentService : IConsignmentService
         }
     }
 
-    public async Task<Result<bool>> EditByIdAsync(int consignmentId, EditConsignmentDto editConsignmentDto, CancellationToken ct)
+    public async Task<Result> EditByIdAsync(int consignmentId, EditConsignmentDto editConsignmentDto, CancellationToken ct)
     {
         if (consignmentId <= 0)
             return Result.Failure<bool>(ConsignmentErrors.Failure("El Id debe ser mayor que cero."));

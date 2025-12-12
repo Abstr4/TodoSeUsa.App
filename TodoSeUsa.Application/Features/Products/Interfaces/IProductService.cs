@@ -16,11 +16,11 @@ public interface IProductService
 
     Task<Result<ProductDto>> GetByCodeAsync(string productCode, CancellationToken ct);
 
-    Task<Result<bool>> CreateAsync(CreateProductDto productDto, CancellationToken ct);
+    Task<Result> CreateAsync(CreateProductDto productDto, CancellationToken ct);
 
-    Task<Result<bool>> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct);
+    Task<Result> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct);
 
-    Task<Result<bool>> EditById(int productId, EditProductDto editProductDto, CancellationToken ct);
+    Task<Result> EditById(int productId, EditProductDto editProductDto, CancellationToken ct);
 
-    Task<Result<bool>> DeleteById(int productId, CancellationToken ct);
+    Task<Result> DeleteById(int productId, CancellationToken ct);
 }

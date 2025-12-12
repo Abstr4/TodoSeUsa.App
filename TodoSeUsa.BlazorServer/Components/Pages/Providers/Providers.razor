@@ -16,7 +16,9 @@
 </style>
 
 <RadzenCard Style="max-width: 100%">
+
     <PageTitleWithBackButton Title="Proveedores" />
+
     <RadzenDataGrid @ref="grid" 
         TItem="ProviderDto" 
         Data="@providers" 
@@ -91,7 +93,7 @@
                 </Template>
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Property="FullName" Title="Info. del proveedor" MinWidth="200px" Width="220px"/>
+            <RadzenDataGridColumn Property="FullName" Title="Nombre completo" MinWidth="200px" Width="220px"/>
 
             <RadzenDataGridColumn Property="CreatedAt" Title="Creado el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" Width="160px"/>
 
@@ -165,7 +167,7 @@
                }
         );
 
-        if (result is Result<bool> editResult)
+        if (result is Result editResult)
         {
             if (editResult.IsSuccess)
             {
@@ -188,7 +190,7 @@
             CloseDialogOnOverlayClick = true
         }
         );
-        if (result is Result<bool> deleteResult)
+        if (result is Result deleteResult)
         {
             if (deleteResult.IsSuccess)
             {
