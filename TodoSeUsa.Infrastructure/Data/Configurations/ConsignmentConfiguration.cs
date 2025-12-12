@@ -13,6 +13,12 @@ public class ConsignmentConfiguration : IEntityTypeConfiguration<Consignment>
 
         builder.HasKey(c => c.Id);
 
+        builder.HasMany(c => c.Products)
+            .WithOne(p => p.Consignment)
+            .HasForeignKey(p => p.ConsignmentId)
+            .IsRequired()
+        .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(c => c.Notes).HasMaxLength(250);
     }
 }

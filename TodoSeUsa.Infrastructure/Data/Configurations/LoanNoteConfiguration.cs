@@ -17,6 +17,6 @@ public class LoanNoteConfiguration : IEntityTypeConfiguration<LoanNote>
                .WithOne(lp => lp.LoanNote)
                .HasForeignKey(lp => lp.LoanNoteId)
                .IsRequired()
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.Restrict);
     }
 }

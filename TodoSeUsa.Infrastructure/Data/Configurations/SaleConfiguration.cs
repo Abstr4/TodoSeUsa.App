@@ -13,6 +13,18 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
 
         builder.HasKey(s => s.Id);
 
+        builder.HasMany(s => s.Items)
+            .WithOne(si => si.Sale)
+            .HasForeignKey(si => si.SaleId)
+            .IsRequired()
+        .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(s => s.Payments)
+            .WithOne(si => si.Sale)
+            .HasForeignKey(si => si.SaleId)
+            .IsRequired()
+        .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(s => s.Status)
         .HasConversion(
             v => v.ToString(),

@@ -13,10 +13,18 @@ public class ProviderConfiguration : IEntityTypeConfiguration<Provider>
 
         builder.HasKey(c => c.Id);
 
+        builder.HasMany(p => p.Consignments)
+            .WithOne(c => c.Provider)
+            .HasForeignKey(c => c.ProviderId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(p => p.Person)
+           .WithOne(per => per.Provider)
+           .HasForeignKey<Provider>(p => p.PersonId)
+           .IsRequired()
+           .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(p => p.CommissionPercent).HasPrecision(18, 4);
-
-        builder.Property(c => c.PersonId).IsRequired();
-
-        builder.HasIndex(c => c.PersonId).IsUnique();
     }
 }

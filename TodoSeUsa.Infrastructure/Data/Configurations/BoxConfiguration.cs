@@ -13,6 +13,11 @@ public class BoxConfiguration : IEntityTypeConfiguration<Box>
 
         builder.HasKey(c => c.Id);
 
+        builder.HasMany(b => b.Products)
+            .WithOne(p => p.Box)
+            .HasForeignKey(p => p.BoxId)
+        .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(p => p.BoxCode)
             .HasComputedColumnSql("'BOX-' + RIGHT('000' + CAST(Id AS VARCHAR(3)), 3)", stored: true);
 
