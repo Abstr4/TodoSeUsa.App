@@ -10,6 +10,7 @@
     <Content Remove="Components\Pages\Boxes\ViewBoxProducts.razor" />
     <Content Remove="Components\Pages\Clients.razor" />
     <Content Remove="Components\Pages\LoanNotes.razor" />
+    <Content Remove="Components\Pages\Products\ProductCard.razor" />
     <Content Remove="Components\Pages\Reservations.razor" />
   </ItemGroup>
 
