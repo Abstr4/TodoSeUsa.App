@@ -2,8 +2,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 using TodoSeUsa.Application.Common.Services;
+using TodoSeUsa.Application.Common.Services.People;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
 using TodoSeUsa.Application.Features.Boxes.Services;
 using TodoSeUsa.Application.Features.Consignments.Interfaces;
@@ -28,7 +28,9 @@ public static class DependencyInjection
         builder.Services.AddScoped<IConsignmentService, ConsignmentService>();
         builder.Services.AddScoped<IProviderService, ProviderService>();
         builder.Services.AddScoped<IPersonService, PersonService>();
-        builder.Services.AddScoped<IProviderService, ProviderService>();
         builder.Services.AddScoped<ISaleService, SaleService>();
+
+        builder.Services.AddScoped<UniqueSaleCodeService>();
+        builder.Services.AddScoped<UniqueConsignmentCodeService>();
     }
 }

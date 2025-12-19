@@ -2,6 +2,8 @@
 
 public class Consignment : BaseAuditableEntity
 {
+    public string Code { get; set; } = string.Empty;
+
     public DateTime DateIssued { get; set; } = DateTime.Now;
 
     public string? Notes { get; set; } = string.Empty;

@@ -13,6 +13,8 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
 
         builder.HasKey(s => s.Id);
 
+        builder.HasIndex(s => s.Code).IsUnique();
+
         builder.HasMany(s => s.Items)
             .WithOne(si => si.Sale)
             .HasForeignKey(si => si.SaleId)

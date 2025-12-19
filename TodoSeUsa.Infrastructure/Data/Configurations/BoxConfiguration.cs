@@ -18,7 +18,7 @@ public class BoxConfiguration : IEntityTypeConfiguration<Box>
             .HasForeignKey(p => p.BoxId)
         .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(p => p.BoxCode)
+        builder.Property(p => p.Code)
             .HasComputedColumnSql("'BOX-' + RIGHT('000' + CAST(Id AS VARCHAR(3)), 3)", stored: true);
 
         builder.Property(c => c.Location).IsRequired().HasMaxLength(250);

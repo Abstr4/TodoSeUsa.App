@@ -2,6 +2,7 @@
 
 public class Sale : BaseAuditableEntity
 {
+    public string Code { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
     public decimal AmountPaid { get; set; }
     public SaleStatus Status { get; set; }
