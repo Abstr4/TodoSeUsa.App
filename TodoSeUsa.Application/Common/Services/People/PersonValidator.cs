@@ -1,6 +1,6 @@
 ﻿using TodoSeUsa.Domain.Validators;
 
-namespace TodoSeUsa.Application.Common.Validators;
+namespace TodoSeUsa.Application.Common.Services.People;
 
 public class PersonValidator : AbstractValidator<Person>
 {

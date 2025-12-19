@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using TodoSeUsa.Application.Common.Enums;
+using TodoSeUsa.Application.Common.Querying.Enums;
 
 namespace TodoSeUsa.Application.Common.Services;
 

@@ -3,7 +3,7 @@ using TodoSeUsa.Application.Features.Consignments.DTOs;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Providers.DTOs;
 
-namespace TodoSeUsa.Application.Common.Helpers;
+namespace TodoSeUsa.Application.Common.Querying.CustomCases;
 
 public static class QuerySortingCases
 {
@@ -11,7 +11,7 @@ public static class QuerySortingCases
     new()
     {
         {
-            nameof(BoxDto.BoxCode),
+            nameof(BoxDto.Code),
             (q, desc) => desc
                 ? q.OrderByDescending(b => b.Id)
                 : q.OrderBy(b => b.Id)

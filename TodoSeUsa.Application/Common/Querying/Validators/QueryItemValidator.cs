@@ -1,4 +1,4 @@
-﻿namespace TodoSeUsa.Application.Common.Validators;
+﻿namespace TodoSeUsa.Application.Common.Querying.Validators;
 
 public class QueryItemValidator : AbstractValidator<QueryItem>
 {

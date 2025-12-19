@@ -1,4 +1,4 @@
-﻿namespace TodoSeUsa.Application.Common.Enums;
+﻿namespace TodoSeUsa.Application.Common.Querying.Enums;
 
 public enum FilterOperator
 {

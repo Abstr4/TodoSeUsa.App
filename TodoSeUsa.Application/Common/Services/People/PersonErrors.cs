@@ -1,4 +1,4 @@
-﻿namespace TodoSeUsa.Application.Common.Errors;
+﻿namespace TodoSeUsa.Application.Common.Services.People;
 
 public static class PersonErrors
 {

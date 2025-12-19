@@ -1,4 +1,4 @@
-﻿namespace TodoSeUsa.Application.Common.Interfaces;
+﻿namespace TodoSeUsa.Application.Common.Services.People;
 
 public interface IPersonService
 {

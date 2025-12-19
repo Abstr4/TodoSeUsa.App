@@ -1,9 +1,9 @@
 ﻿using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using TodoSeUsa.Application.Common.Enums;
+using TodoSeUsa.Application.Common.Querying.Enums;
 using TodoSeUsa.Application.Common.Services;
 
-namespace TodoSeUsa.Application.Common.Extensions;
+namespace TodoSeUsa.Application.Common.Querying.Extensions;
 
 public static class QueryableExtensions
 {

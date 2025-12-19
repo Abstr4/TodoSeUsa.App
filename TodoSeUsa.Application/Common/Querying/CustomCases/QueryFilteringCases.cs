@@ -3,7 +3,8 @@ using TodoSeUsa.Application.Features.Consignments.DTOs;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Providers.DTOs;
 
-namespace TodoSeUsa.Application.Common.Helpers;
+namespace TodoSeUsa.Application.Common.Querying.CustomCases;
+
 public static class QueryFilteringCases
 {
     public static readonly Dictionary<string, Func<string, Expression<Func<Product, bool>>>> ProductFilters =

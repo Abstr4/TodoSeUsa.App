@@ -1,6 +1,4 @@
-﻿using TodoSeUsa.Application.Common.Validators;
-
-namespace TodoSeUsa.Application.Common.Services;
+﻿namespace TodoSeUsa.Application.Common.Services.People;
 
 internal class PersonService : IPersonService
 {
@@ -25,8 +23,8 @@ internal class PersonService : IPersonService
             .Include(p => p.Client)
             .Include(p => p.Provider)
             .FirstOrDefaultAsync(p =>
-                (email != null && p.EmailAddress == email) ||
-                (phoneNumber != null && p.PhoneNumber == phoneNumber),
+                email != null && p.EmailAddress == email ||
+                phoneNumber != null && p.PhoneNumber == phoneNumber,
                 ct);
     }
 
