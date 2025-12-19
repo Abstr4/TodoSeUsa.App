@@ -10,8 +10,9 @@ public class Sale : BaseAuditableEntity
     public ICollection<SaleItem> Items { get; set; } = [];
     public ICollection<Payment> Payments { get; set; } = [];
     public DateTime DateIssued { get; set; } = DateTime.Now;
-
     public string? Notes { get; set; }
+    public DateTime? CancelledAt { get; set; }
+    public string? CancelReason { get; set; }
 
     public int? ClientId { get; set; }
     public Client? Client { get; set; }
