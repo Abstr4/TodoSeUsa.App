@@ -6,6 +6,8 @@ public record SaleDto
 {
     public int Id { get; init; }
 
+    public string Code { get; init; } = string.Empty;
+
     public decimal TotalAmount { get; init; }
 
     public decimal AmountPaid { get; init; }

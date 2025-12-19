@@ -2,7 +2,7 @@
 
 public class CreateConsignmentDto
 {
-    public DateTime DateIssued { get; set; } = DateTime.Now;
+    public DateTime? DateIssued { get; set; }
 
     public string? Notes { get; set; }
 

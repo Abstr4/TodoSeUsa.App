@@ -1,8 +1,6 @@
 ﻿using System.Linq.Dynamic.Core;
-using TodoSeUsa.Application.Common.Enums;
-using TodoSeUsa.Application.Common.Errors;
-using TodoSeUsa.Application.Common.Helpers;
-using TodoSeUsa.Application.Common.Services;
+using TodoSeUsa.Application.Common.Querying.CustomCases;
+using TodoSeUsa.Application.Common.Services.People;
 using TodoSeUsa.Application.Features.Providers.DTOs;
 using TodoSeUsa.Application.Features.Providers.Interfaces;
 using TodoSeUsa.Application.Features.Providers.Validators;

@@ -1,4 +1,5 @@
 ﻿using System.Linq.Dynamic.Core;
+using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Payments.DTOs;
 using TodoSeUsa.Application.Features.Products;
 using TodoSeUsa.Application.Features.Sales.DTOs;
@@ -12,11 +13,13 @@ public sealed class SaleService : ISaleService
 {
     private readonly ILogger<SaleService> _logger;
     private readonly IApplicationDbContextFactory _contextFactory;
+    private readonly UniqueSaleCodeService _uniqueSaleCodeService;
 
-    public SaleService(ILogger<SaleService> logger, IApplicationDbContextFactory contextFactory)
+    public SaleService(ILogger<SaleService> logger, IApplicationDbContextFactory contextFactory, UniqueSaleCodeService uniqueSaleCodeService)
     {
         _logger = logger;
         _contextFactory = contextFactory;
+        _uniqueSaleCodeService = uniqueSaleCodeService;
     }
 
     public async Task<Result<PagedItems<SaleDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
@@ -27,12 +30,6 @@ public sealed class SaleService : ISaleService
             .Include(s => s.Items)
             .Include(s => s.Payments)
             .AsQueryable();
-
-/*        if (request.Filters != null && request.Filters.Count > 0)
-        {
-            var predicate = PredicateBuilder.BuildPredicate<Sale>(request);
-            query = query.Where(predicate);
-        }*/
 
         query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator);
 
@@ -46,6 +43,7 @@ public sealed class SaleService : ISaleService
             .Select(c => new SaleDto
             {
                 Id = c.Id,
+                Code = c.Code,
                 TotalAmount = c.TotalAmount,
                 AmountPaid = c.AmountPaid,
                 Status = c.Status,
@@ -63,7 +61,7 @@ public sealed class SaleService : ISaleService
 
     public async Task<Result<DetailedSaleDto>> GetByIdAsync(int saleId, CancellationToken ct)
     {
-        if (saleId <= 0)
+        if (saleId < 1)
             return Result.Failure<DetailedSaleDto>(SaleErrors.Failure("El Id debe ser mayor que cero."));
 
         try
@@ -75,6 +73,7 @@ public sealed class SaleService : ISaleService
                 .Select(c => new DetailedSaleDto
                 {
                     Id = c.Id,
+                    Code = c.Code,
                     TotalAmount = c.TotalAmount,
                     AmountPaid = c.AmountPaid,
                     Status = c.Status,
@@ -115,6 +114,7 @@ public sealed class SaleService : ISaleService
                 .AsQueryable();
 
             query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator);
+
             query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts);
 
             var totalCount = await query.CountAsync(ct);
@@ -200,6 +200,7 @@ public sealed class SaleService : ISaleService
     public async Task<Result<int>> CreateAsync(CreateSaleDto createSaleDto, CancellationToken ct)
     {
         var validator = new CreateSaleDtoValidator();
+
         var validationResult = await validator.ValidateAsync(createSaleDto, ct);
 
         if (!validationResult.IsValid)
@@ -212,11 +213,11 @@ public sealed class SaleService : ISaleService
             var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var existingProducts = await context.Products
-                .Where(p => createSaleDto.ProductCodes.Contains(p.ProductCode))
+                .Where(p => createSaleDto.ProductCodes.Contains(p.Code))
                 .ToListAsync(ct);
 
-            var soldProductsCodes = existingProducts.Where(p => p.Status == ProductStatus.Sold || p.SaleId != null)
-                .Select(p => p.ProductCode);
+            var soldProductsCodes = existingProducts.Where(p => p.Status == ProductStatus.Sold)
+                .Select(p => p.Code);
 
             if (soldProductsCodes.Any())
             {
@@ -227,7 +228,7 @@ public sealed class SaleService : ISaleService
             }
 
             var missingProducts = createSaleDto.ProductCodes
-                .Except(existingProducts.Select(p => p.ProductCode))
+                .Except(existingProducts.Select(p => p.Code))
                 .ToList();
 
             if (missingProducts.Count != 0)
@@ -238,8 +239,11 @@ public sealed class SaleService : ISaleService
                 );
             }
 
+            var code = await _uniqueSaleCodeService.GenerateAsync(ct);
+
             var sale = new Sale
             {
+                Code = code,
                 DateIssued = createSaleDto.DateIssued ?? DateTime.Now,
                 Notes = createSaleDto.Notes
             };
@@ -269,6 +273,12 @@ public sealed class SaleService : ISaleService
                 }
             }
 
+            var recalculateResult = RecalculateSale(sale);
+            if (recalculateResult.IsFailure)
+            {
+                return Result.Failure<int>(recalculateResult.Error);
+            }
+
             var entry = await context.Sales.AddAsync(sale, ct);
             var saved = await context.SaveChangesAsync(ct);
 
@@ -286,16 +296,143 @@ public sealed class SaleService : ISaleService
         }
     }
 
-    public async Task<Result<int>> AddProductAsync(int saleId, int productId, CancellationToken ct)
+    public async Task<Result> EditAsync(EditSaleDto editSaleDto, CancellationToken ct)
+    {
+        if (editSaleDto.Id < 1)
+            return Result.Failure(SaleErrors.Failure("El Id debe ser mayor que cero."));
+
+        var validator = new EditSaleDtoValidator();
+        var validationResult = await validator.ValidateAsync(editSaleDto, ct);
+
+        if (!validationResult.IsValid)
+            return Result.Failure(SaleErrors.Failure(validationResult.ToString()));
+
+        try
+        {
+            var _context = await _contextFactory.CreateDbContextAsync(ct);
+
+            Sale? sale = await _context.Sales.FirstOrDefaultAsync(b => b.Id == editSaleDto.Id, ct);
+
+            if (sale == null)
+            {
+                return Result.Failure(SaleErrors.NotFound(editSaleDto.Id));
+            }
+
+            if(sale.Status == SaleStatus.Cancelled)
+            {
+                return Result.Failure(SaleErrors.Failure("No se puede editar una venta cancelada."));
+            }
+
+            sale.Notes = editSaleDto.Notes;
+
+            var saved = await _context.SaveChangesAsync(ct);
+            if (saved > 0)
+            {
+                return Result.Success();
+            }
+            return Result.Failure(SaleErrors.Failure("No se pudo editar la venta."));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while trying to edit the sale with ID {editSaleDto.Id}.", editSaleDto.Id);
+            return Result.Failure(SaleErrors.Failure($"Ocurrió un error inesperado al intentar editar la venta."));
+        }
+    }
+
+    public async Task<Result> CancelByCodeAsync(string code, string? reason, CancellationToken ct)
+    {
+        var validator = new SaleCodeValidator();
+        var validationResult = await validator.ValidateAsync(code, ct);
+
+        if (!validationResult.IsValid)
+            return Result.Failure(SaleErrors.Failure(validationResult.ToString()));
+
+        var context = await _contextFactory.CreateDbContextAsync(ct);
+
+        var saleId = await context.Sales
+            .Where(s => s.Code == code)
+            .Select(s => s.Id)
+            .SingleOrDefaultAsync(ct);
+
+        if (saleId == 0)
+            return Result.Failure(SaleErrors.NotFound(code));
+
+        return await CancelInternalAsync(saleId, reason, ct);
+    }
+
+    public Task<Result> CancelByIdAsync(int saleId, string? reason, CancellationToken ct)
+    {
+        return CancelInternalAsync(saleId, reason, ct);
+    }
+
+    private async Task<Result> CancelInternalAsync(int saleId, string? reason, CancellationToken ct)
+    {
+        try
+        {
+            var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var sale = await context.Sales
+                .Include(s => s.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(s => s.Payments)
+                .SingleOrDefaultAsync(s => s.Id == saleId, ct);
+
+            if (sale is null)
+                return Result.Failure(SaleErrors.NotFound(saleId));
+
+            if (sale.Status == SaleStatus.Cancelled)
+                return Result.Success();
+
+            foreach (var item in sale.Items)
+            {
+                if (item.ReturnedAt.HasValue)
+                    continue;
+
+                item.ReturnedAt = DateTime.Now;
+                item.ReturnReason = "Venta cancelada.";
+
+                if (item.Product != null)
+                    item.Product.Status = ProductStatus.Available;
+            }
+
+            foreach (var payment in sale.Payments)
+            {
+                if (payment.RefundedAt.HasValue)
+                    continue;
+
+                payment.RefundedAt = DateTime.Now;
+                payment.RefundReason = "Venta cancelada.";
+            }
+
+            sale.Status = SaleStatus.Cancelled;
+            sale.CancelledAt = DateTime.Now;
+            sale.CancelReason = reason;
+
+            var saved = await context.SaveChangesAsync(ct);
+
+            return saved > 0
+                ? Result.Success()
+                : Result.Failure(SaleErrors.Failure("No se pudo borrar la venta."));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while cancelling sale {saleId}", saleId);
+            return Result.Failure(SaleErrors.Failure("Ocurrió un error inesperado al intentar borrar la venta."));
+        }
+    }
+
+    public async Task<Result> AddProductAsync(int saleId, int productId, CancellationToken ct)
     {
         if (productId < 1)
         {
-            return Result.Failure<int>(SaleErrors.Failure("El ID del producto debe ser mayor a cero."));
+            return Result.Failure(SaleErrors.Failure("El ID del producto debe ser mayor a cero."));
         }
+
         if (saleId < 1)
         {
-            return Result.Failure<int>(SaleErrors.Failure("El ID de la venta debe ser mayor a cero."));
+            return Result.Failure(SaleErrors.Failure("El ID de la venta debe ser mayor a cero."));
         }
+
         try
         {
             var context = await _contextFactory.CreateDbContextAsync(ct);
@@ -306,29 +443,38 @@ public sealed class SaleService : ISaleService
 
             if (sale == null)
             {
-                return Result.Failure<int>(SaleErrors.NotFound(saleId));
+                return Result.Failure(SaleErrors.NotFound(saleId));
             }
 
-            var product = await context.Products.FirstOrDefaultAsync(p => p.Id == productId, ct);
+            if (sale.Status == SaleStatus.Cancelled)
+            {
+                return Result.Failure(SaleErrors.Failure("No se puede agregar productos a una venta cancelada."));
+            }
+
+            var product = await context.Products.SingleOrDefaultAsync(p => p.Id == productId, ct);
             if (product == null)
             {
-                return Result.Failure<int>(ProductErrors.NotFound(productId));
+                return Result.Failure(ProductErrors.NotFound(productId));
             }
 
-            AddProductToSale(sale, product);
+            var addResult = AddProductToSale(sale, product);
+            if (addResult.IsFailure)
+            {
+                return Result.Failure(SaleErrors.Failure(addResult.Error.Description));
+            }
 
             var saved = await context.SaveChangesAsync(ct);
             if (saved > 0)
             {
-                return Result.Success(sale.Items.First(i => i.ProductId == productId).Id);
+                return Result.Success();
             }
 
-            return Result.Failure<int>(SaleErrors.Failure("No se pudo agregar el producto a la venta."));
+            return Result.Failure(SaleErrors.Failure("No se pudo agregar el producto a la venta."));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error adding product {ProductId} to sale {SaleId}", productId, saleId);
-            return Result.Failure<int>(SaleErrors.Failure("Ocurrió un error inesperado al intentar agregar el producto a la venta."));
+            return Result.Failure(SaleErrors.Failure("Ocurrió un error inesperado al intentar agregar el producto a la venta."));
         }
     }
 
@@ -351,8 +497,14 @@ public sealed class SaleService : ISaleService
             if (sale == null)
                 return Result.Failure(SaleErrors.NotFound(saleId));
 
-            var result = ReturnProduct(sale, saleItemId);
-            if (!result.IsSuccess)
+            var item = sale.Items.SingleOrDefault(i => i.Id == saleItemId);
+
+            if (item == null)
+                return Result.Failure(SaleErrors.SaleItemNotFound(saleId));
+
+
+            var result = ReturnProduct(sale, item);
+            if (result.IsFailure)
                 return result;
 
             await context.SaveChangesAsync(ct);
@@ -365,13 +517,15 @@ public sealed class SaleService : ISaleService
         }
     }
 
-    public async Task<Result<int>> RegisterPayment(int saleId, CreatePaymentDto paymentDto, CancellationToken ct)
+    public async Task<Result> RegisterPaymentAsync(int saleId, CreatePaymentDto paymentDto, CancellationToken ct)
     {
         var validator = new CreatePaymentDtoValidator();
+
         var validatonResult = await validator.ValidateAsync(paymentDto, ct);
+
         if (!validatonResult.IsValid)
         {
-            return Result.Failure<int>(SaleErrors.Failure(validatonResult.ToString()));
+            return Result.Failure(SaleErrors.Failure(validatonResult.ToString()));
         }
 
         try
@@ -384,7 +538,12 @@ public sealed class SaleService : ISaleService
 
             if (sale == null)
             {
-                return Result.Failure<int>(SaleErrors.NotFound(saleId));
+                return Result.Failure(SaleErrors.NotFound(saleId));
+            }
+
+            if (sale.Status == SaleStatus.Cancelled)
+            {
+                return Result.Failure(SaleErrors.Failure("No se puede agregar pagos a una venta cancelada."));
             }
 
             var payment = new Payment
@@ -399,37 +558,39 @@ public sealed class SaleService : ISaleService
             var addResult = AddPaymentToSale(sale, payment);
             if (!addResult.IsSuccess)
             {
-                return Result.Failure<int>(SaleErrors.Failure(addResult.Error.Description));
+                return Result.Failure(SaleErrors.Failure(addResult.Error.Description));
             }
 
             var save = await context.SaveChangesAsync(ct);
             if (save > 0)
             {
-                return Result.Success(payment.Id);
+                return Result.Success();
             }
-            return Result.Failure<int>(SaleErrors.Failure("No se pudo agregar el pago a la venta."));
+            return Result.Failure(SaleErrors.Failure("No se pudo agregar el pago a la venta."));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error adding payment to sale {SaleId}", saleId);
-            return Result.Failure<int>(SaleErrors.Failure("Ocurrió un error inesperado al intentar agregar el pago."));
+            return Result.Failure(SaleErrors.Failure("Ocurrió un error inesperado al intentar agregar el pago."));
         }
     }
 
-    public async Task<Result> RefundPaymentAsync(int saleId, int paymentId, decimal amount, string? reason, CancellationToken ct)
+    public async Task<Result> RefundPaymentAsync(int saleId, RefundPaymentDto refundPayment, CancellationToken ct)
     {
         if (saleId < 1)
             return Result.Failure(SaleErrors.Failure("El ID de la venta debe ser mayor a cero."));
 
-        if (paymentId < 1)
+        if (refundPayment.PaymentId < 1)
             return Result.Failure(SaleErrors.Failure("El ID del pago debe ser mayor a cero."));
-
-        if (amount <= 0)
-            return Result.Failure(SaleErrors.Failure("El monto del reembolso debe ser mayor que cero."));
 
         try
         {
             var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var payment = await context.Payments.FirstOrDefaultAsync(p => p.Id == refundPayment.PaymentId && p.SaleId == saleId, ct);
+
+            if (payment is null)
+                return Result.Failure(SaleErrors.PaymentNotFound(refundPayment.PaymentId));
 
             var sale = await context.Sales
                 .Include(s => s.Payments)
@@ -438,8 +599,8 @@ public sealed class SaleService : ISaleService
             if (sale == null)
                 return Result.Failure(SaleErrors.NotFound(saleId));
 
-            var result = RefundPayment(sale, paymentId, amount, reason);
-            if (!result.IsSuccess)
+            var result = RefundPayment(sale, payment, refundPayment.Reason);
+            if (result.IsFailure)
                 return result;
 
             await context.SaveChangesAsync(ct);
@@ -447,173 +608,113 @@ public sealed class SaleService : ISaleService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error refunding payment {PaymentId} for sale {SaleId}", paymentId, saleId);
+            _logger.LogError(ex, "Error refunding payment '{PaymentId}' for sale '{SaleId}'", refundPayment.PaymentId, saleId);
             return Result.Failure(SaleErrors.Failure("Ocurrió un error inesperado al intentar reembolsar el pago."));
-        }
-    }
-
-    public async Task<Result> EditAsync(EditSaleDto editSaleDto, CancellationToken ct)
-    {
-        if (editSaleDto.Id < 1)
-            return Result.Failure(SaleErrors.Failure("El Id debe ser mayor que cero."));
-
-        var validator = new EditSaleDtoValidator();
-        var validationResult = await validator.ValidateAsync(editSaleDto, ct);
-
-        if (!validationResult.IsValid)
-            return Result.Failure(SaleErrors.Failure(validationResult.ToString()));
-
-        try
-        {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
-
-            Sale? sale = await _context.Sales.FirstOrDefaultAsync(b => b.Id == editSaleDto.Id, ct);
-            if (sale == null)
-            {
-                return Result.Failure(SaleErrors.NotFound(editSaleDto.Id));
-            }
-
-            sale.Notes = editSaleDto.Notes;
-
-            var saved = await _context.SaveChangesAsync(ct);
-            if (saved > 0)
-            {
-                return Result.Success();
-            }
-            return Result.Failure(SaleErrors.Failure("No se pudo editar la venta."));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while trying to edit the sale with ID {editSaleDto.Id}.", editSaleDto.Id);
-            return Result.Failure(SaleErrors.Failure($"Ocurrió un error inesperado al intentar editar la venta."));
-        }
-    }
-
-    public async Task<Result> DeleteByIdAsync(int saleId, CancellationToken ct)
-    {
-        if (saleId < 1)
-            return Result.Failure(SaleErrors.Failure("El Id debe ser mayor que cero."));
-
-        try
-        {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
-
-            var sale = await _context.Sales
-                .Include(s => s.Items)
-                .Include(s => s.Payments)
-                .FirstOrDefaultAsync(b => b.Id == saleId, ct);
-
-            if (sale is null)
-                return Result.Failure(SaleErrors.NotFound(saleId));
-
-            if (sale.Items.Count > 0)
-            {
-                return Result.Failure(SaleErrors.Failure("No se puede borrar una venta que contiene productos vendidos."));
-            }
-
-            if (sale.Payments.Count > 0)
-            {
-                return Result.Failure(SaleErrors.Failure("No se puede borrar una venta que contiene pagos."));
-            }
-
-            _context.Sales.Remove(sale);
-            var saved = await _context.SaveChangesAsync(ct);
-            if (saved > 0)
-            {
-                return Result.Success(true);
-            }
-            return Result.Failure(SaleErrors.Failure("No se pudo borrar la venta."));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while trying to delete the sale with ID {saleId}", saleId);
-            return Result.Failure(SaleErrors.Failure($"Ocurrió un error inesperado al intentar borrar la venta."));
         }
     }
 
     private static Result AddProductToSale(Sale sale, Product product)
     {
-        RecalculateSale(sale);
+        if (sale.Status == SaleStatus.Cancelled)
+            return Result.Failure(SaleErrors.Failure("No se puede agregar un producto a una venta cancelada."));
 
-        if (product.Status == ProductStatus.Sold || product.SaleId != null)
+        if (product.Status == ProductStatus.Sold)
             return Result.Failure(SaleErrors.Failure("El producto ya fue vendido."));
 
-        if (sale.Items.Any(i => i.ProductId == product.Id))
+        if (sale.Items.Any(i => i.ProductId == product.Id && !i.ReturnedAt.HasValue))
             return Result.Failure(SaleErrors.Failure("El producto ya está incluido en la venta."));
-
-        product.Box = null;
-        product.Status = ProductStatus.Sold;
-        product.Sale = sale;
 
         var saleItem = new SaleItem
         {
             ProductId = product.Id,
-            ProductCode = product.ProductCode,
+            ProductCode = product.Code,
             Price = product.Price,
             Size = product.Size,
             Category = product.Category,
             Description = product.Description,
             Quality = product.Quality,
-            Body = product.Body
+            Body = product.Body,
+            CreatedAt = DateTime.Now
         };
 
         sale.Items.Add(saleItem);
-        RecalculateSale(sale);
+
+        var result = RecalculateSale(sale);
+        if (result.IsFailure)
+        {
+            sale.Items.Remove(saleItem);
+            return Result.Failure(result.Error);
+        }
+
+        product.Box = null;
+        product.BoxId = null;
+        product.Status = ProductStatus.Sold;
+        product.Sale = sale;
 
         return Result.Success();
     }
 
-    private static Result ReturnProduct(Sale sale, int saleItemId)
+    private static Result ReturnProduct(Sale sale, SaleItem item)
     {
-        RecalculateSale(sale);
+        var saleItem = sale.Items.SingleOrDefault(i => i.Id == item.Id);
 
-        var saleItem = sale.Items.SingleOrDefault(i => i.Id == saleItemId);
         if (saleItem == null)
-            return Result.Failure(SaleErrors.SaleItemNotFound(saleItemId));
+            return Result.Failure(SaleErrors.SaleItemNotFound(item.Id));
 
         if (saleItem.ReturnedAt != null)
-            return Result.Failure(SaleErrors.SaleItemAlreadyReturned(saleItemId));
+            return Result.Failure(SaleErrors.SaleItemAlreadyReturned(item.Id));
+
+        var originalReturnedAt = saleItem.ReturnedAt;
 
         saleItem.ReturnedAt = DateTime.Now;
-        RecalculateSale(sale);
+
+        var result = RecalculateSale(sale);
+        if (result.IsFailure)
+        {
+            saleItem.ReturnedAt = originalReturnedAt;
+            return Result.Failure(result.Error);
+        }
 
         return Result.Success();
     }
 
     private static Result AddPaymentToSale(Sale sale, Payment payment)
     {
-        RecalculateSale(sale);
-
         if (sale.AmountPaid + payment.Amount > sale.TotalAmount)
             return Result.Failure(SaleErrors.Failure("El monto total abonado no puede exceder el total a pagar."));
 
-        payment.Sale = sale;
         sale.Payments.Add(payment);
-        RecalculateSale(sale);
+
+        var result = RecalculateSale(sale);
+        if (result.IsFailure)
+        {
+            sale.Payments.Remove(payment);
+            return Result.Failure(result.Error);
+        }
+
+        payment.Sale = sale;
 
         return Result.Success();
     }
 
-    private static Result RefundPayment(Sale sale, int paymentId, decimal amount, string? reason = null)
+    private static Result RefundPayment(Sale sale, Payment payment, string? reason = null)
     {
-        RecalculateSale(sale);
-
-        if (amount <= 0)
-            return Result.Failure(SaleErrors.Failure("El monto del reembolso debe ser mayor que cero."));
-
-        var payment = sale.Payments.SingleOrDefault(p => p.Id == paymentId);
-        if (payment == null)
-            return Result.Failure(SaleErrors.Failure("No se encontró el pago asociado al reembolso."));
-
         if (payment.RefundedAt.HasValue)
             return Result.Failure(SaleErrors.Failure("El pago ya fue reembolsado."));
 
-        if (amount > payment.Amount)
-            return Result.Failure(SaleErrors.Failure("El monto del reembolso no puede exceder el pago original."));
+        var originalRefundedAt = payment.RefundedAt;
+        var originalRefundReason = payment.RefundReason;
 
         payment.RefundedAt = DateTime.UtcNow;
         payment.RefundReason = reason;
-        RecalculateSale(sale);
+
+        var result = RecalculateSale(sale);
+        if (result.IsFailure)
+        {
+            payment.RefundedAt = originalRefundedAt;
+            payment.RefundReason = originalRefundReason;
+            return Result.Failure(result.Error);
+        }
 
         return Result.Success();
     }

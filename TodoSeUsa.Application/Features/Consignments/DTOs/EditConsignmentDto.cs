@@ -2,6 +2,8 @@
 
 public class EditConsignmentDto
 {
+    public int Id { get; set; }
+
     public DateTime DateIssued { get; set; }
 
     public string? Notes { get; set; }

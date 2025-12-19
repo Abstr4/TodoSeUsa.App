@@ -1,4 +1,5 @@
 ﻿using TodoSeUsa.Application.Features.Products.DTOs;
+using TodoSeUsa.Domain.Validators;
 
 namespace TodoSeUsa.Application.Features.Products.Validators;
 
@@ -6,35 +7,39 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
 {
     public CreateProductDtoValidator()
     {
-        RuleFor(x => x.Price)
+        RuleFor(p => p.Price)
             .NotEmpty().WithMessage("El precio es obligatorio.")
             .GreaterThan(0).WithMessage("El precio debe ser mayor que cero.");
 
-        RuleFor(x => x.Category)
+        RuleFor(p => p.Category)
             .NotEmpty().WithMessage("La categoría es obligatoria.")
             .MaximumLength(100).WithMessage("La longitud de la categoría debe ser menor que 100 carácteres.");
 
-        RuleFor(x => x.Description)
+        RuleFor(p => p.Description)
             .NotEmpty().WithMessage("La descripción es obligatoria.")
             .MaximumLength(250).WithMessage("La longitud de la descripción debe ser menor que 250 carácteres.");
 
-        RuleFor(x => x.Season)
+        RuleFor(p => p.Season)
             .MaximumLength(250).WithMessage("La longitud de la temporada debe ser menor que 250 carácteres.");
 
-        RuleFor(x => x.Quality)
+        RuleFor(p => p.Quality)
             .Must(q => Enum.IsDefined(q))
             .WithMessage("La calidad del producto no es válida.");
 
-        RuleFor(x => x.RefurbishmentCost)
+        RuleFor(p => p.RefurbishmentCost)
             .GreaterThan(0).WithMessage("El costo de arreglo debe ser mayor que cero.")
-            .When(x => x.RefurbishmentCost.HasValue);
+            .When(p => p.RefurbishmentCost.HasValue);
 
-        RuleFor(x => x.ConsignmentId)
+        RuleFor(p => p.ConsignmentId)
             .NotEmpty().WithMessage("El Id del consignamiento es obligatorio.")
             .GreaterThan(0).WithMessage("El Id del consignamiento debe ser mayor que cero.");
 
-        RuleFor(x => x.BoxId)
+        RuleFor(p => p.BoxId)
             .GreaterThan(0).WithMessage("El Id de la caja debe ser mayor que cero.")
-            .When(x => x.BoxId.HasValue);
+            .When(p => p.BoxId.HasValue);
+
+        RuleFor(p => p.BoxCode)
+            .Must(code => code == null || CodesValidators.ValidateBoxCode(code))
+            .WithMessage("Código inválido.");
     }
 }

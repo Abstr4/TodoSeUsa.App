@@ -12,7 +12,7 @@ public interface IConsignmentService
 
     Task<Result<PagedItems<ConsignmentDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken ct);
 
-    Task<Result> EditByIdAsync(int consignmentId, EditConsignmentDto editConsignmentDto, CancellationToken ct);
+    Task<Result> EditByIdAsync(EditConsignmentDto editConsignmentDto, CancellationToken ct);
 
     Task<Result> DeleteByIdAsync(int consignmentId, CancellationToken ct);
 }

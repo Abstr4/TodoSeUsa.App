@@ -6,7 +6,7 @@ public record BoxDto
 
     public int TotalProducts { get; init; }
 
-    public string BoxCode { get; init; } = string.Empty;
+    public string Code { get; init; } = string.Empty;
 
     public string Location { get; init; } = string.Empty;
 

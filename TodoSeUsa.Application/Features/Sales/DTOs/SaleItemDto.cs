@@ -4,7 +4,7 @@ namespace TodoSeUsa.Application.Features.Sales.DTOs;
 
 public class SaleItemDto
 {
-    public int ProductId { get; set; }
+    public int? ProductId { get; set; }
 
     public string ProductCode { get; set; } = string.Empty;
 

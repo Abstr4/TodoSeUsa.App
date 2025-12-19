@@ -1,6 +1,6 @@
 ﻿using System.Linq.Dynamic.Core;
-using TodoSeUsa.Application.Common.Enums;
-using TodoSeUsa.Application.Common.Helpers;
+using TodoSeUsa.Application.Common.Querying.CustomCases;
+using TodoSeUsa.Application.Common.Querying.Extensions;
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Consignments.DTOs;
 using TodoSeUsa.Application.Features.Consignments.Interfaces;
@@ -12,30 +12,29 @@ public sealed class ConsignmentService : IConsignmentService
 {
     private readonly ILogger<ConsignmentService> _logger;
     private readonly IApplicationDbContextFactory _contextFactory;
+    private readonly UniqueConsignmentCodeService _uniqueCodeService;
 
-    public ConsignmentService(ILogger<ConsignmentService> logger, IApplicationDbContextFactory contextFactory)
+    public ConsignmentService(ILogger<ConsignmentService> logger, IApplicationDbContextFactory contextFactory, UniqueConsignmentCodeService uniqueCodeService)
     {
         _logger = logger;
         _contextFactory = contextFactory;
+        _uniqueCodeService = uniqueCodeService;
     }
 
-    public async Task<Result<PagedItems<ConsignmentDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
+    public async Task<Result<PagedItems<ConsignmentDto>>> GetAllAsync(QueryRequest request, CancellationToken cancellationToken)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+        var _context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
         var query = _context.Consignments
             .Include(c => c.Provider)
                 .ThenInclude(p => p.Person)
             .AsQueryable();
 
-        if (request.Filters != null && request.Filters.Count > 0)
-        {
-            query = ApplyCustomFilter(query, request);
-        }
-
+        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ConsignmentFilters);
+        
         query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ConsignmentSorts);
 
-        var totalCount = await query.CountAsync(ct);
+        var totalCount = await query.CountAsync(cancellationToken);
 
         query = query.Skip(request.Skip).Take(request.Take);
 
@@ -43,6 +42,7 @@ public sealed class ConsignmentService : IConsignmentService
             .Select(c => new ConsignmentDto
             {
                 Id = c.Id,
+                Code = c.Code,
                 TotalProducts = c.Products.Count,
                 ProviderFirstName = c.Provider.Person.FirstName,
                 ProviderLastName = c.Provider.Person.LastName,
@@ -52,7 +52,7 @@ public sealed class ConsignmentService : IConsignmentService
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
             })
-        .ToListAsync(ct);
+        .ToListAsync(cancellationToken);
 
         return Result.Success(new PagedItems<ConsignmentDto>
         {
@@ -61,23 +61,20 @@ public sealed class ConsignmentService : IConsignmentService
         });
     }
 
-    public async Task<Result<PagedItems<ConsignmentDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken ct)
+    public async Task<Result<PagedItems<ConsignmentDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken cancellationToken)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+        var _context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
         var query = _context.Consignments
             .Include(c => c.Provider)
                 .ThenInclude(p => p.Person)
             .Where(c => c.ProviderId == providerId);
 
-        if (request.Filters != null && request.Filters.Count > 0)
-        {
-            query = ApplyCustomFilter(query, request);
-        }
+        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ConsignmentFilters);
 
         query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ConsignmentSorts);
 
-        var totalCount = await query.CountAsync(ct);
+        var totalCount = await query.CountAsync(cancellationToken);
 
         query = query.Skip(request.Skip).Take(request.Take);
 
@@ -85,6 +82,7 @@ public sealed class ConsignmentService : IConsignmentService
             .Select(c => new ConsignmentDto
             {
                 Id = c.Id,
+                Code = c.Code,
                 TotalProducts = c.Products.Count,
                 ProviderFirstName = c.Provider.Person.FirstName,
                 ProviderLastName = c.Provider.Person.LastName,
@@ -94,7 +92,7 @@ public sealed class ConsignmentService : IConsignmentService
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
             })
-        .ToListAsync(ct);
+        .ToListAsync(cancellationToken);
 
         return Result.Success(new PagedItems<ConsignmentDto>
         {
@@ -103,20 +101,21 @@ public sealed class ConsignmentService : IConsignmentService
         });
     }
 
-    public async Task<Result<ConsignmentDto>> GetByIdAsync(int consignmentId, CancellationToken ct)
+    public async Task<Result<ConsignmentDto>> GetByIdAsync(int consignmentId, CancellationToken cancellationToken)
     {
         if (consignmentId <= 0)
             return Result.Failure<ConsignmentDto>(ConsignmentErrors.Failure("El Id debe ser mayor que cero."));
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            var _context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
             var consignmentDto = await _context.Consignments
                 .Where(c => c.Id == consignmentId)
                 .Select(c => new ConsignmentDto
                 {
                     Id = c.Id,
+                    Code = c.Code,
                     TotalProducts = c.Products.Count,
                     ProviderId = c.ProviderId,
                     ProviderFirstName = c.Provider.Person.FirstName,
@@ -127,7 +126,7 @@ public sealed class ConsignmentService : IConsignmentService
                     UpdatedAt = c.UpdatedAt
                 })
                 .AsNoTracking()
-                .FirstOrDefaultAsync(ct);
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (consignmentDto == null)
                 return Result.Failure<ConsignmentDto>(ConsignmentErrors.NotFound(consignmentId));
@@ -141,30 +140,32 @@ public sealed class ConsignmentService : IConsignmentService
         }
     }
 
-    public async Task<Result<int>> CreateAsync(CreateConsignmentDto createConsignmentDto, CancellationToken ct)
+    public async Task<Result<int>> CreateAsync(CreateConsignmentDto createConsignmentDto, CancellationToken cancellationToken)
     {
         var validator = new CreateConsignmentDtoValidator();
-        var validationResult = await validator.ValidateAsync(createConsignmentDto, ct);
+        var validationResult = await validator.ValidateAsync(createConsignmentDto, cancellationToken);
 
         if (!validationResult.IsValid)
             return Result.Failure<int>(ConsignmentErrors.Failure(validationResult.ToString()));
 
+        var code = await _uniqueCodeService.GenerateAsync(cancellationToken);
+
         Consignment consignment = new()
         {
-            ProviderId = createConsignmentDto.ProviderId,
-            DateIssued = createConsignmentDto.DateIssued,
+            Code = code,
+            DateIssued = createConsignmentDto.DateIssued ?? DateTime.Now,
             Notes = createConsignmentDto.Notes,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now
+            ProviderId = createConsignmentDto.ProviderId,
+            CreatedAt = DateTime.Now
         };
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            var _context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
-            var entry = await _context.Consignments.AddAsync(consignment, ct);
+            var entry = await _context.Consignments.AddAsync(consignment, cancellationToken);
 
-            var saved = await _context.SaveChangesAsync(ct);
+            var saved = await _context.SaveChangesAsync(cancellationToken);
 
             if (saved > 0)
                 return Result.Success(entry.Entity.Id);
@@ -178,18 +179,18 @@ public sealed class ConsignmentService : IConsignmentService
         }
     }
 
-    public async Task<Result> DeleteByIdAsync(int consignmentId, CancellationToken ct)
+    public async Task<Result> DeleteByIdAsync(int consignmentId, CancellationToken cancellationToken)
     {
-        if (consignmentId <= 0)
+        if (consignmentId < 1)
             return Result.Failure<bool>(ConsignmentErrors.Failure("El Id debe ser mayor que cero."));
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            var _context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
             var consignment = await _context.Consignments
                 .Include(b => b.Products)
-                .FirstOrDefaultAsync(b => b.Id == consignmentId, ct);
+                .FirstOrDefaultAsync(b => b.Id == consignmentId, cancellationToken);
 
             if (consignment is null)
                 return Result.Failure<bool>(ConsignmentErrors.NotFound(consignmentId));
@@ -200,7 +201,7 @@ public sealed class ConsignmentService : IConsignmentService
             }
 
             _context.Consignments.Remove(consignment);
-            await _context.SaveChangesAsync(ct);
+            await _context.SaveChangesAsync(cancellationToken);
             return Result.Success(true);
         }
         catch (Exception ex)
@@ -210,80 +211,35 @@ public sealed class ConsignmentService : IConsignmentService
         }
     }
 
-    public async Task<Result> EditByIdAsync(int consignmentId, EditConsignmentDto editConsignmentDto, CancellationToken ct)
+    public async Task<Result> EditByIdAsync(EditConsignmentDto editConsignmentDto, CancellationToken cancellationToken)
     {
-        if (consignmentId <= 0)
-            return Result.Failure<bool>(ConsignmentErrors.Failure("El Id debe ser mayor que cero."));
-
         var validator = new EditConsignmentDtoValidator();
-        var validationResult = await validator.ValidateAsync(editConsignmentDto, ct);
+        var validationResult = await validator.ValidateAsync(editConsignmentDto, cancellationToken);
 
         if (!validationResult.IsValid)
             return Result.Failure<bool>(ConsignmentErrors.Failure(validationResult.ToString()));
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            var _context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
-            Consignment? consignment = await _context.Consignments.FirstOrDefaultAsync(b => b.Id == consignmentId, ct);
+            Consignment? consignment = await _context.Consignments.FirstOrDefaultAsync(b => b.Id == editConsignmentDto.Id, cancellationToken);
             if (consignment == null)
             {
-                return Result.Failure<bool>(ConsignmentErrors.NotFound(consignmentId));
+                return Result.Failure<bool>(ConsignmentErrors.NotFound(editConsignmentDto.Id));
             }
+
             consignment.DateIssued = editConsignmentDto.DateIssued;
             consignment.Notes = editConsignmentDto.Notes;
             consignment.ProviderId = editConsignmentDto.ProviderId;
 
-            await _context.SaveChangesAsync(ct);
+            await _context.SaveChangesAsync(cancellationToken);
             return Result.Success(true);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while trying to edit the consignment with ID {consignmentId}.", consignmentId);
+            _logger.LogError(ex, "An error occurred while trying to edit the consignment with ID {Id}.", editConsignmentDto.Id);
             return Result.Failure<bool>(ConsignmentErrors.Failure($"Ocurrió un error inesperado al intentar editar la consignación."));
         }
-    }
-
-    public static IQueryable<Consignment> ApplyCustomFilter(IQueryable<Consignment> query, QueryRequest request)
-    {
-        if (request.Filters == null || request.Filters.Count == 0)
-            return query;
-
-        var remainingFilters = new List<FilterDescriptor>();
-
-        foreach (var filter in request.Filters)
-        {
-            if (string.IsNullOrWhiteSpace(filter.Property) || filter.FilterValue == null)
-                continue;
-
-            switch (filter.Property)
-            {
-                case "ProviderFullName":
-                    var val = filter.FilterValue.ToString();
-                    query = query.Where(c =>
-                        EF.Functions.Like(c.Provider.Person.FirstName, $"%{val}%") ||
-                        EF.Functions.Like(c.Provider.Person.LastName, $"%{val}%")
-                    // || EF.Functions.Like(EF.Property<int>(c, "ProviderId").ToString(), $"%{val}%")
-                    );
-                    break;
-
-                default:
-                    remainingFilters.Add(filter);
-                    break;
-            }
-        }
-
-        if (remainingFilters.Count > 0)
-        {
-            var subRequest = new QueryRequest
-            {
-                Filters = remainingFilters,
-                LogicalFilterOperator = request.LogicalFilterOperator
-            };
-            var predicate = PredicateBuilder.BuildPredicate<Consignment>(subRequest);
-            query = query.Where(predicate);
-        }
-
-        return query;
     }
 }

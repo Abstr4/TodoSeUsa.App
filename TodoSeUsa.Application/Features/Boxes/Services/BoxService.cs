@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Linq.Dynamic.Core;
-using TodoSeUsa.Application.Common.Helpers;
-using TodoSeUsa.Application.Common.Services;
+using TodoSeUsa.Application.Common.Querying.CustomCases;
 using TodoSeUsa.Application.Features.Boxes.DTOs;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
 using TodoSeUsa.Application.Features.Boxes.Validators;
@@ -27,11 +26,7 @@ public class BoxService : IBoxService
 
         var query = _context.Boxes.AsQueryable();
 
-        if (request.Filters != null && request.Filters.Count > 0)
-        {
-            var predicate = PredicateBuilder.BuildPredicate<Box>(request);
-            query = query.Where(predicate);
-        }
+        query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator);
 
         query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.BoxCustomSorts);
 
@@ -45,7 +40,7 @@ public class BoxService : IBoxService
                 Id = b.Id,
                 TotalProducts = b.Products.Count(),
                 Location = b.Location,
-                BoxCode = $"BOX-{b.Id:D5}",
+                Code = b.Code,
                 CreatedAt = b.CreatedAt,
                 UpdatedAt = b.UpdatedAt,
             })
@@ -75,7 +70,7 @@ public class BoxService : IBoxService
                     Id = b.Id,
                     TotalProducts = b.Products.Count(),
                     Location = b.Location,
-                    BoxCode = $"BOX-{b.Id:D5}",
+                    Code = b.Code,
                     CreatedAt = b.CreatedAt,
                     UpdatedAt = b.UpdatedAt
                 })
@@ -179,7 +174,7 @@ public class BoxService : IBoxService
 
     public async Task<Result> EditBoxById(int boxId, EditBoxDto editBoxDto, CancellationToken ct)
     {
-        if (boxId <= 0)
+        if (boxId < 1)
             return Result.Failure(BoxErrors.Failure("El Id debe ser mayor que cero."));
 
         var validator = new EditBoxDtoValidator();
@@ -198,10 +193,9 @@ public class BoxService : IBoxService
             {
                 return Result.Failure(BoxErrors.NotFound(boxId));
             }
-            if (!string.IsNullOrWhiteSpace(editBoxDto.Location))
-            {
-                box.Location = editBoxDto.Location;
-            }
+
+            box.Location = editBoxDto.Location;
+            
             await _context.SaveChangesAsync(ct);
             return Result.Success();
         }
@@ -214,7 +208,7 @@ public class BoxService : IBoxService
 
     public async Task<Result> DeleteBoxById(int boxId, CancellationToken ct)
     {
-        if (boxId <= 0)
+        if (boxId < 1)
             return Result.Failure(BoxErrors.Failure("El Id debe ser mayor que cero."));
 
         try
@@ -222,6 +216,7 @@ public class BoxService : IBoxService
             var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var box = await _context.Boxes
+                .Include(b => b.Products)
                 .FirstOrDefaultAsync(b => b.Id == boxId, ct);
 
             if (box is null)

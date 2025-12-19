@@ -1,9 +1,11 @@
 ﻿using System.Text.RegularExpressions;
-using TodoSeUsa.Application.Common.Helpers;
+using TodoSeUsa.Application.Common.Querying.CustomCases;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Products.Interfaces;
 using TodoSeUsa.Application.Features.Products.Validators;
+using TodoSeUsa.Domain.Common;
 using TodoSeUsa.Domain.Enums;
+using TodoSeUsa.Domain.Rules;
 
 namespace TodoSeUsa.Application.Features.Products.Services;
 
@@ -19,10 +21,7 @@ public partial class ProductService : IProductService
         _contextFactory = contextFactory;
     }
 
-    public async Task<Result<PagedItems<ProductDto>>> GetByBoxIdAsync(
-    QueryRequest request,
-    int boxId,
-    CancellationToken ct)
+    public async Task<Result<PagedItems<ProductDto>>> GetByBoxIdAsync(QueryRequest request, int boxId, CancellationToken ct)
     {
         if (boxId < 1)
         {
@@ -50,6 +49,7 @@ public partial class ProductService : IProductService
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
+                    Code = p.Code,
                     Price = p.Price,
                     Category = p.Category,
                     Description = p.Description,
@@ -84,10 +84,7 @@ public partial class ProductService : IProductService
 
     }
 
-    public async Task<Result<PagedItems<ProductDto>>> GetByConsignmentIdAsync(
-    QueryRequest request,
-    int consignmentId,
-    CancellationToken ct)
+    public async Task<Result<PagedItems<ProductDto>>> GetByConsignmentIdAsync(QueryRequest request, int consignmentId, CancellationToken ct)
     {
         if (consignmentId < 1)
         {
@@ -115,6 +112,7 @@ public partial class ProductService : IProductService
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
+                    Code = p.Code,
                     Price = p.Price,
                     Category = p.Category,
                     Description = p.Description,
@@ -148,10 +146,7 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result<PagedItems<ProductDto>>> GetByProviderIdAsync(
-        QueryRequest request,
-        int providerId,
-        CancellationToken ct)
+    public async Task<Result<PagedItems<ProductDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken ct)
     {
         if (providerId < 1)
         {
@@ -180,6 +175,7 @@ public partial class ProductService : IProductService
                 {
                     Id = p.Id,
                     Price = p.Price,
+                    Code = p.Code,
                     Category = p.Category,
                     Description = p.Description,
                     Body = p.Body,
@@ -208,9 +204,7 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result<PagedItems<ProductDto>>> GetAllAsync(
-    QueryRequest request,
-    CancellationToken ct)
+    public async Task<Result<PagedItems<ProductDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
     {
         try
         {
@@ -234,6 +228,7 @@ public partial class ProductService : IProductService
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
+                    Code = p.Code,
                     Price = p.Price,
                     Category = p.Category,
                     Description = p.Description,
@@ -283,7 +278,7 @@ public partial class ProductService : IProductService
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
-                    ProductCode = p.ProductCode,
+                    Code = p.Code,
                     Price = p.Price,
                     Category = p.Category,
                     Description = p.Description,
@@ -318,12 +313,16 @@ public partial class ProductService : IProductService
 
     public async Task<Result<ProductDto>> GetByCodeAsync(string productCode, CancellationToken ct)
     {
-        productCode = NormalizeProductCode(productCode);
+        string code;
 
-        if (!Regex.IsMatch(productCode, @"^TSU-\d+$"))
+        try
+        {
+            code = ProductCodeRules.NormalizeAndValidate(productCode);
+        }
+        catch (DomainException ex)
         {
             return Result.Failure<ProductDto>(
-                ProductErrors.Failure("El código es inválido, debe comenzar con 'TSU-' y continuar con números.")
+                ProductErrors.Failure(ex.Message)
             );
         }
 
@@ -336,7 +335,7 @@ public partial class ProductService : IProductService
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
-                    ProductCode = p.ProductCode,
+                    Code = p.Code,
                     Price = p.Price,
                     Category = p.Category,
                     Description = p.Description,
@@ -355,19 +354,19 @@ public partial class ProductService : IProductService
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt
                 })
-                .Where(p => p.ProductCode == productCode)
+                .Where(p => p.Code == code)
                 .FirstOrDefaultAsync(ct);
 
             if (product == null)
             {
-                return Result.Failure<ProductDto>(ProductErrors.NotFound(productCode));
+                return Result.Failure<ProductDto>(ProductErrors.NotFound(code));
             }
 
             return Result.Success(product);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting product by code {ProductCode}", productCode);
+            _logger.LogError(ex, "Error getting product by code {code}", code);
             return Result.Failure<ProductDto>(
                 ProductErrors.Failure("Ocurrió un error inesperado al buscar el producto.")
             );
@@ -382,35 +381,56 @@ public partial class ProductService : IProductService
         if (!validationResult.IsValid)
             return Result.Failure<bool>(ProductErrors.Failure(validationResult.ToString()));
 
-        Product product = new()
-        {
-            Price = productDto.Price,
-            Category = productDto.Category,
-            Description = productDto.Description,
-            Body = productDto.Body,
-            Size = productDto.Size,
-            Quality = productDto.Quality,
-            Status = ProductStatus.Available,
-            Season = productDto.Season,
-            RefurbishmentCost = productDto.RefurbishmentCost,
-            ConsignmentId = productDto.ConsignmentId,
-            BoxId = productDto.BoxId
-        };
-
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            var context = await _contextFactory.CreateDbContextAsync(ct);
 
-            await _context.Products.AddAsync(product, ct);
-            await _context.SaveChangesAsync(ct);
+            int? boxId = null;
+
+            if (productDto.BoxCode != null)
+            {
+                var boxIdResult = await context.Boxes
+                    .Where(x => x.Code == productDto.BoxCode)
+                    .Select(x => x.Id)
+                    .SingleOrDefaultAsync(ct);
+
+                if (boxIdResult == 0)
+                    return Result.Failure<bool>(
+                        ProductErrors.Failure($"La caja con el código '{productDto.BoxCode}' no existe.")
+                    );
+
+                boxId = boxIdResult;
+            }
+
+            Product product = new()
+            {
+                Price = productDto.Price,
+                Category = productDto.Category,
+                Description = productDto.Description,
+                Body = productDto.Body,
+                Size = productDto.Size,
+                Quality = productDto.Quality,
+                Status = ProductStatus.Available,
+                Season = productDto.Season,
+                RefurbishmentCost = productDto.RefurbishmentCost,
+                ConsignmentId = productDto.ConsignmentId,
+                BoxId = boxId
+            };
+
+            await context.Products.AddAsync(product, ct);
+            await context.SaveChangesAsync(ct);
+
             return Result.Success(true);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while trying to create the product.");
-            return Result.Failure<bool>(ProductErrors.Failure($"Ocurrió un error inesperado al intentar crear el producto."));
+            return Result.Failure<bool>(
+                ProductErrors.Failure("Ocurrió un error inesperado al intentar crear el producto.")
+            );
         }
     }
+
 
     public async Task<Result> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct)
     {
@@ -524,16 +544,6 @@ public partial class ProductService : IProductService
         }
 
         return errors;
-    }
-
-    private static string NormalizeProductCode(string code)
-    {
-        var trimmed = code.Trim();
-
-        if (trimmed.StartsWith("TSU-", StringComparison.OrdinalIgnoreCase))
-            return trimmed.ToUpperInvariant();
-
-        return $"TSU-{trimmed}";
     }
 
     private static IEnumerable<CreateProductDto> ExpandByQuantity(IEnumerable<CreateProductDto> dtos)

@@ -4,6 +4,8 @@ public record ConsignmentDto
 {
     public int Id { get; init; }
 
+    public string Code { get; init; } = string.Empty;
+
     public string ProviderFirstName { get; init; } = string.Empty;
 
     public string ProviderLastName { get; init; } = string.Empty;
