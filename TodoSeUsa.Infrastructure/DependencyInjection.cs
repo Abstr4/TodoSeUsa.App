@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TodoSeUsa.Application.Common.Interfaces;
 using TodoSeUsa.Infrastructure.Data.Interceptors;
+using TodoSeUsa.Infrastructure.Persistance.Seed;
 
 namespace TodoSeUsa.Infrastructure;
 
@@ -24,5 +25,7 @@ public static class DependencyInjection
         });
 
         builder.Services.AddScoped<IApplicationDbContextFactory, ApplicationDbContextFactory>();
+
+        builder.Services.AddScoped<DbSeeder>();
     }
 }

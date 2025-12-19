@@ -1,19 +1,25 @@
 ﻿namespace TodoSeUsa.Infrastructure.Persistance.Seed;
 
 using Microsoft.EntityFrameworkCore;
+using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Domain.Entities;
 using TodoSeUsa.Domain.Enums;
 
-public static class DbSeeder
+public sealed class DbSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext context)
+    private readonly UniqueConsignmentCodeService _codeService;
+    public DbSeeder(UniqueConsignmentCodeService codeService)
+    {
+        _codeService = codeService;
+    }
+    public async Task SeedAsync(ApplicationDbContext context)
     {
         await SeedBoxesAsync(context);
         await SeedPeopleAsync(context);
         await SeedProvidersAsync(context);
         await SeedConsignmentsAsync(context);
         await SeedProductsAsync(context);
-        await SeedSalesAsync(context);
+        // await SeedSalesAsync(context);
         // await SeedClientsAsync(context);
         // await SeedReservationsAsync(context);
     }
@@ -65,21 +71,31 @@ public static class DbSeeder
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedConsignmentsAsync(ApplicationDbContext context)
+    public async Task SeedConsignmentsAsync(ApplicationDbContext context, CancellationToken ct = default)
     {
-        if (await context.Consignments.AnyAsync())
+        if (await context.Consignments.AnyAsync(ct))
             return;
 
-        var provider = await context.Providers.FirstAsync();
+        var provider = await context.Providers.FirstAsync(ct);
 
         var consignments = new List<Consignment>
         {
-            new() { ProviderId = provider.Id, Notes = "First consignment" },
-            new() { ProviderId = provider.Id, Notes = "Second consignment" }
+            new()
+            {
+                ProviderId = provider.Id,
+                Code = await _codeService.GenerateAsync(ct),
+                Notes = "First consignment"
+            },
+            new()
+            {
+                ProviderId = provider.Id,
+                Code = await _codeService.GenerateAsync(ct),
+                Notes = "Second consignment"
+            }
         };
 
-        await context.Consignments.AddRangeAsync(consignments);
-        await context.SaveChangesAsync();
+        await context.Consignments.AddRangeAsync(consignments, ct);
+        await context.SaveChangesAsync(ct);
     }
 
     private static async Task SeedProductsAsync(ApplicationDbContext context)
