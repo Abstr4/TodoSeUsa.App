@@ -15,6 +15,10 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
             .WithMany(s => s.Items)
             .HasForeignKey(si => si.SaleId);
 
+        builder.HasOne(si => si.Product)
+            .WithMany()
+            .IsRequired(false);
+
         builder.Property(p => p.Price)
             .IsRequired()
             .HasPrecision(18, 2);
