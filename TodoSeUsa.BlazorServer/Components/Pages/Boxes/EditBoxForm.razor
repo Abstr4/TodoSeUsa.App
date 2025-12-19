@@ -1,32 +1,40 @@
 ﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
 
-@inject IBoxService BoxService;
+@inject IBoxService _boxService;
 
-@inject DialogService DialogService;
-@inject SimpleNotifications SimpleNotifications;
-
+@inject DialogService _dialogService;
 
 <RadzenTemplateForm TItem="EditBoxDto" Data=@editBoxDto Submit=@OnSubmit>
     <RadzenStack Gap="1rem">
         <RadzenFieldset Text="Info. de la caja">
+
             <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
                 <RadzenLabel Component="Location">
                     Ubicación física
                 </RadzenLabel>
+
                 <RadzenTextBox Name="Location" @bind-Value=@editBoxDto.Location />
+
                 <RadzenLengthValidator Min="1" Max="250" Component="Location" Text="La ubicación debe entre 1 y 250 carácteres."></RadzenLengthValidator>
+
             </RadzenStack>
 
             <RadzenStack AlignItems="AlignItems.End" JustifyContent="JustifyContent.End" class="rz-mt-4">
+
                 <RadzenButton  Icon="reset_settings" Click="@ResetEditToOriginal" Text="Resetear"/>
+
             </RadzenStack>
         </RadzenFieldset>
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem" class="rz-mt-8">
-            <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled="!HasChanges()" />
-            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
+
+            <RadzenButton Icon="save" Text="Guardar" IsBusy="busy" BusyText="Editando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Disabled="!HasChanges()" />
+
+            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => _dialogService.Close())" />
         </RadzenStack>
+
     </RadzenStack>
 </RadzenTemplateForm>
 
@@ -37,6 +45,8 @@
 
     private EditBoxDto editBoxDto = new();
 
+    private bool busy = false;
+
     protected override void OnInitialized()
     {
         if (BoxDto is not null)
@@ -45,14 +55,14 @@
         }
         else
         {
-            DialogService.Close();
+            _dialogService.Close();
         }
     }
 
     async Task OnSubmit(EditBoxDto editBoxDto)
     {
-        var result = await BoxService.EditBoxById(BoxDto.Id, editBoxDto, CancellationToken.None);
-        DialogService.Close(result);
+        var result = await _boxService.EditBoxById(BoxDto.Id, editBoxDto, CancellationToken.None);
+        _dialogService.Close(result);
     }
 
     private bool HasChanges()

@@ -1,19 +1,28 @@
 ﻿@using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 
-@inject IProductService ProductService
+@inject IProductService _productService;
 
-@inject DialogService DialogService
+@inject DialogService _dialogService;
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
+
     <RadzenText TextStyle="TextStyle.H6">¿Estás seguro que deseas borrar el producto: '@ProductDto.Category - @ProductDto.Description' ID: @ProductDto.Id ?</RadzenText>
+
 </RadzenStack>
+
 <RadzenCard Variant="Variant.Outlined" Style="border-color: red;" class="d-flex align-content-center align-items-center rz-mb-4">
+
     <RadzenIcon Icon="warning" IconStyle="IconStyle.Danger" Style="font-size: 2rem" class="me-1"></RadzenIcon>
+
     <RadzenText TextStyle="TextStyle.H6" Style="color:red; margin: 0">Ésta operación no se puede revertir</RadzenText>
+
 </RadzenCard>
+
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="3rem" Wrap="FlexWrap.Wrap">
+
     <RadzenButton IsBusy="busy" Icon="delete" Text="Borrar" BusyText="Borrando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@(async() => await Delete(ProductDto.Id))" />
+
 </RadzenStack>
 
 @code
@@ -25,8 +34,8 @@
     async Task Delete(int productId)
     {
         busy = true;
-        var result = await ProductService.DeleteById(productId, CancellationToken.None);
+        var result = await _productService.DeleteById(productId, CancellationToken.None);
         busy = false;
-        DialogService.Close(result);
+        _dialogService.Close(result);
     }
 }

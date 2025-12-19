@@ -1,12 +1,10 @@
-﻿@using TodoSeUsa.BlazorServer.Helpers
+﻿
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+
     <RadzenLabel Text="Filtro de mayúsculas/minúsculas:" Component="caseSensitivity" />
-    <RadzenDropDown @bind-Value="@Value" 
-                    TextProperty="Text" 
-                    ValueProperty="Value" 
-                    Name="caseSensitivity" 
-                    Change="OnChange" 
-                    Data="@RadzenFilteringHelpers.CaseSensitivities" />
+
+    <RadzenDropDown @bind-Value="@Value" TextProperty="Text" ValueProperty="Value" Name="caseSensitivity" Change="OnChange" Data="@RadzenFilteringHelpers.CaseSensitivities" />
+
 </RadzenStack>
 
 

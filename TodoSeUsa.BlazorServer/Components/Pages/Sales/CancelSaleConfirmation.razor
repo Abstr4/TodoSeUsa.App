@@ -1,15 +1,20 @@
 ﻿@using TodoSeUsa.Application.Features.Sales.DTOs
 @using TodoSeUsa.Application.Features.Sales.Interfaces
 
-@inject ISaleService _saleService
+@inject ISaleService _saleService;
 
-@inject DialogService _dialogService
+@inject DialogService _dialogService;
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
 
     <RadzenText TextStyle="TextStyle.H6">
-        ¿Estás seguro que deseas borrar la venta con <b>ID: @SaleDto.Id </b>
-        y emitida el: <b>@SaleDto.DateIssued.ToString("yyyy/MM/dd HH:mm")</b>?</RadzenText>
+        Cancelar una venta implica la devolución de todos los productos y un reembolso de todos los pagos.
+    </RadzenText>
+
+    <RadzenText TextStyle="TextStyle.H6">
+        ¿Estás seguro que deseas cancelar la venta código: <b>@SaleDto.Code</b> con <b>ID: @SaleDto.Id </b>
+        y emitida el: <b>@SaleDto.DateIssued.ToString("yyyy/MM/dd HH:mm")?</b>
+    </RadzenText>
 </RadzenStack>
 
 <RadzenCard Variant="Variant.Outlined" Style="border-color: red;" class="d-flex align-content-center align-items-center rz-mb-4">
@@ -25,21 +30,24 @@
              Gap="3rem" 
              Wrap="FlexWrap.Wrap">
 
-    <RadzenButton IsBusy="_isDeleteButtonBusy" Icon="delete" Text="Borrar" BusyText="Borrando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@(async() => await Delete(SaleDto.Id))" />
+    <RadzenButton IsBusy="_isDeleteButtonBusy" Icon="cancel" Text="Cancelar" BusyText="Cancelando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@Delete" />
 
 </RadzenStack>
 
 @code
 {
-    [Parameter] public required SaleDto SaleDto { get; set; }
+    [Parameter] public required DetailedSaleDto SaleDto { get; set; }
 
-    private bool _isDeleteButtonBusy;
+    private bool _isDeleteButtonBusy = false;
 
-    async Task Delete(int saleId)
+    async Task Delete()
     {
+        if (SaleDto is null) return;
+
         _isDeleteButtonBusy = true;
-        var result = await _saleService.DeleteByIdAsync(saleId, CancellationToken.None);
+        var result = await _saleService.CancelByIdAsync(SaleDto.Id, null, CancellationToken.None);
         _isDeleteButtonBusy = false;
+
         _dialogService.Close(result);
     }
 }

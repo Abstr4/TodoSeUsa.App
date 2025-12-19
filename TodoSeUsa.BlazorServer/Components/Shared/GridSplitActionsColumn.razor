@@ -1,15 +1,22 @@
 ﻿@typeparam TItem 
 
 <RadzenSplitButton Icon="more_vert" Size="ButtonSize.Small" Click="@(args => OnActionClick.InvokeAsync((args, Item)))"> 
+
     <ChildContent> 
+
         <RadzenSplitButtonItem Text="Ver" Value="view" Icon="visibility" />
+
         <RadzenSplitButtonItem Text="Editar" Value="edit" Icon="edit" />
+
         <RadzenSplitButtonItem Text="Eliminar" Value="delete" Icon="delete" />
+
     </ChildContent>
+
 </RadzenSplitButton>
 
 @code
 {
     [Parameter] public TItem Item { get; set; } = default!;
+
     [Parameter] public EventCallback<(RadzenSplitButtonItem, TItem)> OnActionClick { get; set; }
 }

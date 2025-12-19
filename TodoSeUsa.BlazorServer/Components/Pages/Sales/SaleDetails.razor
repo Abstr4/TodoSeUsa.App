@@ -1,16 +1,16 @@
 ﻿@page "/ventas/{Id:int}"
 
-@using TodoSeUsa.Application.Features.Sales.DTOs
-@using TodoSeUsa.Application.Features.Sales.Interfaces
 @using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.Application.Features.Sales.DTOs
+@using TodoSeUsa.Application.Features.Sales.Interfaces
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
 
-@inject ISaleService _saleService
+@inject ISaleService _saleService;
 
-@inject NavigationManager _navigationManager
-@inject DialogService _dialogService
-@inject SimpleNotifications _simpleNotifications
+@inject NavigationManager _navigationManager;
+@inject DialogService _dialogService;
+@inject SimpleNotifications _simpleNotifications;
 @inject IJSRuntime _JS;
 
 
@@ -52,8 +52,8 @@
                             <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
                                         Click=@HandleEditSale Style="flex-grow: 1;" />
 
-                            <RadzenButton  Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger"
-                                            Click=@HandleDeleteSale Style="flex-grow: 1;"/>
+                            <RadzenButton  Icon="cancel" Text="Cancelar" ButtonStyle="ButtonStyle.Danger"
+                                            Click=@HandleCancelSale Style="flex-grow: 1;"/>
                         </RadzenStack>
                     </RadzenStack>
 
@@ -86,6 +86,16 @@
                                 </RadzenTableCell>
                             </RadzenTableRow>
 
+                        <RadzenTableRow id="code-row">
+
+                            <RadzenTableCell>
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código" style="font-weight:bold" />
+                            </RadzenTableCell>
+                            <RadzenTableCell>
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@_sale.Code" />
+                            </RadzenTableCell>
+                        </RadzenTableRow>
+
                             <RadzenTableRow id="status-row">
 
                                 <RadzenTableCell>
@@ -99,7 +109,7 @@
                             <RadzenTableRow id="TotalAmount-row">
 
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Monto total" style="font-weight:bold" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Monto total (en productos)" style="font-weight:bold" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="@($"$ {_sale.TotalAmount}")" />
@@ -260,10 +270,12 @@
 </RadzenStack>
 
 
-@code {
+@code 
+{
     [Parameter] public int Id { get; set; }
 
     private DetailedSaleDto? _sale;
+
     private bool isLoading = false;
 
     private RadzenDataGrid<SaleItemDto> productsGrid = null!;
@@ -298,7 +310,7 @@
         }
         isLoading = false;
 
-        StateHasChanged(); // Ensures grids are rendered
+        StateHasChanged();
 
         if (_sale != null && productsGrid != null && paymentsGrid != null)
         {
@@ -313,7 +325,7 @@
         if (isLoadingProducts) return;
         isLoadingProducts = true;
 
-        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
         var result = await _saleService.GetItemsAsync(Id, request, CancellationToken.None);
 
         if (result.IsSuccess)
@@ -335,7 +347,7 @@
         if (isLoadingPayments) return;
         isLoadingPayments = true;
 
-        var request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
         var result = await _saleService.GetPaymentsAsync(Id, request, CancellationToken.None);
 
         if (result.IsSuccess)
@@ -350,11 +362,6 @@
             paymentsEmptyGridMessage = result.Error.Description;
         }
         isLoadingPayments = false;
-    }
-
-    private void HandleAddProduct()
-    {
-
     }
 
     private async Task HandleEditSale()
@@ -395,27 +402,28 @@
         }
     }
 
-    private async Task HandleDeleteSale()
+    private async Task HandleCancelSale()
     {
         if (_sale is null) return;
 
-        var result = await _dialogService.OpenAsync<DeleteSaleConfirmation>($"Confirmar eliminación",
-        new Dictionary<string, object>() { { "DetailedSaleDto", _sale } },
+        var result = await _dialogService.OpenAsync<CancelSaleConfirmation>($"Confirmar cancelación",
+        new Dictionary<string, object>() { { "SaleDto", _sale } },
         new DialogOptions()
             {
                 CloseDialogOnOverlayClick = true
             }
         );
-        if (result is Result deleteResult)
+
+        if (result is Result cancelResult)
         {
-            if (deleteResult.IsSuccess)
+            if (cancelResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Venta eliminada con éxito.");
+                _simpleNotifications.Success($"Venta cancelada con éxito.");
                 await NavigationHelpers.GoBackOrHomeAsync(_JS, _navigationManager, "/ventas");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                _simpleNotifications.Error($"Error: {cancelResult.Error.Description}");
             }
         }
     }

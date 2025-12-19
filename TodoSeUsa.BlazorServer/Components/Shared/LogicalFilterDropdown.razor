@@ -1,18 +1,16 @@
 ﻿@using Radzen
 @using Radzen.Blazor
-@using TodoSeUsa.BlazorServer.Helpers
 
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+
     <RadzenLabel Text="Filtro lógico: " Component="operator" />
-    <RadzenDropDown @bind-Value="Value"
-                    TextProperty="Text"
-                    ValueProperty="Value"
-                    Name="operator"
-                    Data="@Data"
-                    Change="@OnChange" />
+
+    <RadzenDropDown @bind-Value="Value" TextProperty="Text" ValueProperty="Value" Name="operator" Data="@Data" Change="@OnChange" />
+
 </RadzenStack>
 
-@code {
+@code
+{
     [Parameter] public LogicalFilterOperator Value { get; set; }
     [Parameter] public EventCallback<LogicalFilterOperator> ValueChanged { get; set; }
     [Parameter] public EventCallback OnChanged { get; set; }

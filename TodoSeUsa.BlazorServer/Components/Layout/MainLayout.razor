@@ -3,6 +3,7 @@
 @using TodoSeUsa.BlazorServer.Components.Pages.Consignments
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
 @using TodoSeUsa.BlazorServer.Components.Pages.Providers
+@using TodoSeUsa.BlazorServer.UI.Notifications
 
 @inherits LayoutComponentBase;
 
@@ -94,28 +95,9 @@
         }
     }
 
-    private async Task HandleCreateProduct()
+    private void HandleCreateProduct()
     {
-        var result = await _dialogService.OpenAsync<CreateProductForm>("Crear un producto nuevo",
-               new Dictionary<string, object>(),
-               new DialogOptions()
-               {
-                   Width = "50%",
-                   CloseDialogOnOverlayClick = true
-               }
-        );
-        if (result is Result<int> createResult)
-        {
-            if (createResult.IsSuccess)
-            {
-                _simpleNotifications.Success($"Producto creado con éxito!");
-                _navigationManager.NavigateTo($"/productos/{createResult.Value}");
-            }
-            else
-            {
-                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
-            }
-        }
+        _navigationManager.NavigateTo($"/productos/registrar");
     }
 
     private async Task HandleCreateProvider()

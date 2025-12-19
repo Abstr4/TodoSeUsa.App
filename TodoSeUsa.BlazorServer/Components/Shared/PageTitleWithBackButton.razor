@@ -1,10 +1,12 @@
-﻿@inject NavigationManager NavigationManager;
+﻿@using TodoSeUsa.BlazorServer.UI.Navigation
+@inject NavigationManager _navigationManager;
 
 @inject IJSRuntime JS;
 
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Style="width: 100%;">
+
     <div style="flex: 0 0 auto;">
-        <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+        <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(_navigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
     </div>
 
     <div style="flex: 1; text-align: center;">
@@ -14,7 +16,9 @@
     <div style="flex: 0 0 auto; visibility: hidden;">
         <RadzenButton Icon="arrow_back" Text="Volver" Size="ButtonSize.Medium" />
     </div>
+
 </RadzenStack>
+
 <hr />
 
 @code {

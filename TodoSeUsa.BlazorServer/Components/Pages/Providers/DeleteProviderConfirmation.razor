@@ -1,9 +1,9 @@
 ﻿@using TodoSeUsa.Application.Features.Providers.DTOs
 @using TodoSeUsa.Application.Features.Providers.Interfaces
 
-@inject IProviderService ProviderService
+@inject IProviderService _providerService;
 
-@inject DialogService DialogService
+@inject DialogService _dialogService;
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
 
@@ -30,8 +30,8 @@
     async Task Delete(int consignmentId)
     {
         saveButtonBusy = true;
-        var result = await ProviderService.DeleteByIdAsync(consignmentId, CancellationToken.None);
+        var result = await _providerService.DeleteByIdAsync(consignmentId, CancellationToken.None);
         saveButtonBusy = false;
-        DialogService.Close(result);
+        _dialogService.Close(result);
     }
 }

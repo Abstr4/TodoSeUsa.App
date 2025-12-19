@@ -5,9 +5,9 @@
 
 @inject IProviderService providerService;
 
-@inject DialogService DialogService;
-@inject NavigationManager NavigationManager;
-@inject SimpleNotifications SimpleNotifications;
+@inject DialogService _dialogService;
+@inject NavigationManager _navigationManager;
+@inject SimpleNotifications _simpleNotifications;
 
 <style>
     .rz-custom-header {
@@ -47,7 +47,7 @@
 
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un proveedor nuevo" Click="@HandleCreateProvider" />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar un proveedor nuevo" Click="@HandleCreateProvider" />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -130,7 +130,7 @@
 
         isLoading = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
 
         var result = await providerService.GetAllAsync(request, CancellationToken.None);
         if (result.IsSuccess)
@@ -153,12 +153,12 @@
 
     private void ViewProvider(int providerId)
     {
-        NavigationManager.NavigateTo($"/proveedores/{providerId}");
+        _navigationManager.NavigateTo($"/proveedores/{providerId}");
     }
 
     private async Task HandleEditProvider(ProviderDto provider)
     {
-        var result = await DialogService.OpenAsync<EditProviderForm>($"Editar proveedor",
+        var result = await _dialogService.OpenAsync<EditProviderForm>($"Editar proveedor",
                new Dictionary<string, object>() { { "ProviderDto", provider } },
                new DialogOptions()
                {
@@ -171,19 +171,19 @@
         {
             if (editResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Proveedor editado con éxito.");
+                _simpleNotifications.Success($"Proveedor editado con éxito.");
                 await grid.Reload();
             }
             else
             {
-                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleDeleteProvider(ProviderDto provider)
     {
-        var result = await DialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
+        var result = await _dialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "ProviderDto", provider } },
         new DialogOptions()
         {
@@ -194,19 +194,19 @@
         {
             if (deleteResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Proveedor eliminado con éxito.");
+                _simpleNotifications.Success($"Proveedor eliminado con éxito.");
                 await grid.Reload();
             }
             else
             {
-                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleCreateProvider()
     {
-        var result = await DialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
+        var result = await _dialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -218,12 +218,12 @@
         {
             if (createResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Proveedor creado con éxito!");
-                NavigationManager.NavigateTo($"/proveedores/{createResult.Value}");
+                _simpleNotifications.Success($"Proveedor creado con éxito!");
+                _navigationManager.NavigateTo($"/proveedores/{createResult.Value}");
             }
             else
             {
-                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
+                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }

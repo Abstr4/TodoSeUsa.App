@@ -1,19 +1,19 @@
 ﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
 
-@inject IBoxService BoxService
+@inject IBoxService _boxService;
 
-@inject DialogService DialogService
+@inject DialogService _dialogService;
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
-    <RadzenText TextStyle="TextStyle.H6">¿Estás seguro que deseas borrar la caja '@BoxDto.BoxCode'?</RadzenText>
+    <RadzenText TextStyle="TextStyle.H6">¿Estás seguro que deseas borrar la caja '@BoxDto.Code'?</RadzenText>
 </RadzenStack>
 <RadzenCard Variant="Variant.Outlined" Style="border-color: red;" class="d-flex align-content-center align-items-center rz-mb-4">
     <RadzenIcon Icon="warning" IconStyle="IconStyle.Danger" Style="font-size: 2rem" class="me-1"></RadzenIcon>
     <RadzenText TextStyle="TextStyle.H6" Style="color:red; margin: 0">Ésta operación no se puede revertir</RadzenText>
 </RadzenCard>
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
-    <RadzenButton Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@(() => Delete(BoxDto.Id))"></RadzenButton>
+    <RadzenButton Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@Delete"></RadzenButton>
 </RadzenStack>
 
 @code
@@ -21,9 +21,12 @@
 
     [Parameter] public BoxDto BoxDto { get; set; } = null!;
 
-    async Task Delete(int boxId)
+    async Task Delete()
     {
-        var result = await BoxService.DeleteBoxById(boxId, CancellationToken.None);
-        DialogService.Close(result);
+        if (BoxDto is null)
+            return;
+
+        var result = await _boxService.DeleteBoxById(BoxDto.Id, CancellationToken.None);
+        _dialogService.Close(result);
     }
 }

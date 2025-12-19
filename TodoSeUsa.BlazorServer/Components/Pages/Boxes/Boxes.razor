@@ -23,8 +23,11 @@
 
         <HeaderTemplate>
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una caja nueva" Click="@HandleCreateBox" />
+
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar una caja nueva" Click="@HandleCreateBox" />
+
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
+
             </RadzenStack>
         </HeaderTemplate>
 
@@ -36,7 +39,7 @@
                     <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, box)) Icon="read_more">
 
                         <ChildContent>
-                            <RadzenSplitButtonItem Text="Agregar producto" Value="add_product" Icon="add" />
+                            <RadzenSplitButtonItem Text="Agregar producto(s)" Value="add_product" Icon="add" />
                             <RadzenSplitButtonItem Text="Ver caja" Value="view" Icon="read_more" />
                             <RadzenSplitButtonItem Text="Editar caja" Value="edit" Icon="edit" />
                             <RadzenSplitButtonItem Text="Eliminar caja" Value="delete" Icon="delete" />
@@ -47,9 +50,7 @@
 
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Property="@nameof(BoxDto.Id)" Title="ID" TextAlign="TextAlign.Center" MinWidth="80px" Width="80px" />
-
-            <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.BoxCode)" Title="Código" MinWidth="120px" Width="120px"/>
+            <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.Code)" Title="Código" MinWidth="120px" Width="120px"/>
 
             <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.TotalProducts)" Title="Cant. productos" MinWidth="120px" Width="120px">
 
@@ -102,7 +103,7 @@
 
         isLoading = true;
 
-        QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+        QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
 
         var result = await _boxService.GetAllAsync(request, CancellationToken.None);
         if (result.IsSuccess)
@@ -129,7 +130,7 @@
 
     private async Task HandleEditBox(BoxDto boxDto)
     {
-        var result = await _dialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxDto.BoxCode}'",
+        var result = await _dialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxDto.Code}'",
             new Dictionary<string, object>() { { "BoxDto", boxDto } },
             new DialogOptions()
             {
@@ -141,7 +142,7 @@
         {
             if (editResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Caja '{boxDto.BoxCode}' editada con éxito.");
+                _simpleNotifications.Success($"Caja '{boxDto.Code}' editada con éxito.");
                 await grid.Reload();
             }
             else
@@ -164,7 +165,7 @@
         {
             if (deleteResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Caja '{boxDto.BoxCode}' eliminada con éxito.");
+                _simpleNotifications.Success($"Caja '{boxDto.Code}' eliminada con éxito.");
                 await grid.Reload();
             }
             else
@@ -199,7 +200,7 @@
 
     public async Task ShowBoxProducts(BoxDto boxDto)
     {
-        await _dialogService.OpenAsync<BoxProductsGrid>($"Productos en la caja código '{boxDto.BoxCode}'",
+        await _dialogService.OpenAsync<BoxProductsGrid>($"Productos en la caja código '{boxDto.Code}'",
             new Dictionary<string, object>() { { "BoxDto", boxDto } },
             new DialogOptions()
             {
@@ -212,7 +213,7 @@
 
     public async Task AddProductToBox(BoxDto box)
     {
-        var result = await _dialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{box.BoxCode}'",
+        var result = await _dialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{box.Code}'",
             new Dictionary<string, object>() { { "BoxDto", box } },
             new DialogOptions()
             {

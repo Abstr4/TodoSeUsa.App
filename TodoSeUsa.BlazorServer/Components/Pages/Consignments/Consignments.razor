@@ -5,9 +5,9 @@
 
 @inject IConsignmentService consignmentService;
 
-@inject DialogService DialogService;
-@inject NavigationManager NavigationManager;
-@inject SimpleNotifications SimpleNotifications;
+@inject DialogService _dialogService;
+@inject NavigationManager _navigationManager;
+@inject SimpleNotifications _simpleNotifications;
 
 <style>
     .rz-custom-header {
@@ -29,12 +29,18 @@
         OrOperatorText="O" LessThanOrEqualsText="Menor o igual que" LessThanText="Menor que" 
         GreaterThanOrEqualsText="Mayor o igual que" GreaterThanText="Mayor que" NotEqualsText="No es igual a" 
         IsNullText="Es nulo" IsNotNullText="No es nulo" ColumnWidth="200px">
+
         <HeaderTemplate>
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una consignación nueva" Click="@HandleCreateConsignment" />
+
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar una consignación nueva" Click="@HandleCreateConsignment" />
+
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
+
             </RadzenStack>
+
         </HeaderTemplate>
+
         <Columns>
             <RadzenDataGridColumn TItem="ConsignmentDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
 
@@ -52,7 +58,7 @@
 
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Property="Id" Title="ID" TextAlign="TextAlign.Center" MinWidth="80px" Width="80px"/>
+            <RadzenDataGridColumn Property="Code" Title="Código" TextAlign="TextAlign.Center" MinWidth="120px" Width="200px"/>
 
             <RadzenDataGridColumn Filterable="false" Property="TotalProducts" Title="Cant. productos" MinWidth="80px" Width="140px">
                 <Template Context="consignment">
@@ -69,8 +75,6 @@
             <RadzenDataGridColumn Property="ProviderFullName" Title="Info. del proveedor" MinWidth="200px" Width="160px"/>
 
             <RadzenDataGridColumn Property="ProviderId" Title="Id del proveedor" MinWidth="80px" Width="140px"/>
-
-            <RadzenDataGridColumn Property="Notes" Title="Notas" MinWidth="120px"/>
 
             <RadzenDataGridColumn Property="DateIssued" Title="Emitida el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="160px"/>
 
@@ -110,7 +114,7 @@
         {
             isLoading = true;
 
-            QueryRequest request = QueryRequestHelper.ConvertToQueryRequest(args, logicalFilterOperator);
+            QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
 
             var result = await consignmentService.GetAllAsync(request, CancellationToken.None);
             if (result.IsSuccess)
@@ -136,12 +140,12 @@
 
     private void ViewConsignment(int consignmentId)
     {
-        NavigationManager.NavigateTo($"/consignaciones/{consignmentId}");
+        _navigationManager.NavigateTo($"/consignaciones/{consignmentId}");
     }
 
     private async Task HandleEditConsignment(ConsignmentDto consignment)
     {
-        var result = await DialogService.OpenAsync<EditConsignmentForm>($"Editar consignación",
+        var result = await _dialogService.OpenAsync<EditConsignmentForm>($"Editar consignación",
                new Dictionary<string, object>() { { "ConsignmentDto", consignment } },
                new DialogOptions()
                {
@@ -154,19 +158,19 @@
         {
             if (editResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Consignación editada con éxito.");
+                _simpleNotifications.Success($"Consignación editada con éxito.");
                 await grid.Reload();
             }
             else
             {
-                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleDeleteConsignment(ConsignmentDto consignment)
     {
-        var result = await DialogService.OpenAsync<DeleteConsignmentConfirmation>($"Confirmar eliminación",
+        var result = await _dialogService.OpenAsync<DeleteConsignmentConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "ConsignmentDto", consignment } },
         new DialogOptions()
         {
@@ -177,19 +181,19 @@
         {
             if (deleteResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Consignación eliminada con éxito.");
+                _simpleNotifications.Success($"Consignación eliminada con éxito.");
                 await grid.Reload();
             }
             else
             {
-                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleCreateConsignment()
     {
-        var result = await DialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
+        var result = await _dialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -201,19 +205,19 @@
         {
             if (createResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Consignación creada con éxito!");
-                NavigationManager.NavigateTo($"/consignaciones/{createResult.Value}");
+                _simpleNotifications.Success($"Consignación creada con éxito!");
+                _navigationManager.NavigateTo($"/consignaciones/{createResult.Value}");
             }
             else
             {
-                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
+                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }
 
     public async Task ShowConsignmentProducts(ConsignmentDto consignmentDto)
     {
-        await DialogService.OpenAsync<ConsignmentProductsGrid>($"Productos en la consignación ID: {consignmentDto.Id}",
+        await _dialogService.OpenAsync<ConsignmentProductsGrid>($"Productos en la consignación ID: {consignmentDto.Id}",
                new Dictionary<string, object>() { { "ConsignmentDto", consignmentDto } },
                new DialogOptions()
                {

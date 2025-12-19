@@ -1,9 +1,9 @@
 ﻿@using TodoSeUsa.Application.Features.Consignments.DTOs
 @using TodoSeUsa.Application.Features.Consignments.Interfaces
 
-@inject IConsignmentService ConsignmentService
+@inject IConsignmentService _consignmentService;
 
-@inject DialogService DialogService
+@inject DialogService _dialogService;
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
     <RadzenText TextStyle="TextStyle.H6">
@@ -28,8 +28,8 @@
     async Task Delete(int consignmentId)
     {
         busy = true;
-        var result = await ConsignmentService.DeleteByIdAsync(consignmentId, CancellationToken.None);
+        var result = await _consignmentService.DeleteByIdAsync(consignmentId, CancellationToken.None);
         busy = false;
-        DialogService.Close(result);
+        _dialogService.Close(result);
     }
 }
