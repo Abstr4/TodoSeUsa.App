@@ -1,6 +1,6 @@
 ﻿using Radzen;
 
-namespace TodoSeUsa.BlazorServer.Helpers;
+namespace TodoSeUsa.BlazorServer.UI.Notifications;
 
 public class SimpleNotifications
 {

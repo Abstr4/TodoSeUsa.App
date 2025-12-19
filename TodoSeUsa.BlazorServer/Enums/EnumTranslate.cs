@@ -1,6 +1,6 @@
 ﻿using TodoSeUsa.Domain.Enums;
 
-namespace TodoSeUsa.BlazorServer.Helpers;
+namespace TodoSeUsa.BlazorServer.Enums;
 
 public static class EnumTranslate
 {

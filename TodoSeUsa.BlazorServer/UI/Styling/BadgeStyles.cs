@@ -1,7 +1,7 @@
 ﻿using Radzen;
 using TodoSeUsa.Domain.Enums;
 
-namespace TodoSeUsa.BlazorServer.Helpers;
+namespace TodoSeUsa.BlazorServer.UI.Styling;
 
 public static class BadgeStyles
 {

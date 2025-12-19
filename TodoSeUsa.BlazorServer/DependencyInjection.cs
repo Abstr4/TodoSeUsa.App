@@ -1,6 +1,6 @@
 ﻿using CurrieTechnologies.Razor.SweetAlert2;
 using Radzen;
-using TodoSeUsa.BlazorServer.Helpers;
+using TodoSeUsa.BlazorServer.UI.Notifications;
 
 namespace TodoSeUsa.BlazorServer;
 

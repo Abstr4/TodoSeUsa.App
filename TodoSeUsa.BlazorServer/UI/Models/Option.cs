@@ -1,4 +1,4 @@
-﻿namespace TodoSeUsa.BlazorServer.Helpers;
+﻿namespace TodoSeUsa.BlazorServer.UI.Models;
 
 public class Option<T>
 {

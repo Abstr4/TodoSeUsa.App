@@ -1,11 +1,11 @@
 ﻿using Radzen;
 using TodoSeUsa.Application.Common.Models;
 
-namespace TodoSeUsa.BlazorServer.Helpers;
+namespace TodoSeUsa.BlazorServer.UI.RadzenAdapters.Query;
 
-public static class QueryRequestHelper
+public static class RadzenQueryRequestMapper
 {
-    public static QueryRequest ConvertToQueryRequest(LoadDataArgs args, Radzen.LogicalFilterOperator logicalFilterOperator)
+    public static QueryRequest ConvertToQueryRequest(LoadDataArgs args, LogicalFilterOperator logicalFilterOperator)
     {
         return new QueryRequest
         {
@@ -18,9 +18,9 @@ public static class QueryRequestHelper
         };
     }
 
-    private static TodoSeUsa.Application.Common.Models.FilterDescriptor MapFilterDescriptor(Radzen.FilterDescriptor f)
+    private static Application.Common.Models.FilterDescriptor MapFilterDescriptor(Radzen.FilterDescriptor f)
     {
-        return new TodoSeUsa.Application.Common.Models.FilterDescriptor
+        return new Application.Common.Models.FilterDescriptor
         {
             Property = f.Property,
             FilterProperty = f.FilterProperty,
@@ -32,9 +32,9 @@ public static class QueryRequestHelper
         };
     }
 
-    private static TodoSeUsa.Application.Common.Models.SortDescriptor MapSortDescriptor(Radzen.SortDescriptor s)
+    private static Application.Common.Models.SortDescriptor MapSortDescriptor(Radzen.SortDescriptor s)
     {
-        return new TodoSeUsa.Application.Common.Models.SortDescriptor
+        return new Application.Common.Models.SortDescriptor
         {
             Property = s.Property,
             SortOrder = RadzenFilterMapper.Map(s.SortOrder ?? SortOrder.Ascending)

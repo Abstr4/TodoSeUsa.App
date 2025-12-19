@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using TodoSeUsa.Domain.Validators;
 
-namespace TodoSeUsa.BlazorServer.Helpers;
+namespace TodoSeUsa.BlazorServer.Validation;
 
 public static partial class InputValidators
 {
@@ -34,5 +34,10 @@ public static partial class InputValidators
     public static bool IsProductCodeValid(string productCode)
     {
         return Regex.IsMatch(productCode, @"^(TSU-\d+|\d+)$");
+    }
+
+    public static bool IsBoxCodeValid(string productCode)
+    {
+        return Regex.IsMatch(productCode, @"^(BOX-\d+|\d+)$");
     }
 }

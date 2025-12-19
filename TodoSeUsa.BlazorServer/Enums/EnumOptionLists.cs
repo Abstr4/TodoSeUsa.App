@@ -1,6 +1,7 @@
-﻿using TodoSeUsa.Domain.Enums;
+﻿using TodoSeUsa.BlazorServer.UI.Models;
+using TodoSeUsa.Domain.Enums;
 
-namespace TodoSeUsa.BlazorServer.Helpers;
+namespace TodoSeUsa.BlazorServer.Enums;
 
 public static class EnumOptionLists
 {

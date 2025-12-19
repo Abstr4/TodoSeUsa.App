@@ -1,6 +1,6 @@
 ﻿using Radzen;
 
-namespace TodoSeUsa.BlazorServer.Helpers;
+namespace TodoSeUsa.BlazorServer.UI.RadzenAdapters;
 
 public static class RadzenFilteringHelpers
 {
