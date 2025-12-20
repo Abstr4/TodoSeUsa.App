@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TodoSeUsa.Application.Common.Interfaces;
 using TodoSeUsa.Infrastructure.Data.Interceptors;
+using TodoSeUsa.Infrastructure.FileSystem;
 using TodoSeUsa.Infrastructure.Persistance.Seed;
 
 namespace TodoSeUsa.Infrastructure;
@@ -23,6 +24,8 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString)
                    .AddInterceptors(builder.Services.BuildServiceProvider().GetRequiredService<SoftDeleteInterceptor>());
         });
+
+        builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 
         builder.Services.AddScoped<IApplicationDbContextFactory, ApplicationDbContextFactory>();
 
