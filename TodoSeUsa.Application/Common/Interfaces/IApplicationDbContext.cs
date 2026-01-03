@@ -1,4 +1,6 @@
-﻿namespace TodoSeUsa.Application.Common.Interfaces;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+
+namespace TodoSeUsa.Application.Common.Interfaces;
 
 public interface IApplicationDbContext
 {
@@ -23,6 +25,10 @@ public interface IApplicationDbContext
     DbSet<Reservation> Reservations { get; }
 
     DbSet<Person> Persons { get; }
+
+    DbSet<ProductImage> ProductImages { get; }
+
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
 
     Task<int> SaveChangesAsync(CancellationToken ct);
 }

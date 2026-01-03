@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System.Reflection;
 using TodoSeUsa.Application.Common.Interfaces;
 
 namespace TodoSeUsa.Infrastructure.Data;
@@ -60,5 +61,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 entry.Entity.UpdatedAt = DateTime.Now;
             }
         }
+    }
+
+    public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default)
+    {
+        return Database.BeginTransactionAsync(ct);
     }
 }
