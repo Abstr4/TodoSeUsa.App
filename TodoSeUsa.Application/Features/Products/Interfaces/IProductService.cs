@@ -1,9 +1,12 @@
-﻿using TodoSeUsa.Application.Features.Products.DTOs;
+﻿using Microsoft.AspNetCore.Http;
+using TodoSeUsa.Application.Features.Products.DTOs;
 
 namespace TodoSeUsa.Application.Features.Products.Interfaces;
 
 public interface IProductService
 {
+    Task<Result<int>> GetTotalCountAsync(CancellationToken ct);
+
     Task<Result<PagedItems<ProductDto>>> GetAllAsync(QueryRequest request, CancellationToken ct);
 
     Task<Result<PagedItems<ProductDto>>> GetByBoxIdAsync(QueryRequest request, int boxId, CancellationToken ct);
@@ -16,9 +19,9 @@ public interface IProductService
 
     Task<Result<ProductDto>> GetByCodeAsync(string productCode, CancellationToken ct);
 
-    Task<Result> CreateAsync(CreateProductDto productDto, CancellationToken ct);
+    Task<Result<int>> CreateAsync(CreateProductDto dto, IReadOnlyList<Stream> imageStreams, CancellationToken ct);
 
-    Task<Result> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct);
+    Task<Result<IReadOnlyList<int>>> CreateBatchAsync(CreateProductDto dto, IReadOnlyList<Stream> imageStreams, CancellationToken ct);
 
     Task<Result> EditById(int productId, EditProductDto editProductDto, CancellationToken ct);
 

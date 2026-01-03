@@ -11,6 +11,10 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
             .NotEmpty().WithMessage("El precio es obligatorio.")
             .GreaterThan(0).WithMessage("El precio debe ser mayor que cero.");
 
+        RuleFor(p => p.Quantity)
+            .NotEmpty().WithMessage("La cantidad es obligatoria.")
+            .GreaterThan(0).WithMessage("La cantidad debe ser mayor que cero.");
+
         RuleFor(p => p.Category)
             .NotEmpty().WithMessage("La categoría es obligatoria.")
             .MaximumLength(100).WithMessage("La longitud de la categoría debe ser menor que 100 carácteres.");

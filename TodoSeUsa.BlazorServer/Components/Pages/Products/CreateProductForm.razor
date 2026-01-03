@@ -3,10 +3,14 @@
 @using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 @using TodoSeUsa.BlazorServer.Enums
+@using TodoSeUsa.BlazorServer.UI.RadzenAdapters.Files
 @using TodoSeUsa.BlazorServer.Validation
 
 @inject IProductService _productService;
-@inject DialogService _dialogService;
+
+@inject IJSRuntime JS;
+@inject NavigationManager _navigationManager;
+@inject SimpleNotifications _simpleNotifications;
 
 <style>
     #uploadWithDragAndDrop {
@@ -33,23 +37,49 @@
 
             <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
 
+                @if (errors.Count > 0)
+                {
+                    <RadzenAlert Severity="Severity.Error" Style="margin-top: 1rem;">
+                        <RadzenText Text="Por favor, corrija los siguientes errores:" Style="font-weight: bold;" />
+                        <ul>
+                            @foreach (var error in errors)
+                            {
+                                <li>
+                                    <RadzenText Text="@error" />
+                                </li>
+                            }
+                        </ul>
+                    </RadzenAlert>
+                }
+
                 <RadzenRow Gap="1rem">
 
-                    <RadzenColumn Size="12" SizeMD="4" SizeLG="3">
+                    <RadzenColumn Size="12" SizeMD="4" SizeLG="3" id="image-upload-column">
 
-                        <RadzenCard Variant="Variant.Outlined" Style="min-width: 250px">
+                        <RadzenCard Variant="Variant.Outlined">
 
-                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Imágenes del producto</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Select a file to upload</RadzenText>
 
-                            <RadzenUpload id="uploadWithDragAndDrop" @ref="upload" ChooseText="Arrastra y suelta imágenes o haz click aquí para seleccionarlas." Auto="false" Multiple="true" Url="upload/multiple" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})" Progress=@OnProgress Style="width: 100%" />
+                            <RadzenUpload id="uploadWithDragAndDrop" Change="OnUploadChange" ChooseText="Drag and drop here or click to choose files" Auto="false" Multiple="true" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})" Style="width: 100%" />
 
-                            <RadzenButton Text="Subir" Click=@OnUpload class="rz-mt-4" />
+                            @if (errors.Count > 0)
+                            {
+                                <ul>
+                                        
+                                    @foreach(var error in errors)
+                                    {
+                                        <li>
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Style="color: red" Text="@error"/>
+                                        </li>
+                                    }
+                                </ul>
+                            }
 
                         </RadzenCard>
 
                     </RadzenColumn>
 
-                    <RadzenColumn Size="12" SizeMD="8" SizeLG="9">
+                    <RadzenColumn Size="12" SizeMD="8" SizeLG="9" id="fields-column">
 
                         <RadzenRow>
 
@@ -193,101 +223,95 @@
                                 </RadzenStack>
                             </RadzenColumn>
 
+                            <RadzenColumn Size="12" SizeSM="6" SizeLG="4" id="season-column">
+
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                    <RadzenLabel Component="Season">
+                                        Temporada <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                    </RadzenLabel>
+
+                                    <RadzenTextBox MaxLength="250" Name="Season" @bind-Value=@createProductDto.Season Style="width: 100%;" Change="@OnSeasonChanged" Placeholder="Temporada..." />
+
+                                    <RadzenCustomValidator Component="Season"
+                                                           Validator="(() => InputValidators.IsNullOrEmptyOrMatchesAlphanumericPattern(createProductDto.Season))"
+                                                           Text="La temporada no puede contener solo espacios o símbolos." />
+
+                                    <RadzenLengthValidator Component="Season" Max="250" Text="La temporada debe tener entre 1 y 250 carácteres." />
+
+                                </RadzenStack>
+                            </RadzenColumn>
+
+                            <RadzenColumn Size="12" SizeSM="6" SizeLG="4" id="boxCode-column">
+
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                    <RadzenLabel Component="BoxCode">
+                                        Código de la caja<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                    </RadzenLabel>
+
+                                    <div style="position: relative; display: flex; align-items: center;">
+                                        <RadzenTextBox @bind-Value="@createProductDto.BoxCode"
+                                                       Name="BoxCode"
+                                                       Style="width: 100%;"
+                                                       Placeholder="Sin caja asignada..." />
+
+                                        @if (createProductDto.BoxCode != null)
+                                        {
+                                            <i class="notranslate rzi rz-cell-filter-clear"
+                                               style="position:absolute; inset-inline-end:15px; cursor:pointer;"
+                                               @onclick="ClearBoxId"
+                                               onmouseover="this.style.backgroundColor='rgba(0,0,0,0.1)'"
+                                               onmouseout="this.style.backgroundColor='transparent'">close</i>
+                                        }
+                                    </div>
+                                </RadzenStack>
+
+                                <RadzenCustomValidator Component="BoxCode"
+                                                       Text="Código inválido, ingrese uno completo como 'BOX-123' o sólo los números finales '123'."
+                                                       Validator="@(() => string.IsNullOrEmpty(createProductDto.BoxCode) || InputValidators.IsBoxCodeValid(createProductDto.BoxCode))" />
+
+                            </RadzenColumn>
+
+                            <RadzenColumn Size="12" SizeSM="6" SizeLG="4" id="refurbishmentCost-column">
+
+                                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                                    <RadzenLabel Component="RefurbishmentCost">
+                                        Costo del arreglo<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                    </RadzenLabel>
+
+                                    <div style="position: relative; display: flex; align-items: center;">
+
+                                        <RadzenNumeric @bind-Value="@createProductDto.RefurbishmentCost"
+                                                       Name="RefurbishmentCost"
+                                                       Style="width: 100%;"
+                                                       Min="1"
+                                                       Placeholder="Sin costo asignado..."
+                                                       TValue="decimal?" />
+
+                                        @if (createProductDto.RefurbishmentCost.HasValue)
+                                        {
+                                            <i class="notranslate rzi rz-cell-filter-clear"
+                                               style="position:absolute; inset-inline-end:15px; cursor:pointer;"
+                                               @onclick="ClearRefurbishmentCost"
+                                               onmouseover="this.style.backgroundColor='rgba(0,0,0,0.1)'"
+                                               onmouseout="this.style.backgroundColor='transparent'">close</i>
+                                        }
+                                    </div>
+
+                                    <RadzenNumericRangeValidator Component="RefurbishmentCost" Min="1" Text="El costo del arreglo debe ser mayor a cero" Visible="@createProductDto.RefurbishmentCost.HasValue" />
+                                </RadzenStack>
+                            </RadzenColumn>
                         </RadzenRow>
 
                     </RadzenColumn>
-
                 </RadzenRow>
-
-                <RadzenRow>
-
-                    <RadzenColumn Size="12" SizeSM="6" SizeLG="4" id="season-column">
-
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
-
-                            <RadzenLabel Component="Season">
-                                Temporada <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
-                            </RadzenLabel>
-
-                            <RadzenTextBox MaxLength="250" Name="Season" @bind-Value=@createProductDto.Season Style="width: 100%;" Change="@OnSeasonChanged" Placeholder="Temporada..." />
-
-                            <RadzenCustomValidator Component="Season"
-                                                   Validator="(() => InputValidators.IsNullOrEmptyOrMatchesAlphanumericPattern(createProductDto.Season))"
-                                                   Text="La temporada no puede contener solo espacios o símbolos." />
-
-                            <RadzenLengthValidator Component="Season" Max="250" Text="La temporada debe tener entre 1 y 250 carácteres." />
-
-                        </RadzenStack>
-                    </RadzenColumn>
-
-                    <RadzenColumn Size="12" SizeSM="6" SizeLG="4" id="boxCode-column">
-
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
-
-                            <RadzenLabel Component="BoxCode">
-                                Código de la caja<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
-                            </RadzenLabel>
-
-                            <div style="position: relative; display: flex; align-items: center;">
-                                <RadzenTextBox @bind-Value="@createProductDto.BoxCode"
-                                               Name="BoxCode"
-                                               Style="width: 100%;"
-                                               Placeholder="Sin caja asignada..." />
-
-                                @if (createProductDto.BoxCode != null)
-                                {
-                                    <i class="notranslate rzi rz-cell-filter-clear"
-                                       style="position:absolute; inset-inline-end:15px; cursor:pointer;"
-                                       @onclick="ClearBoxId"
-                                       onmouseover="this.style.backgroundColor='rgba(0,0,0,0.1)'"
-                                       onmouseout="this.style.backgroundColor='transparent'">close</i>
-                                }
-                            </div>
-                        </RadzenStack>
-
-                        <RadzenCustomValidator Component="BoxCode"
-                                               Text="Código inválido, ingrese uno completo como 'BOX-123' o sólo los números finales '123'."
-                                               Validator="@(() => string.IsNullOrEmpty(createProductDto.BoxCode) || InputValidators.IsBoxCodeValid(createProductDto.BoxCode))" />
-
-                    </RadzenColumn>
-
-                    <RadzenColumn Size="12" SizeSM="6" SizeLG="4" id="refurbishmentCost-column">
-
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
-
-                            <RadzenLabel Component="RefurbishmentCost">
-                                Costo del arreglo<RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
-                            </RadzenLabel>
-
-                            <div style="position: relative; display: flex; align-items: center;">
-
-                                <RadzenNumeric @bind-Value="@createProductDto.RefurbishmentCost"
-                                               Name="RefurbishmentCost"
-                                               Style="width: 100%;"
-                                               Min="1"
-                                               Placeholder="Sin costo asignado..."
-                                               TValue="decimal?" />
-
-                                @if (createProductDto.RefurbishmentCost.HasValue)
-                                {
-                                    <i class="notranslate rzi rz-cell-filter-clear"
-                                       style="position:absolute; inset-inline-end:15px; cursor:pointer;"
-                                       @onclick="ClearRefurbishmentCost"
-                                       onmouseover="this.style.backgroundColor='rgba(0,0,0,0.1)'"
-                                       onmouseout="this.style.backgroundColor='transparent'">close</i>
-                                }
-                            </div>
-
-                            <RadzenNumericRangeValidator Component="RefurbishmentCost" Min="1" Text="El costo del arreglo debe ser mayor a cero" Visible="@createProductDto.RefurbishmentCost.HasValue" />
-                        </RadzenStack>
-                    </RadzenColumn>
-                </RadzenRow>
-
             </RadzenStack>
 
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-4">
 
-                <RadzenButton IsBusy="@busy" BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" />
+                <RadzenButton IsBusy="@isSaveButtonBusy" BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" />
 
             </RadzenStack>
 
@@ -302,31 +326,14 @@
     [Parameter] public int? ConsignmentId { get; set; }
     [Parameter] public int? SaleId { get; set; }
 
-    private bool busy;
-
+    private bool isSaveButtonBusy = false;
     private CreateProductDto createProductDto = new();
 
-    private bool IsBoxIdValid => createProductDto.BoxId == null || createProductDto.BoxId > 0;
+    private List<string> errors = [];
 
-    RadzenUpload upload;
+    private const int MaxAllowedFileSize = 10 * 1024 * 1024; // 10 MB
 
-    void OnUpload()
-    {
-        upload.Upload();
-    }
-
-    void OnProgress(UploadProgressArgs args)
-    {
-        // console.Log($"Upload progress: {args.Progress}% / {args.Loaded} of {args.Total} bytes.");
-
-        if (args.Progress == 100)
-        {
-            foreach (var file in args.Files)
-            {
-                // console.Log($"Uploaded: {file.Name} / {file.Size} bytes");
-            }
-        }
-    }
+    private readonly List<IBrowserFile> _selectedFiles = new();
 
     protected override void OnInitialized()
     {
@@ -339,13 +346,78 @@
         };
     }
 
-    async Task OnSubmit(CreateProductDto createProductDto)
+    private async Task OnSubmit(CreateProductDto createProductDto)
     {
-        busy = true;
-        var result = await _productService.CreateAsync(createProductDto, CancellationToken.None);
-        busy = false;
-        _dialogService.Close(result);
+        isSaveButtonBusy = true;
+
+        var _imageStreams = new List<Stream>();
+
+        foreach (var file in _selectedFiles)
+        {
+            if (file.Size > MaxAllowedFileSize)
+            {
+                errors.Add($"el archivo '{file.Name}' excede el tamaño de archivo máximo (10MB).");
+            }
+
+            var stream = new MemoryStream();
+            await file.OpenReadStream(MaxAllowedFileSize).CopyToAsync(stream);
+            stream.Position = 0;
+            _imageStreams.Add(stream);
+        }
+
+        if (errors.Count > 0)
+        {
+            isSaveButtonBusy = false;
+            return;
+        }
+
+        bool createResult;
+        IReadOnlyList<int> createdIds = Array.Empty<int>();
+
+        if (createProductDto.Quantity == 1)
+        {
+            var result = await _productService.CreateAsync(createProductDto, _imageStreams, CancellationToken.None);
+
+            createResult = result.IsSuccess;
+
+            if (createResult)
+                createdIds = new List<int> { result.Value };
+
+            else
+                errors = [ result.Error.Description ];
+        }
+
+        else
+        {
+            var result = await _productService.CreateBatchAsync(createProductDto, _imageStreams, CancellationToken.None);
+
+            createResult = result.IsSuccess;
+
+            if (createResult)
+                createdIds = result.Value;
+
+            else
+                errors = [result.Error.Description ];
+        }
+
+        isSaveButtonBusy = false;
+
+        if (createResult)
+        {
+            _navigationManager.NavigateTo("/productos");
+            _simpleNotifications.Success("Producto(s) creado(s) exitosamente.");
+        }
     }
+
+
+    void OnUploadChange(UploadChangeEventArgs args)
+    {
+        _selectedFiles.Clear();
+
+        foreach (var file in args.Files)
+            _selectedFiles.Add(file);
+    }
+
 
     private void ClearBoxId()
     {

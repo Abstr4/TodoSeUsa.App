@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using TodoSeUsa.Application.Common.Querying.CustomCases;
+﻿using TodoSeUsa.Application.Common.Querying.CustomCases;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Products.Interfaces;
 using TodoSeUsa.Application.Features.Products.Validators;
@@ -13,12 +12,35 @@ public partial class ProductService : IProductService
 {
     private readonly ILogger<ProductService> _logger;
     private readonly IApplicationDbContextFactory _contextFactory;
+    private readonly IProductImageService _productImageService;
 
     public ProductService(
-        ILogger<ProductService> logger, IApplicationDbContextFactory contextFactory)
+        ILogger<ProductService> logger,
+        IApplicationDbContextFactory contextFactory,
+        IProductImageService productImageService)
     {
         _logger = logger;
         _contextFactory = contextFactory;
+        _productImageService = productImageService;
+    }
+
+    public async Task<Result<int>> GetTotalCountAsync(CancellationToken ct)
+    {
+        try
+        {
+            var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var totalCount = await context.Products.CountAsync(ct);
+
+            return Result.Success(totalCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while counting products.");
+            return Result.Failure<int>(
+                ProductErrors.Failure("Ocurrió un error inesperado al intentar contar los productos.")
+            );
+        }
     }
 
     public async Task<Result<PagedItems<ProductDto>>> GetByBoxIdAsync(QueryRequest request, int boxId, CancellationToken ct)
@@ -373,94 +395,199 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result> CreateAsync(CreateProductDto productDto, CancellationToken ct)
+    public async Task<Result<int>> CreateAsync(CreateProductDto dto, IReadOnlyList<Stream> imageStreams, CancellationToken ct)
     {
         var validator = new CreateProductDtoValidator();
-        var validationResult = await validator.ValidateAsync(productDto, ct);
+        var validationResult = await validator.ValidateAsync(dto, ct);
 
         if (!validationResult.IsValid)
-            return Result.Failure<bool>(ProductErrors.Failure(validationResult.ToString()));
+            return Result.Failure<int>(ProductErrors.Failure(validationResult.ToString()));
+
+        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var transaction = await context.BeginTransactionAsync(ct);
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            var boxIdResult = await ResolveBoxIdAsync(context, dto.BoxCode, ct);
+            if (boxIdResult.IsFailure)
+                return Result.Failure<int>(ProductErrors.Failure("Código de la caja inválido."));
 
-            int? boxId = null;
-
-            if (productDto.BoxCode != null)
+            var product = new Product
             {
-                var boxIdResult = await context.Boxes
-                    .Where(x => x.Code == productDto.BoxCode)
-                    .Select(x => x.Id)
-                    .SingleOrDefaultAsync(ct);
-
-                if (boxIdResult == 0)
-                    return Result.Failure<bool>(
-                        ProductErrors.Failure($"La caja con el código '{productDto.BoxCode}' no existe.")
-                    );
-
-                boxId = boxIdResult;
-            }
-
-            Product product = new()
-            {
-                Price = productDto.Price,
-                Category = productDto.Category,
-                Description = productDto.Description,
-                Body = productDto.Body,
-                Size = productDto.Size,
-                Quality = productDto.Quality,
+                Price = dto.Price,
+                Category = dto.Category,
+                Description = dto.Description,
+                Body = dto.Body,
+                Size = dto.Size,
+                Quality = dto.Quality,
                 Status = ProductStatus.Available,
-                Season = productDto.Season,
-                RefurbishmentCost = productDto.RefurbishmentCost,
-                ConsignmentId = productDto.ConsignmentId,
-                BoxId = boxId
+                Season = dto.Season,
+                RefurbishmentCost = dto.RefurbishmentCost,
+                ConsignmentId = dto.ConsignmentId,
+                BoxId = boxIdResult.Value
             };
 
-            await context.Products.AddAsync(product, ct);
-            await context.SaveChangesAsync(ct);
+            var entity = await context.Products.AddAsync(product, ct);
+            var save = await context.SaveChangesAsync(ct);
 
-            return Result.Success(true);
+            if (save == 0)
+                return Result.Failure<int>(ProductErrors.Failure("No se pudo crear el producto."));
+
+            var attachResult = await TryAttachImagesAsync(product, imageStreams, context, ct);
+            if (attachResult.IsFailure)
+            {
+                return Result.Failure<int>(attachResult.Error);
+            }
+
+            var saveImages = await context.SaveChangesAsync(ct);
+            if (saveImages == 0 && imageStreams.Count > 0)
+            {
+                return Result.Failure<int>(ProductErrors.Failure("No se pudo crear el producto."));
+            }
+
+            await transaction.CommitAsync(ct);
+
+            return Result.Success(entity.Entity.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while trying to create the product.");
-            return Result.Failure<bool>(
-                ProductErrors.Failure("Ocurrió un error inesperado al intentar crear el producto.")
-            );
+            await transaction.RollbackAsync(ct);
+
+            _logger.LogError(ex, "Error creating product");
+
+            return Result.Failure<int>(ProductErrors.Failure("Ocurrió un error inesperado al intentar crear el producto."
+            ));
+        }
+    }
+
+    public async Task<Result<IReadOnlyList<int>>> CreateBatchAsync(
+    CreateProductDto dto,
+    IReadOnlyList<Stream> imageStreams,
+    CancellationToken ct)
+    {
+        var validator = new CreateProductDtoValidator();
+        var validationResult = await validator.ValidateAsync(dto, ct);
+
+        if (!validationResult.IsValid)
+            return Result.Failure<IReadOnlyList<int>>(ProductErrors.Failure(validationResult.ToString()));
+
+        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var transaction = await context.BeginTransactionAsync(ct);
+
+        try
+        {
+            var boxIdResult = await ResolveBoxIdAsync(context, dto.BoxCode, ct);
+            if (boxIdResult.IsFailure)
+                return Result.Failure<IReadOnlyList<int>>(ProductErrors.Failure("Código de la caja inválido."));
+
+            var createdIds = new List<int>(dto.Quantity);
+
+            for (int i = 0; i < dto.Quantity; i++)
+            {
+                var product = new Product
+                {
+                    Price = dto.Price,
+                    Category = dto.Category,
+                    Description = dto.Description,
+                    Body = dto.Body,
+                    Size = dto.Size,
+                    Quality = dto.Quality,
+                    Status = ProductStatus.Available,
+                    Season = dto.Season,
+                    RefurbishmentCost = dto.RefurbishmentCost,
+                    ConsignmentId = dto.ConsignmentId,
+                    BoxId = boxIdResult.Value
+                };
+
+                await context.Products.AddAsync(product, ct);
+
+                var saveProduct = await context.SaveChangesAsync(ct);
+
+                if (saveProduct == 0)
+                    return Result.Failure<IReadOnlyList<int>>(ProductErrors.Failure("No se pudo crear el producto."));
+
+                var attachResult = await TryAttachImagesAsync(product, imageStreams, context, ct);
+                if (attachResult.IsFailure)
+                    return Result.Failure<IReadOnlyList<int>>(attachResult.Error);
+
+                var saveImages = await context.SaveChangesAsync(ct);
+                if (saveImages == 0 && imageStreams.Count > 0)
+                    return Result.Failure<IReadOnlyList<int>>(ProductErrors.Failure("No se pudo crear el producto."));
+
+                createdIds.Add(product.Id);
+            }
+
+            await transaction.CommitAsync(ct);
+
+            return Result.Success<IReadOnlyList<int>>(createdIds);
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(ct);
+
+            _logger.LogError(ex, "Error creating products");
+
+            return Result.Failure<IReadOnlyList<int>>(
+                ProductErrors.Failure("Ocurrió un error inesperado al intentar crear los productos."));
         }
     }
 
 
-    public async Task<Result> CreateAsync(List<CreateProductDto> productDtos, CancellationToken ct)
+    private static async Task<Result<int?>> ResolveBoxIdAsync(IApplicationDbContext context, string? boxCode, CancellationToken ct)
     {
-        if (productDtos == null || productDtos.Count == 0)
-            return Result.Failure<bool>(ProductErrors.Failure("No products provided."));
-
-        var validator = new CreateProductDtoValidator();
-
-        var validationErrors = ValidateOriginalDtos(productDtos, validator, ct);
-        if (validationErrors.Count > 0)
-            return Result.Failure<bool>(ProductErrors.Failure(string.Join("; ", validationErrors)));
-
-        var expandedDtos = ExpandByQuantity(productDtos).ToList();
-
-        try
+        if (boxCode is null)
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
-
-            var products = expandedDtos.Select(MapToEntity).ToList();
-
-            await context.Products.AddRangeAsync(products, ct);
-            await context.SaveChangesAsync(ct);
-
-            return Result.Success(true);
+            return Result.Success<int?>(null);
         }
-        catch (Exception ex)
+
+        var boxId = await context.Boxes
+            .Where(x => x.Code == boxCode)
+            .Select(x => x.Id)
+            .SingleOrDefaultAsync(ct);
+
+        if (boxId == 0)
         {
-            _logger.LogError(ex, "An error occurred while trying to create the products.");
-            return Result.Failure<bool>(ProductErrors.Failure("Ocurrió un error inesperado creando los productos."));
+            return Result.Failure<int?>(ProductErrors.Failure($"La caja con el código '{boxCode}' no existe."));
         }
+
+        return Result.Success<int?>(boxId);
+    }
+
+    private async Task<Result> TryAttachImagesAsync(Product product, IReadOnlyList<Stream> imageStreams, IApplicationDbContext context, CancellationToken ct)
+    {
+        if (imageStreams.Count == 0)
+            return Result.Success();
+
+        var savedPaths = new List<string>();
+
+        foreach (var stream in imageStreams)
+        {
+            var saveResult = await _productImageService.SaveAsync(product.Id, stream, ct);
+            if (saveResult is null)
+            {
+                foreach (var path in savedPaths)
+                {
+                    await _productImageService.DeleteAsync(path, ct);
+                }
+
+                return Result.Failure(ProductErrors.Failure("No se pudieron adjuntar una o más imágenes."));
+            }
+
+            savedPaths.Add(saveResult);
+
+            product.Images.Add(new ProductImage
+            {
+                Path = saveResult
+            });
+        }
+
+        var saveImages = await context.SaveChangesAsync(ct);
+        if (saveImages == 0)
+        {
+            return Result.Failure<int>(ProductErrors.Failure("No se pudieron guardar las imágenes."));
+        }
+
+        return Result.Success();
     }
 
     public async Task<Result> DeleteById(int productId, CancellationToken ct)
@@ -553,7 +680,7 @@ public partial class ProductService : IProductService
                 yield return dto;
     }
 
-    private Product MapToEntity(CreateProductDto dto) => new()
+    private static Product MapToEntity(CreateProductDto dto) => new()
     {
         Price = dto.Price,
         Category = dto.Category,
