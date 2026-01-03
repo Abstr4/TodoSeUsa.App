@@ -13,16 +13,6 @@ builder.AddApplicationServices();
 builder.AddInfrastructureServices();
 builder.AddWebServices();
 
-var storageRoot = Path.Combine(
-    builder.Environment.ContentRootPath,
-    "Storage",
-    "ProductImages"
-);
-
-Directory.CreateDirectory(storageRoot);
-
-builder.Configuration["Storage:BasePath"] = storageRoot;
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

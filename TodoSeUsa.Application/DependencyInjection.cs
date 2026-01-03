@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Common.Services.People;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
@@ -32,5 +33,6 @@ public static class DependencyInjection
 
         builder.Services.AddScoped<UniqueSaleCodeService>();
         builder.Services.AddScoped<UniqueConsignmentCodeService>();
+        builder.Services.AddScoped<IProductImageService, ProductImageService>();
     }
 }

@@ -8,6 +8,16 @@ public static class DependencyInjection
 {
     public static void AddWebServices(this IHostApplicationBuilder builder)
     {
+        var storageRoot = Path.Combine(
+            builder.Environment.ContentRootPath,
+            "Storage"
+        );
+
+        Directory.CreateDirectory(storageRoot);
+
+        builder.Configuration["Storage:BasePath"] = storageRoot;
+
+
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
 
