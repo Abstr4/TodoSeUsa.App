@@ -24,21 +24,46 @@ public partial class ProductService : IProductService
         _productImageService = productImageService;
     }
 
-    public async Task<Result<int>> GetTotalCountAsync(CancellationToken ct)
+    public async Task<Result<int>> GetAvailableCountAsync(CancellationToken ct)
     {
         try
         {
             var context = await _contextFactory.CreateDbContextAsync(ct);
 
-            var totalCount = await context.Products.CountAsync(ct);
+            var count = await context.Products
+                .Where(p => p.Status == ProductStatus.Available)
+                .CountAsync(ct);
 
-            return Result.Success(totalCount);
+            return Result.Success(count);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while counting products.");
+            _logger.LogError(ex, "An error occurred while counting available products.");
+
             return Result.Failure<int>(
-                ProductErrors.Failure("Ocurrió un error inesperado al intentar contar los productos.")
+                ProductErrors.Failure("Ocurrió un error inesperado al intentar contar los productos disponibles.")
+            );
+        }
+    }
+
+    public async Task<Result<decimal>> GetAvailableInventoryValueAsync(CancellationToken ct)
+    {
+        try
+        {
+            var context = await _contextFactory.CreateDbContextAsync(ct);
+
+            var totalValue = await context.Products
+                .Where(p => p.Status == ProductStatus.Available)
+                .SumAsync(p => p.Price, ct);
+
+            return Result.Success(totalValue);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while calculating available inventory value.");
+
+            return Result.Failure<decimal>(
+                ProductErrors.Failure("Ocurrió un error inesperado al intentar calcular el valor del inventario disponible.")
             );
         }
     }
@@ -460,10 +485,7 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result<IReadOnlyList<int>>> CreateBatchAsync(
-    CreateProductDto dto,
-    IReadOnlyList<Stream> imageStreams,
-    CancellationToken ct)
+    public async Task<Result<IReadOnlyList<int>>> CreateBatchAsync(CreateProductDto dto, IReadOnlyList<Stream> imageStreams, CancellationToken ct)
     {
         var validator = new CreateProductDtoValidator();
         var validationResult = await validator.ValidateAsync(dto, ct);
@@ -531,7 +553,6 @@ public partial class ProductService : IProductService
                 ProductErrors.Failure("Ocurrió un error inesperado al intentar crear los productos."));
         }
     }
-
 
     private static async Task<Result<int?>> ResolveBoxIdAsync(IApplicationDbContext context, string? boxCode, CancellationToken ct)
     {
@@ -658,40 +679,4 @@ public partial class ProductService : IProductService
             return Result.Failure<bool>(ProductErrors.Failure($"Ocurrió un error inesperado al intentar editar el producto."));
         }
     }
-
-    private static List<string> ValidateOriginalDtos(IEnumerable<CreateProductDto> dtos, CreateProductDtoValidator validator, CancellationToken ct)
-    {
-        var errors = new List<string>();
-
-        foreach (var dto in dtos)
-        {
-            var result = validator.ValidateAsync(dto, ct).Result;
-            if (!result.IsValid)
-                errors.Add(result.ToString());
-        }
-
-        return errors;
-    }
-
-    private static IEnumerable<CreateProductDto> ExpandByQuantity(IEnumerable<CreateProductDto> dtos)
-    {
-        foreach (var dto in dtos)
-            for (int i = 0; i < dto.Quantity; i++)
-                yield return dto;
-    }
-
-    private static Product MapToEntity(CreateProductDto dto) => new()
-    {
-        Price = dto.Price,
-        Category = dto.Category,
-        Description = dto.Description,
-        Body = dto.Body,
-        Size = dto.Size,
-        Quality = dto.Quality,
-        Status = ProductStatus.Available,
-        Season = dto.Season,
-        RefurbishmentCost = dto.RefurbishmentCost,
-        ConsignmentId = dto.ConsignmentId,
-        BoxId = dto.BoxId
-    };
 }

@@ -5,7 +5,9 @@ namespace TodoSeUsa.Application.Features.Products.Interfaces;
 
 public interface IProductService
 {
-    Task<Result<int>> GetTotalCountAsync(CancellationToken ct);
+    Task<Result<int>> GetAvailableCountAsync(CancellationToken ct);
+
+    Task<Result<decimal>> GetAvailableInventoryValueAsync(CancellationToken ct);
 
     Task<Result<PagedItems<ProductDto>>> GetAllAsync(QueryRequest request, CancellationToken ct);
 
