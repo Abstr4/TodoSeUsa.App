@@ -34,7 +34,7 @@
 <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style=" padding-bottom: 1.1rem">
     @if (isLoading)
     {
-        <ScreenLoading/>
+        <ScreenLoading />
     }
     else if (_sale != null)
     {
@@ -53,7 +53,7 @@
                                         Click=@HandleEditSale Style="flex-grow: 1;" />
 
                             <RadzenButton  Icon="cancel" Text="Cancelar" ButtonStyle="ButtonStyle.Danger"
-                                            Click=@HandleCancelSale Style="flex-grow: 1;"/>
+                                            Click=@HandleCancelSale Style="flex-grow: 1;" />
                         </RadzenStack>
                     </RadzenStack>
 
@@ -264,7 +264,7 @@
     }
     else
     {
-        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Text="@errorMessage"/>
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Text="@errorMessage" />
         <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => _JS.GoBackOrHomeAsync(_navigationManager, "/"))" />
     }
 </RadzenStack>

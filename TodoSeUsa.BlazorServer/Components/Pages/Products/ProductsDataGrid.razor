@@ -19,7 +19,7 @@
 
         <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar un producto nuevo" Click="@HandleCreateProduct" Visible="IsMainPage"/>
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar un producto nuevo" Click="@HandleCreateProduct" Visible="IsMainPage" />
 
             <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@productsGrid.Reload" ResetButtonClicked="@ResetAsync" />
 

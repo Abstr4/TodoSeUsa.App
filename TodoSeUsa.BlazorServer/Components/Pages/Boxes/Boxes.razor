@@ -50,7 +50,7 @@
 
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.Code)" Title="Código" MinWidth="120px" Width="120px"/>
+            <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.Code)" Title="Código" MinWidth="120px" Width="120px" />
 
             <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.TotalProducts)" Title="Cant. productos" MinWidth="120px" Width="120px">
 
@@ -67,9 +67,9 @@
                 </Template>
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Property="@nameof(BoxDto.Location)" Title="Ubicación" MinWidth="120px" Width="200px"/>
+            <RadzenDataGridColumn Property="@nameof(BoxDto.Location)" Title="Ubicación" MinWidth="120px" Width="200px" />
 
-            <RadzenDataGridColumn Property="@nameof(BoxDto.CreatedAt)" Title="Creada el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="120px"/>
+            <RadzenDataGridColumn Property="@nameof(BoxDto.CreatedAt)" Title="Creada el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="120px" Width="120px" />
 
             <RadzenDataGridColumn Sortable="false" TItem="BoxDto" Title="Acciones" MinWidth="120px" Width="120px">
                 <Template Context="box">

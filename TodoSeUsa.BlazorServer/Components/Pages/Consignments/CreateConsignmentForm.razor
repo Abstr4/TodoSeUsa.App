@@ -22,9 +22,9 @@
                                 ID del proveedor <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
 
-                            <RadzenNumeric Name="ProviderId" @bind-Value=@createConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" Disabled="@(ProviderId != null)"/>
+                            <RadzenNumeric Name="ProviderId" @bind-Value=@createConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" Disabled="@(ProviderId != null)" />
                             <RadzenRequiredValidator Component="ProviderId" Text="El ID del proveedor es requerido." />
-                            <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El ID del proveedor debe ser mayor a cero."/>
+                            <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El ID del proveedor debe ser mayor a cero." />
 
                         </RadzenStack>
                     </RadzenColumn>
@@ -44,7 +44,7 @@
                                 <RadzenButton Icon="alarm" Click="@(() => createConsignmentDto.DateIssued = DateTime.Now)" Text="Ahora" />
                             </RadzenStack>
 
-                            <RadzenCustomValidator Validator="@(() => createConsignmentDto.DateIssued is null || createConsignmentDto.DateIssued <= DateTime.Now)" Text="La fecha debe estar en el pasado."/>
+                            <RadzenCustomValidator Validator="@(() => createConsignmentDto.DateIssued is null || createConsignmentDto.DateIssued <= DateTime.Now)" Text="La fecha debe estar en el pasado." />
                         </RadzenStack>
                     </RadzenColumn>
                     <RadzenColumn Size="6" id="notes-column">

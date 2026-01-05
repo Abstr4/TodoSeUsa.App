@@ -35,7 +35,7 @@
                     <HeaderTemplate>
 
                         <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap" Style="text-wrap: wrap;">
-                            <RadzenIcon Icon="apparel"/>
+                            <RadzenIcon Icon="apparel" />
                             <span>
                                 Agregar producto
                                 <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
@@ -96,7 +96,7 @@
                                         <RadzenStack Orientation="Orientation.Horizontal">
 
                                             <RadzenNumeric Name="Amount" @bind-Value=@paymentUiModel.Amount TValue="decimal" Min="0" />
-                                            <RadzenButton Click="@PayDifference" Icon="add" Text="Monto restante" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium"/>
+                                            <RadzenButton Click="@PayDifference" Icon="add" Text="Monto restante" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
                                         </RadzenStack>
 
                                         <RadzenRequiredValidator Component="Amount" Text="El monto es requerido." />
@@ -239,7 +239,7 @@
 
                 <HeaderTemplate>
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
-                        <RadzenIcon Icon="apparel"/>
+                        <RadzenIcon Icon="apparel" />
                         <span>Productos</span>
                     </RadzenStack>
                 </HeaderTemplate>
@@ -285,7 +285,7 @@
 
                 <HeaderTemplate>
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
-                        <RadzenIcon Icon="payments"/>
+                        <RadzenIcon Icon="payments" />
                         <span>Pagos</span>
                     </RadzenStack>
                 </HeaderTemplate>

@@ -65,7 +65,7 @@
                                     Click=@HandleEditProvider Style="flex-grow: 1;" />
 
                         <RadzenButton  Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger"
-                                        Click=@HandleDeleteProvider Style="flex-grow: 1;"/>
+                                        Click=@HandleDeleteProvider Style="flex-grow: 1;" />
                     </RadzenStack>
                 </RadzenStack>
 
@@ -172,7 +172,7 @@
                     </HeaderTemplate>
 
                     <ChildContent>
-                        <ProductsDataGrid OnLoad="LoadProductsByProvider" IsMainPage=false/>
+                        <ProductsDataGrid OnLoad="LoadProductsByProvider" IsMainPage=false />
                     </ChildContent>
 
                     <SummaryTemplate>
@@ -209,7 +209,7 @@
     }
     else
     {
-        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Text="@errorMessage"/>
+        <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Text="@errorMessage" />
         <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => JS.GoBackOrHomeAsync(_navigationManager, "/"))" />
     }
 </RadzenStack>

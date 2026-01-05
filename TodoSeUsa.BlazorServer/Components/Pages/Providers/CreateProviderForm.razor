@@ -38,7 +38,7 @@
                                 </RadzenStack>
 
                                 <RadzenRequiredValidator Component="FirstName" Text="El nombre es requerido." />
-                                <RadzenLengthValidator Component="FirstName" Text="El nombre debe tener menos de 50 carácteres"/>
+                                <RadzenLengthValidator Component="FirstName" Text="El nombre debe tener menos de 50 carácteres" />
                             </RadzenStack>
                         </RadzenColumn>
                         <RadzenColumn Size="6" id="lastName-column">
@@ -96,7 +96,7 @@
 
                                     <RadzenTextBox Name="EmailAddress" MaxLength="250" @bind-Value=@createProviderDto.EmailAddress Style="width: 100%;" Change="@OnEmailAddressChanged" Placeholder="Email..." />
 
-                                    <RadzenCustomValidator Component="EmailAddress" Validator="@(() => InputValidators.IsValidEmailAddress(createProviderDto.EmailAddress))" Text="El email es inválido. Ingrese un válido como: 'ejemplo@dominio.com'."/>
+                                    <RadzenCustomValidator Component="EmailAddress" Validator="@(() => InputValidators.IsValidEmailAddress(createProviderDto.EmailAddress))" Text="El email es inválido. Ingrese un válido como: 'ejemplo@dominio.com'." />
                                 </RadzenStack>
                             </RadzenStack>
                         </RadzenColumn>
@@ -135,7 +135,7 @@
                                         <RadzenTextBox Name="Address" @bind-Value=@createProviderDto.Address Style="width: 100%;" Change="@OnAddressChanged" Placeholder="Dirección..." />
 
                                         <RadzenCustomValidator Component="Address" Validator="@(() => InputValidators.IsNullOrEmptyOrMatchesAlphanumericPattern(createProviderDto.Address))"
-                                            Text="Debe ingresar un texto válido, no sólo simbolos y espacios en blanco."/>
+                                            Text="Debe ingresar un texto válido, no sólo simbolos y espacios en blanco." />
                                     </RadzenStack>
                                 </RadzenStack>
                         </RadzenColumn>

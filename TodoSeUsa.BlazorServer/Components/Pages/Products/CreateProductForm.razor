@@ -69,7 +69,7 @@
                                     @foreach(var error in errors)
                                     {
                                         <li>
-                                            <RadzenText TextStyle="TextStyle.Subtitle2" Style="color: red" Text="@error"/>
+                                            <RadzenText TextStyle="TextStyle.Subtitle2" Style="color: red" Text="@error" />
                                         </li>
                                     }
                                 </ul>
@@ -119,11 +119,11 @@
                                         Id de la consignación<RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Req." Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                                     </RadzenLabel>
 
-                                    <RadzenNumeric Name="ConsignmentId" @bind-Value=@createProductDto.ConsignmentId Style="width: 100%;" TValue="int" Min="1" Disabled="@(ConsignmentId != null)"/>
+                                    <RadzenNumeric Name="ConsignmentId" @bind-Value=@createProductDto.ConsignmentId Style="width: 100%;" TValue="int" Min="1" Disabled="@(ConsignmentId != null)" />
 
                                     <RadzenRequiredValidator Component="ConsignmentId" Text="El Id de la consignación es obligatorio." />
 
-                                    <RadzenNumericRangeValidator Component="ConsignmentId" Min="1" Text="El Id de la consignación debe ser mayor a cero."/>
+                                    <RadzenNumericRangeValidator Component="ConsignmentId" Min="1" Text="El Id de la consignación debe ser mayor a cero." />
                                 </RadzenStack>
                             </RadzenColumn>
 
@@ -141,7 +141,7 @@
 
                                     <RadzenRegexValidator Component="Size"
                                                             Pattern="^(?=.*[\p{L}\p{N}]).{1,50}$"
-                                                            Text="El talle debe tener entre 1 y 50 caracteres válidos (no solo espacios o símbolos)."/>
+                                                            Text="El talle debe tener entre 1 y 50 caracteres válidos (no solo espacios o símbolos)." />
                                 </RadzenStack>
                             </RadzenColumn>
 
@@ -201,7 +201,7 @@
 
                                     <RadzenRegexValidator Component="Category"
                                                             Pattern="^(?=.*[\p{L}\p{N}]).{1,100}$"
-                                                            Text="La categoría debe tener entre 1 y 100 caracteres válidos (no solo espacios o símbolos)."/>
+                                                            Text="La categoría debe tener entre 1 y 100 caracteres válidos (no solo espacios o símbolos)." />
                                 </RadzenStack>
                             </RadzenColumn>
 
