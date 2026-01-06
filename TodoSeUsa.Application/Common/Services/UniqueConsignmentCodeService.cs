@@ -21,7 +21,7 @@ public class UniqueConsignmentCodeService
 
         do
         {
-            code = CrockfordBase32CodeGenerator.Create();
+            code = CrockfordBase32CodeGenerator.CreateHyphenated(blockLength: 4);
 
             exists = await context.Consignments
                 .AnyAsync(s => s.Code == code, ct);
