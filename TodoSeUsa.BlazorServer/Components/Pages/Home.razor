@@ -10,60 +10,117 @@
 @inject IProductService _productService;
 
 <style>
-    #title, #general-info-card, #sales-info-card
+
+    #page-title, .info-card, .card-title
     {
-        margin-bottom: 2rem;
+        margin-bottom: 2rem !important;
     }
+
+    .chart-title
+    {
+        margin-bottom: 1rem !important;
+    }
+
 </style>
 
-<div id="title" style="flex: 1; text-align: center;">
-    <RadzenText Text="Resumen" TextStyle="TextStyle.H3" Style="margin: 0; margin-bottom: 0.5rem;" />
+<div id="page-title" style="flex: 1; text-align: center;">
+
+    <RadzenText Text="Resumen" TextStyle="TextStyle.H3" />
+
 </div>
 
 @if (loadError is null)
 {
-    <RadzenCard id="general-info-card" class="rz-p-4 rz-p-md-6 rz-p-lg-12">
+    <RadzenCard class="rz-p-4 rz-p-md-6 rz-p-lg-12 info-card">
 
-        <RadzenText Text="General" TextStyle="TextStyle.H5" Style="margin-bottom: 2rem;" />
+        <RadzenText class="card-title" Text="General" TextStyle="TextStyle.H5" />
+ 
+        <RadzenRow Gap="1rem" id="general-info-kpi-cards-row">
 
-        <RadzenRow Gap="1rem" id="kpi-cards-row">
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem"
+                            class="rz-p-4 rz-border-radius-1"
+                            Style="border: var(--rz-grid-cell-border); width: 100%;">
+                <RadzenText TextStyle="TextStyle.H6">Productos</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@availableProductsCount</RadzenText>
+            </RadzenStack>
+        </RadzenColumn>
+
+        <RadzenColumn Size="12" SizeMD="6">
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem"
+                            class="rz-p-4 rz-border-radius-1"
+                            Style="border: var(--rz-grid-cell-border); width: 100%;">
+                <RadzenText TextStyle="TextStyle.H6">Valor total en productos</RadzenText>
+                <RadzenText TextStyle="TextStyle.H3">@availableProductsValue.ToString("C")</RadzenText>
+            </RadzenStack>
+        </RadzenColumn>
 
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem"
-                                class="rz-p-4 rz-border-radius-1"
-                                Style="border: var(--rz-grid-cell-border); width: 100%;">
-                    <RadzenText TextStyle="TextStyle.H6">Productos</RadzenText>
-                    <RadzenText TextStyle="TextStyle.H3">@availableProductsCount</RadzenText>
+                             class="rz-p-4 rz-border-radius-1"
+                             Style="border: var(--rz-grid-cell-border); width: 100%;">
+
+                    <RadzenText TextStyle="TextStyle.H6">Ventas del mes</RadzenText>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.End">
+                        <RadzenText Style="color: var(--rz-series-1)" TextStyle="TextStyle.H3">@thisMonthSalesCount</RadzenText>
+                        @if (thisMonthSalesCount > 0)
+                        {
+                            <RadzenIcon Icon="trending_up" />
+                        }
+                        else if (thisMonthSalesCount < 0)
+                        {
+                            <RadzenIcon Icon="trending_down" />
+                        }
+                        <RadzenText Style="color: var(--rz-series-1)" Text="@FormatSalesDiff(thisMonthSalesDiff)" TextStyle="TextStyle.Body2" />
+                    </RadzenStack>
+
                 </RadzenStack>
             </RadzenColumn>
 
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem"
-                                class="rz-p-4 rz-border-radius-1"
-                                Style="border: var(--rz-grid-cell-border); width: 100%;">
-                    <RadzenText TextStyle="TextStyle.H6">Valor total en productos</RadzenText>
-                    <RadzenText TextStyle="TextStyle.H3">@availableProductsValue.ToString("C")</RadzenText>
+                             class="rz-p-4 rz-border-radius-1"
+                             Style="border: var(--rz-grid-cell-border); width: 100%;">
+
+                    <RadzenText TextStyle="TextStyle.H6">Ingresos del mes</RadzenText>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.End">
+                        <RadzenText Style="color: var(--rz-series-1)" TextStyle="TextStyle.H3">@thisMonthRevenue.ToString("C")</RadzenText>
+                        @if (thisMonthRevenueDiff > 0)
+                        {
+                            <RadzenIcon Icon="trending_up" />
+                        }
+                        else if (thisMonthRevenueDiff < 0)
+                        {
+                            <RadzenIcon Icon="trending_down" />
+                        }
+                        <RadzenText Style="color: var(--rz-series-1)" Text="@FormatRevenueDiff(thisMonthRevenueDiff)" TextStyle="TextStyle.Body2" />
+                    </RadzenStack>
+
                 </RadzenStack>
             </RadzenColumn>
 
-        </RadzenRow>
+    </RadzenRow>
 
     </RadzenCard>
 
-    <RadzenCard id="sales-info-card" class="rz-p-4 rz-p-md-6 rz-p-lg-12">
+    <RadzenCard class="rz-p-4 rz-p-md-6 rz-p-lg-12 info-card">
 
-        <RadzenText Text="Ventas" TextStyle="TextStyle.H5" Style="margin-bottom: 2rem;" />
+        <RadzenText class="card-title" Text="Ventas (vista detallada)" TextStyle="TextStyle.H5" />
 
-        <RadzenText Text="Filtrar por fecha" TextStyle="TextStyle.Subtitle1" />
+        <RadzenStack id="date-filter-controls" Orientation="Orientation.Vertical">
 
-        <RadzenRow id="date-filters-row" AlignItems="AlignItems.End" Gap="1rem">
+            <RadzenText Text="Filtrar por fecha" TextStyle="TextStyle.Subtitle1" />
+
+            <RadzenRow id="date-filters-row" AlignItems="AlignItems.End" Gap="1rem">
 
             <RadzenColumn Size="12" SizeMD="3">
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem"
                                 class="rz-p-4 rz-border-radius-1"
                                 Style="border: var(--rz-grid-cell-border);">
                     <RadzenLabel Text="Año:" />
-                    <RadzenDropDown Data="@years" @bind-Value="selectedYear" Change="@Reload" Style="width:100%;" />
+                    <RadzenDropDown Data="@years" @bind-Value="selectedYear" Change="@(e => OnYearChanged((int)e))" Style="width:100%;" />
                 </RadzenStack>
             </RadzenColumn>
 
@@ -73,68 +130,175 @@
                                 Style="border: var(--rz-grid-cell-border);">
                     <RadzenLabel Text="Mes:" />
                     <RadzenDropDown Data="@months" TextProperty="Text" ValueProperty="Value"
-                                    @bind-Value="selectedMonth" Change="@Reload" Style="width:100%;" />
+                                    @bind-Value="selectedMonth" Change="@(e => OnMonthChanged((int)e))" Style="width:100%;" />
                 </RadzenStack>
             </RadzenColumn>
 
-            <RadzenColumn Size="12" SizeMD="2">
-                <RadzenButton Text="Resetear filtros" Icon="refresh" ButtonStyle="ButtonStyle.Primary"
-                                Click="@ResetToCurrent" Style="width:100%;">
-                </RadzenButton>
-            </RadzenColumn>
+            <RadzenButton Text="Resetear filtros" Icon="refresh" ButtonStyle="ButtonStyle.Primary" Click="@ResetToCurrent" />
+
         </RadzenRow>
+        </RadzenStack>
 
-        <RadzenStack id="daily-sales-stack" Orientation="Orientation.Vertical" Gap="1rem" Style="margin-top: 2rem;">
+        <RadzenStack id="month-scope-sales-stack" Orientation="Orientation.Vertical" Gap="1rem" Style="margin-top: 2.5rem;">
 
-            <RadzenText TextStyle="TextStyle.H6">Ventas diarias (@months[selectedMonth - 1].Text)</RadzenText>
+            <RadzenText TextStyle="TextStyle.H6" > Ventas del mes (@months[selectedMonth - 1].Text) </RadzenText>
+                
+            <RadzenStack Gap="1rem">
 
-            <RadzenRow id="kpi-cards-row" Gap="1rem">
+                <RadzenRow id="month-sales-kpi-cards-row" Gap="1rem">
+
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem"
+                                        class="rz-p-4 rz-border-radius-1"
+                                        Style="border: var(--rz-grid-cell-border); width: 100%;">
+                            <RadzenText TextStyle="TextStyle.H6">Ventas</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H3">@monthlySalesCount</RadzenText>
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem"
+                                        class="rz-p-4 rz-border-radius-1"
+                                        Style="border: var(--rz-grid-cell-border); width: 100%;">
+                            <RadzenText TextStyle="TextStyle.H6">Ingresos</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H3">@monthlyRevenue.ToString("C")</RadzenText>
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                </RadzenRow>
+
+                <RadzenStack id="daily-sales-chart-stack" Orientation="Orientation.Vertical" Gap="0.5rem"
+                                class="rz-p-4 rz-border-radius-1"
+                                Style="border: var(--rz-grid-cell-border);">
+
+                    <RadzenText Text="Ingresos diarios" TextStyle="TextStyle.H6" class="chart-title"/>
+
+                    <RadzenStack id="daily-sales-chart-datalabels-toggle" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem"
+                                    class="rz-p-4 rz-border-radius-1"
+                                    Style="border: var(--rz-grid-cell-border);">
+
+                        <RadzenCheckBox @bind-Value="@showDailyDataLabels" Name="dataLabels" />
+                        <RadzenLabel Text="Mostrar valores" Component="dataLabels" />
+                    </RadzenStack>
+
+                    <RadzenChart>
+
+                        <RadzenChartTooltipOptions />
+
+                        <RadzenLineSeries Data="@paddedSales" CategoryProperty="Day" ValueProperty="Total" Smooth="false" Title="Ingresos">
+                            <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
+                            <RadzenSeriesDataLabels Visible="@showDailyDataLabels" />
+                        </RadzenLineSeries>
+
+                        <RadzenCategoryAxis Padding="20" Min="1" Max="@DateTime.DaysInMonth(selectedYear, selectedMonth)" Step="1">
+                            <RadzenAxisTitle Text="Días del mes" />
+                        </RadzenCategoryAxis>
+
+                        <RadzenValueAxis Formatter="@FormatAsARS">
+                            <RadzenGridLines Visible="true" />
+                            <RadzenAxisTitle Text="Ingresos en ARS" />
+                        </RadzenValueAxis>
+
+                    </RadzenChart>
+
+                </RadzenStack>
+
+            </RadzenStack>
+
+        </RadzenStack>
+
+        <RadzenStack id="year-scope-sales-stack" Orientation="Orientation.Vertical" Gap="1rem" Style="margin-top: 2rem;">
+
+            <RadzenText TextStyle="TextStyle.H6" > Ventas del año (@selectedYear) </RadzenText>
+
+            <RadzenRow id="monthly-sales-kpi-cards-row" Gap="1rem">
 
                 <RadzenColumn Size="12" SizeMD="6">
                     <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem"
-                                 class="rz-p-4 rz-border-radius-1"
-                                 Style="border: var(--rz-grid-cell-border); width: 100%;">
-                        <RadzenText TextStyle="TextStyle.H6">Ventas</RadzenText>
-                        <RadzenText TextStyle="TextStyle.H3">@salesCount</RadzenText>
+                                    class="rz-p-4 rz-border-radius-1"
+                                    Style="border: var(--rz-grid-cell-border); width: 100%;">
+                        <RadzenText TextStyle="TextStyle.H6">Ventas totales</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H3">@yearlySalesCount</RadzenText>
                     </RadzenStack>
                 </RadzenColumn>
 
                 <RadzenColumn Size="12" SizeMD="6">
                     <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem"
-                                 class="rz-p-4 rz-border-radius-1"
-                                 Style="border: var(--rz-grid-cell-border); width: 100%;">
-                        <RadzenText TextStyle="TextStyle.H6">Ingresos</RadzenText>
-                        <RadzenText TextStyle="TextStyle.H3">@revenue.ToString("C")</RadzenText>
+                                    class="rz-p-4 rz-border-radius-1"
+                                    Style="border: var(--rz-grid-cell-border); width: 100%;">
+                        <RadzenText TextStyle="TextStyle.H6">Ingresos totales</RadzenText>
+                        <RadzenText TextStyle="TextStyle.H3">@yearlyRevenue.ToString("C")</RadzenText>
                     </RadzenStack>
                 </RadzenColumn>
-
             </RadzenRow>
 
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem"
-                            class="rz-p-4 rz-border-radius-1"
-                            Style="border: var(--rz-grid-cell-border);">
-                <RadzenCheckBox @bind-Value="@showDataLabels" Name="dataLabels" />
-                <RadzenLabel Text="Mostrar valores" Component="dataLabels" />
-            </RadzenStack>
-            
-            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem"
-                            class="rz-p-4 rz-border-radius-1"
-                            Style="border: var(--rz-grid-cell-border);">
+            <RadzenStack id="yearly-graphs-stack" Orientation="Orientation.Vertical" Gap="1rem">
 
-                <RadzenChart id="sales-chart">
-                    <RadzenChartTooltipOptions />
+                <RadzenStack id="monthly-revenue-stack" Orientation="Orientation.Vertical" Gap="0.5rem"
+                                class="rz-p-4 rz-border-radius-1"
+                                Style="border: var(--rz-grid-cell-border);">
 
-                    <RadzenLineSeries Data="@paddedSales" CategoryProperty="Day" ValueProperty="Total" Smooth="false" Title="Ventas">
-                        <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
-                        <RadzenSeriesDataLabels Visible="@showDataLabels" />
-                    </RadzenLineSeries>
+                    <RadzenText Text="Ingresos mensuales" TextStyle="TextStyle.H6" class="chart-title" />
 
-                    <RadzenCategoryAxis Padding="20" Min="1" Max="@DateTime.DaysInMonth(selectedYear, selectedMonth)" Step="1" />
-                    <RadzenValueAxis Formatter="@FormatAsARS">
-                        <RadzenGridLines Visible="true" />
-                        <RadzenAxisTitle Text="Ingresos en ARS" />
-                    </RadzenValueAxis>
-                </RadzenChart>
+                    <RadzenStack id="daily-revenue-datalabels-toggle-stack" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border);">
+
+                        <RadzenCheckBox @bind-Value="@showMonthlySalesDataLabels" Name="yearlyDataLabels" />
+                        <RadzenLabel Text="Mostrar valores" Component="yearlyDataLabels" />
+                    </RadzenStack>
+
+                    <RadzenChart id="monthly-sales-chart">
+
+                        <RadzenChartTooltipOptions />
+
+                        <RadzenLineSeries Data="@paddedMonthlySalesWithNames" CategoryProperty="MonthName" ValueProperty="Total" Smooth="false" Title="Ingresos">
+
+                            <RadzenMarkers Visible="true" MarkerType="MarkerType.Circle" />
+                            <RadzenSeriesDataLabels Visible="@showMonthlySalesDataLabels" />
+
+                        </RadzenLineSeries>
+
+                        <RadzenCategoryAxis Padding="20" Min="1" Max="12" Step="1" LabelAutoRotation="-45" />
+
+                        <RadzenValueAxis Formatter="@FormatAsARS">
+
+                            <RadzenGridLines Visible="true" />
+                            <RadzenAxisTitle Text="Ingresos en ARS" />
+                        </RadzenValueAxis>
+
+                    </RadzenChart>
+
+                </RadzenStack>
+
+                <RadzenStack id="monthly-count-stack" Orientation="Orientation.Vertical" Gap="0.5rem"
+                                class="rz-p-4 rz-border-radius-1"
+                                Style="border: var(--rz-grid-cell-border);">
+
+                    <RadzenText Text="Cantidad de ventas mensuales" TextStyle="TextStyle.H6" class="chart-title" />
+
+                    <RadzenStack id="monthly-count-datalabels-toggle-stack" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border);">
+
+                        <RadzenCheckBox @bind-Value="@showMonthlyCountDataLabels" Name="yearlyDataLabels" />
+                        <RadzenLabel Text="Mostrar valores" Component="yearlyDataLabels" />
+                    </RadzenStack>
+
+                    <RadzenChart id="monthly-sales-count-chart">
+
+                        <RadzenChartTooltipOptions />
+
+                        <RadzenColumnSeries Data="@paddedMonthlyCountWithNames" CategoryProperty="MonthName" ValueProperty="Count" Title="Cantidad de ventas">
+                            <RadzenSeriesDataLabels Visible="@showMonthlyCountDataLabels" />
+                        </RadzenColumnSeries>
+
+                        <RadzenCategoryAxis Padding="20" Min="1" Max="12" Step="1" LabelAutoRotation="-45" />
+
+                        <RadzenValueAxis>
+                            <RadzenAxisTitle Text="Cantidad de ventas" />
+                        </RadzenValueAxis>
+
+                    </RadzenChart>
+
+                </RadzenStack>
+
             </RadzenStack>
 
         </RadzenStack>
@@ -153,87 +317,288 @@ else
     int selectedYear = DateTime.UtcNow.Year;
     int selectedMonth = DateTime.UtcNow.Month;
 
+    // general scope
     int availableProductsCount;
     decimal availableProductsValue;
+    int thisMonthSalesCount;
+    decimal thisMonthRevenue;
+    int thisMonthSalesDiff;
+    decimal thisMonthRevenueDiff;
 
-    int salesCount;
-    decimal revenue;
+    // yearly scope
+    int yearlySalesCount;
+    decimal yearlyRevenue;
+
+    // monthly scope
+    int monthlySalesCount;
+    decimal monthlyRevenue;
+
+    IReadOnlyList<SalePointDto> dailySales = Array.Empty<SalePointDto>();
+    IReadOnlyList<MonthlySalePointDto> monthlySales = Array.Empty<MonthlySalePointDto>();
+    IReadOnlyList<MonthlyCountPointDto> monthlyCount = Array.Empty<MonthlyCountPointDto>();
 
     IEnumerable<int> daysInMonth => Enumerable.Range(1, DateTime.DaysInMonth(selectedYear, selectedMonth));
 
     IReadOnlyList<SalePointDto> paddedSales => daysInMonth
-    .Select(day => sales.FirstOrDefault(s => s.Day == day) ?? new SalePointDto { Day = day, Total = 0 })
-    .ToList();
+        .Select(day => dailySales.FirstOrDefault(s => s.Day == day) ?? new SalePointDto { Day = day, Total = 0 })
+        .ToList();
 
-    IReadOnlyList<SalePointDto> sales = Array.Empty<SalePointDto>();
+    IReadOnlyList<MonthlySalePointDtoWithName> paddedMonthlySalesWithNames =>
+        Enumerable.Range(1, 12)
+            .Select(m =>
+            {
+                var s = monthlySales.FirstOrDefault(x => x.Month == m) ?? new MonthlySalePointDto { Month = m, Total = 0 };
+                return new MonthlySalePointDtoWithName
+                {
+                    MonthNumber = m,
+                    MonthName = SpanishMonths.All[m - 1].Text,
+                    Total = s.Total
+                };
+            }).ToList();
+
+    IReadOnlyList<MonthlyCountPointDtoWithName> paddedMonthlyCountWithNames =>
+        Enumerable.Range(1, 12)
+            .Select(m =>
+            {
+                var s = monthlyCount.FirstOrDefault(x => x.Month == m) ?? new MonthlyCountPointDto { Month = m, Count = 0 };
+                return new MonthlyCountPointDtoWithName
+                {
+                    MonthNumber = m,
+                    MonthName = SpanishMonths.All[m - 1].Text,
+                    Count = s.Count
+                };
+            }).ToList();
 
     IEnumerable<int> years = Enumerable.Range(DateTime.UtcNow.Year - 5, 6);
-
     IReadOnlyList<Option<int>> months = SpanishMonths.All;
 
-    bool showDataLabels;
+    bool showDailyDataLabels;
+    bool showMonthlySalesDataLabels;
+    bool showMonthlyCountDataLabels;
 
     protected override async Task OnInitializedAsync()
     {
-        await Reload();
+        await LoadGeneralScopeAsync();
+        await ReloadYearAndMonthScopesAsync();
     }
 
-    async Task Reload()
+    async Task ReloadYearAndMonthScopesAsync()
+    {
+        await ReloadYearScopeAsync();
+        await ReloadMonthScopeAsync();
+    }
+
+    async Task LoadGeneralScopeAsync()
+    {
+        loadError = null;
+        var ct = CancellationToken.None;
+
+        // Products KPIs
+        var productsResult = await _productService.GetAvailableCountAsync(ct);
+        if (!productsResult.IsSuccess) { loadError = "No se pudo cargar productos"; return; }
+
+        var inventoryValueResult = await _productService.GetAvailableInventoryValueAsync(ct);
+        if (!inventoryValueResult.IsSuccess) { loadError = "No se pudo cargar valor total de productos"; return; }
+
+        availableProductsCount = productsResult.Value;
+        availableProductsValue = inventoryValueResult.Value;
+
+        // This month KPIs
+        var monthSalesResult = await _saleService.GetTotalCountAsync(selectedYear, selectedMonth, ct);
+        if (!monthSalesResult.IsSuccess) { loadError = "No se pudo cargar ventas del mes"; return; }
+
+        var monthRevenueResult = await _saleService.GetRevenueAsync(selectedYear, selectedMonth, ct);
+        if (!monthRevenueResult.IsSuccess) { loadError = "No se pudo cargar ingresos del mes"; return; }
+
+        thisMonthSalesCount = monthSalesResult.Value;
+        thisMonthRevenue = monthRevenueResult.Value;
+
+        var lastMonth = selectedMonth == 1 ? 12 : selectedMonth - 1;
+        var lastMonthYear = selectedMonth == 1 ? selectedYear - 1 : selectedYear;
+
+        // Sales difference
+        var lastMonthSalesResult = await _saleService.GetTotalCountAsync(lastMonthYear, lastMonth, ct);
+        thisMonthSalesDiff = lastMonthSalesResult.IsSuccess ? thisMonthSalesCount - lastMonthSalesResult.Value : 0;
+
+        // Revenue difference
+        var lastMonthRevenueResult = await _saleService.GetRevenueAsync(lastMonthYear, lastMonth, ct);
+        thisMonthRevenueDiff = lastMonthRevenueResult.IsSuccess ? thisMonthRevenue - lastMonthRevenueResult.Value : 0;
+
+    }
+
+    async Task ReloadYearScopeAsync()
     {
         loadError = null;
 
+        await LoadProductSummaryAsync();
+        if (loadError is not null) return;
+
+        await LoadYearSummaryAsync();
+        if (loadError is not null) return;
+
+        await LoadMonthlySeriesAsync();
+    }
+
+    async Task ReloadMonthScopeAsync()
+    {
+        loadError = null;
+
+        await LoadMonthSummaryAsync();
+        if (loadError is not null) return;
+
+        await LoadDailySeriesAsync();
+    }
+
+    async Task LoadMonthSummaryAsync()
+    {
         var ct = CancellationToken.None;
 
         var countResult = await _saleService.GetTotalCountAsync(selectedYear, selectedMonth, ct);
         if (!countResult.IsSuccess)
         {
-            loadError = "No se pudo cargar el panel";
+            loadError = "No se pudo cargar ventas del mes";
             return;
         }
 
         var revenueResult = await _saleService.GetRevenueAsync(selectedYear, selectedMonth, ct);
         if (!revenueResult.IsSuccess)
         {
-            loadError = "No se pudo cargar el panel";
+            loadError = "No se pudo cargar ingresos del mes";
             return;
         }
+
+        monthlySalesCount = countResult.Value;
+        monthlyRevenue = revenueResult.Value;
+    }
+
+    async Task LoadDailySeriesAsync()
+    {
+        var ct = CancellationToken.None;
 
         var salesResult = await _saleService.GetSalesAsync(selectedYear, selectedMonth, ct);
         if (!salesResult.IsSuccess)
         {
-            loadError = "No se pudo cargar el panel";
+            loadError = "No se pudo cargar ventas diarias";
             return;
         }
+
+        dailySales = salesResult.Value;
+    }
+
+    async Task LoadProductSummaryAsync()
+    {
+        var ct = CancellationToken.None;
 
         var productsResult = await _productService.GetAvailableCountAsync(ct);
         if (!productsResult.IsSuccess)
         {
-            loadError = "No se pudo cargar el panel";
+            loadError = "No se pudo cargar productos";
             return;
         }
 
         var inventoryValueResult = await _productService.GetAvailableInventoryValueAsync(ct);
         if (!inventoryValueResult.IsSuccess)
         {
-            loadError = "No se pudo cargar el panel";
+            loadError = "No se pudo cargar valor total de productos";
             return;
         }
 
         availableProductsCount = productsResult.Value;
         availableProductsValue = inventoryValueResult.Value;
-        salesCount = countResult.Value;
-        revenue = revenueResult.Value;
-        sales = salesResult.Value;
     }
 
+    async Task LoadYearSummaryAsync()
+    {
+        var ct = CancellationToken.None;
+
+        var yearlyCountResult = await _saleService.GetYearlyTotalCountAsync(selectedYear, ct);
+        if (!yearlyCountResult.IsSuccess)
+        {
+            loadError = "No se pudo cargar ventas anuales";
+            return;
+        }
+
+        var yearlyRevenueResult = await _saleService.GetYearlyRevenueAsync(selectedYear, ct);
+        if (!yearlyRevenueResult.IsSuccess)
+        {
+            loadError = "No se pudo cargar ingresos anuales";
+            return;
+        }
+
+        yearlySalesCount = yearlyCountResult.Value;
+        yearlyRevenue = yearlyRevenueResult.Value;
+    }
+
+    async Task LoadMonthlySeriesAsync()
+    {
+        var ct = CancellationToken.None;
+
+        var monthlyCountResult = await _saleService.GetMonthlyCountAsync(selectedYear, ct);
+        if (!monthlyCountResult.IsSuccess)
+        {
+            loadError = "No se pudo cargar ventas mensuales";
+            return;
+        }
+
+        var monthlySalesResult = await _saleService.GetMonthlySalesAsync(selectedYear, ct);
+        if (!monthlySalesResult.IsSuccess)
+        {
+            loadError = "No se pudo cargar ingresos mensuales";
+            return;
+        }
+
+        monthlyCount = monthlyCountResult.Value;
+        monthlySales = monthlySalesResult.Value;
+    }
+
+    async Task OnYearChanged(int year)
+    {
+        selectedYear = year;
+        await ReloadYearAndMonthScopesAsync();
+    }
+
+    async Task OnMonthChanged(int month)
+    {
+        selectedMonth = month;
+        await ReloadMonthScopeAsync();
+    }
 
     async Task ResetToCurrent()
     {
         selectedYear = DateTime.UtcNow.Year;
         selectedMonth = DateTime.UtcNow.Month;
-        await Reload();
+        await ReloadYearAndMonthScopesAsync();
     }
 
     string FormatAsARS(object value)
-        => Convert.ToDecimal(value).ToString("C0", CultureInfo.CreateSpecificCulture("es-AR"));
+    {
+        return Convert.ToDecimal(value).ToString("C0", CultureInfo.CreateSpecificCulture("es-AR"));
+    }
+
+    string FormatSalesDiff(int diff)
+    {
+        var sign = diff >= 0 ? "+" : "-";
+        return $"{sign}{Math.Abs(diff)} que el mes pasado";
+    }
+
+    string FormatRevenueDiff(decimal diff)
+    {
+        var sign = diff >= 0 ? "+" : "-";
+        return $"{sign}{Math.Abs(diff).ToString("C", CultureInfo.CreateSpecificCulture("es-AR"))} que el mes pasado";
+    }
+
+
+    public sealed class MonthlySalePointDtoWithName
+    {
+        public int MonthNumber { get; set; }
+        public string MonthName { get; set; } = string.Empty;
+        public decimal Total { get; set; }
+    }
+
+    public sealed class MonthlyCountPointDtoWithName
+    {
+        public int MonthNumber { get; set; }
+        public string MonthName { get; set; } = string.Empty;
+        public int Count { get; set; }
+    }
 }
