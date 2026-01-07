@@ -33,7 +33,10 @@
 {
     <RadzenCard class="rz-p-4 rz-p-md-6 rz-p-lg-12 info-card">
 
-        <RadzenText class="card-title" Text="General" TextStyle="TextStyle.H5" />
+        <RadzenStack class="card-title" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" >
+            <RadzenText Text="General" TextStyle="TextStyle.H5" />
+            <RadzenText TextStyle="TextStyle.H6" > @DateTime.Now.ToString("d") </RadzenText>
+        </RadzenStack>
  
         <RadzenRow Gap="1rem" id="general-info-kpi-cards-row">
 
@@ -62,7 +65,7 @@
 
                     <RadzenText TextStyle="TextStyle.H6">Ventas del mes</RadzenText>
 
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.End">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
                         <RadzenText Style="color: var(--rz-series-1)" TextStyle="TextStyle.H3">@thisMonthSalesCount</RadzenText>
                         @if (thisMonthSalesCount > 0)
                         {
@@ -85,7 +88,7 @@
 
                     <RadzenText TextStyle="TextStyle.H6">Ingresos del mes</RadzenText>
 
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.End">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
                         <RadzenText Style="color: var(--rz-series-1)" TextStyle="TextStyle.H3">@thisMonthRevenue.ToString("C")</RadzenText>
                         @if (thisMonthRevenueDiff > 0)
                         {
