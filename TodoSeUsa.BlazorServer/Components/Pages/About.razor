@@ -1,0 +1,73 @@
+﻿@page "/acerca-de"
+
+<style>
+
+    #page-title {
+        margin-bottom: 2rem !important;
+    }
+
+    .social-icon
+    {
+        font-size: 16px
+    }
+</style>
+
+
+
+<RadzenCard Variant="Variant.Outlined" Style="max-width: 720px; margin: 2rem auto;">
+
+    <RadzenStack Gap="1.5rem">
+
+        <RadzenText TextStyle="TextStyle.H3" Text="Acerca de" />
+
+        <RadzenStack id="content">
+
+            <RadzenText id="description">
+                Este sistema de gestión fue diseñado para simplificar el registro de productos, el control de inventario y el seguimiento de ventas para nuestra tienda de ropa <strong>TodoSeUsa</strong>, reemplazando los documentos dispersos por toda la casa por un único sistema consistente que nuestra familia puede usar de forma ordenada.
+            </RadzenText>
+
+            <RadzenText id="aditional-description">
+                Además, este proyecto ha sido un espacio de aprendizaje práctico, para explorar tecnologías modernas y construir un sistema que realmente se utiliza y tiene un impacto tangible.
+            </RadzenText>
+            <hr />
+
+            <RadzenText TextStyle="TextStyle.H5" Text="Desarrollo" />
+
+            <RadzenText id="who">
+                Desarrollado por <strong>Matias Margaritini</strong> en un pueblito de Córdoba, Argentina.
+            </RadzenText>
+
+            <RadzenText id="tech-stack">
+                <strong>Tecnologías principales:</strong><br />
+                .NET 9 · Blazor Server · Entity Framework Core · SQL Server · Radzen
+            </RadzenText>
+        </RadzenStack>
+
+        <hr />
+
+        <RadzenStack id="footer" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+
+            <RadzenText Style="opacity: 0.7;">
+                © 2026 · Licenciado bajo MIT
+            </RadzenText>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+
+                <RadzenLink Href="https://www.linkedin.com/in/matiasrojasmargaritini" Target="_blank">
+                    <i class="bi bi-linkedin" style="font-size: 2rem; color: dodgerblue;"></i>
+                </RadzenLink>
+
+                <RadzenLink Href="https://github.com/Abstr4" Target="_blank">
+                    <i class="bi bi-github" style="font-size: 2rem; color: black;"></i>
+                </RadzenLink>
+
+            </RadzenStack>
+
+        </RadzenStack>
+
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+
+}
