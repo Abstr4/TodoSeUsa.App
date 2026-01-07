@@ -1,6 +1,5 @@
 ﻿using System.Linq.Dynamic.Core;
 using TodoSeUsa.Application.Common.Querying.CustomCases;
-using TodoSeUsa.Application.Common.Querying.Extensions;
 using TodoSeUsa.Application.Common.Services;
 using TodoSeUsa.Application.Features.Consignments.DTOs;
 using TodoSeUsa.Application.Features.Consignments.Interfaces;
@@ -31,7 +30,7 @@ public sealed class ConsignmentService : IConsignmentService
             .AsQueryable();
 
         query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ConsignmentFilters);
-        
+
         query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ConsignmentSorts);
 
         var totalCount = await query.CountAsync(cancellationToken);

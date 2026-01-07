@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Linq.Dynamic.Core;
+﻿using System.Linq.Dynamic.Core;
 using TodoSeUsa.Application.Common.Querying.CustomCases;
 using TodoSeUsa.Application.Features.Boxes.DTOs;
 using TodoSeUsa.Application.Features.Boxes.Interfaces;
@@ -195,7 +194,7 @@ public class BoxService : IBoxService
             }
 
             box.Location = editBoxDto.Location;
-            
+
             await _context.SaveChangesAsync(ct);
             return Result.Success();
         }

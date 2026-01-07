@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using TodoSeUsa.Application.Features.Products.DTOs;
+﻿using TodoSeUsa.Application.Features.Products.DTOs;
 
 namespace TodoSeUsa.Application.Features.Products.Interfaces;
 

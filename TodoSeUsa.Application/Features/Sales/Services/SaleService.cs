@@ -358,7 +358,7 @@ public sealed class SaleService : ISaleService
             _logger.LogError(ex, "An error occurred while retrieving products for sale ID {saleId}.", saleId);
             return Result.Failure<PagedItems<SaleItemDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos de la venta."));
         }
-        
+
     }
 
     public async Task<Result<PagedItems<PaymentDto>>> GetPaymentsAsync(int saleId, QueryRequest request, CancellationToken ct)
@@ -530,7 +530,7 @@ public sealed class SaleService : ISaleService
                 return Result.Failure(SaleErrors.NotFound(editSaleDto.Id));
             }
 
-            if(sale.Status == SaleStatus.Cancelled)
+            if (sale.Status == SaleStatus.Cancelled)
             {
                 return Result.Failure(SaleErrors.Failure("No se puede editar una venta cancelada."));
             }

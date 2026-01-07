@@ -30,6 +30,6 @@ public class SaleItem
     // lifecycle
 
     public DateTime? ReturnedAt { get; set; }
-        
+
     public string? ReturnReason { get; set; }
 }
