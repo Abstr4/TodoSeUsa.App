@@ -7,6 +7,8 @@
 
 @inherits LayoutComponentBase;
 
+@inject IJSRuntime JS
+
 @inject NavigationManager _navigationManager;
 @inject SimpleNotifications _simpleNotifications;
 @inject DialogService _dialogService;
@@ -14,12 +16,35 @@
 
 <RadzenComponents @rendermode="InteractiveServer" />
 
+<style>
+
+    .fab-bottom-container {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 10000;
+    }
+
+    .fab-top-container {
+        position: fixed;
+        top: 120px;
+        right: 10px;
+        z-index: 10000;
+    }
+
+    #myBtn {
+        display: none;
+    }
+
+</style>
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
     </div>
 
     <main style="max-width: 100%; overflow-x: auto;">
+
         <div class="top-row px-4">
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
         </div>
@@ -27,18 +52,26 @@
         <article class="content px-4">
             @Body
         </article>
+
     </main>
 </div>
 
-<RadzenFabMenu Direction="Radzen.FabMenuDirection.Top">
 
-    <RadzenFabMenuItem Text="Venta" Icon="sell" Click="@HandleCreateSale" />
-    <RadzenFabMenuItem Text="Producto" Icon="apparel" Click="@HandleCreateProduct" />
-    <RadzenFabMenuItem Text="Consignación" Icon="add_notes" Click="@HandleCreateConsignment" />
-    <RadzenFabMenuItem Text="Caja" Icon="box" Click="@HandleCreateBox" />
-    <RadzenFabMenuItem Text="Proveedor" Icon="person" Click="@HandleCreateProvider" />
-     
-</RadzenFabMenu>
+<div class="fab-bottom-container">
+
+    <RadzenFabMenu Direction="Radzen.FabMenuDirection.Top" >
+        <RadzenFabMenuItem Text="Venta" Icon="sell" Click="@HandleCreateSale" />
+        <RadzenFabMenuItem Text="Producto" Icon="apparel" Click="@HandleCreateProduct" />
+        <RadzenFabMenuItem Text="Consignación" Icon="add_notes" Click="@HandleCreateConsignment" />
+        <RadzenFabMenuItem Text="Caja" Icon="box" Click="@HandleCreateBox" />
+        <RadzenFabMenuItem Text="Proveedor" Icon="person" Click="@HandleCreateProvider" />
+    </RadzenFabMenu>
+
+</div>
+
+<div class="fab-top-container">
+    <RadzenFab id="myBtn" Click="ScrollToTop" Icon="arrow_upward" aria-label="back-to-top"/>
+</div>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
@@ -46,7 +79,20 @@
     <span class="dismiss">🗙</span>
 </div>
 
-@code {
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("initScrollToTop");
+        }
+    }
+
+    private async Task ScrollToTop()
+    {
+        await JS.InvokeVoidAsync("topFunction");
+    }
 
     private async Task HandleCreateBox()
     {
