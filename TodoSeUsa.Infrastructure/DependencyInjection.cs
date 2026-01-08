@@ -19,16 +19,20 @@ public static class DependencyInjection
 
         builder.Services.AddScoped<SoftDeleteInterceptor>();
 
-        builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+        builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
-            options.UseSqlServer(connectionString)
-                   .AddInterceptors(builder.Services.BuildServiceProvider().GetRequiredService<SoftDeleteInterceptor>());
+            var interceptor = sp.GetRequiredService<SoftDeleteInterceptor>();
+
+            options.UseSqlServer(connectionString);
+            options.AddInterceptors(interceptor);
         });
 
+        builder.Services.AddDbContextFactory<ApplicationDbContext>(
+            options => options.UseSqlServer(connectionString),
+            ServiceLifetime.Scoped);
+
         builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
-
         builder.Services.AddScoped<IApplicationDbContextFactory, ApplicationDbContextFactory>();
-
         builder.Services.AddScoped<DbSeeder>();
     }
 }

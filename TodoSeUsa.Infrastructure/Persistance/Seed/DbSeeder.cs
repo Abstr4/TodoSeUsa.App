@@ -41,7 +41,7 @@ public sealed class DbSeeder
 
     private static async Task SeedPeopleAsync(ApplicationDbContext context)
     {
-        if (await context.People.AnyAsync())
+        if (await context.Persons.AnyAsync())
             return;
 
         var people = new List<Person>
@@ -51,7 +51,7 @@ public sealed class DbSeeder
             new() { FirstName = "Carlos", LastName = "Pérez", EmailAddress = "carlos@example.com", PhoneNumber = "555111222", Address = "Av. Los Álamos 259" },
         };
 
-        await context.People.AddRangeAsync(people);
+        await context.Persons.AddRangeAsync(people);
         await context.SaveChangesAsync();
     }
 
@@ -60,7 +60,7 @@ public sealed class DbSeeder
         if (await context.Providers.AnyAsync())
             return;
 
-        var person = await context.People.FirstAsync();
+        var person = await context.Persons.FirstAsync();
         var provider = new Provider
         {
             PersonId = person.Id,

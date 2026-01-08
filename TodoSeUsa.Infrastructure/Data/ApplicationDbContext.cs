@@ -1,17 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Reflection;
 using TodoSeUsa.Application.Common.Interfaces;
 
 namespace TodoSeUsa.Infrastructure.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options), IApplicationDbContext
 {
     public DbSet<Box> Boxes => Set<Box>();
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Consignment> Consignments => Set<Consignment>();
     public DbSet<LoanNote> LoanNotes => Set<LoanNote>();
     public DbSet<Payment> Payments => Set<Payment>();
-    public DbSet<Person> People => Set<Person>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Provider> Providers => Set<Provider>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
@@ -25,6 +25,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -38,8 +40,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                             .HasConversion<string>();
             }
         }
-
-        base.OnModelCreating(modelBuilder);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
