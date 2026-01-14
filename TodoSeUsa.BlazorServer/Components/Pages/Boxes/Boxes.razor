@@ -3,11 +3,13 @@
 @using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
 
-@inject IBoxService _boxService;
+@inject IBoxService BoxService;
 
-@inject DialogService _dialogService;
-@inject NavigationManager _navigationManager;
-@inject SimpleNotifications _simpleNotifications;
+@inject DialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+
+@attribute [Authorize]
 
 <style>
     .rz-custom-header {
@@ -105,7 +107,7 @@
 
         QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
 
-        var result = await _boxService.GetAllAsync(request, CancellationToken.None);
+        var result = await BoxService.GetAllAsync(request, CancellationToken.None);
         if (result.IsSuccess)
         {
             boxes = result.Value.Items;
@@ -125,12 +127,12 @@
 
     private void ViewBox(int boxId)
     {
-        _navigationManager.NavigateTo($"/cajas/{boxId}");
+        NavigationManager.NavigateTo($"/cajas/{boxId}");
     }
 
     private async Task HandleEditBox(BoxDto boxDto)
     {
-        var result = await _dialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxDto.Code}'",
+        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxDto.Code}'",
             new Dictionary<string, object>() { { "BoxDto", boxDto } },
             new DialogOptions()
             {
@@ -142,19 +144,19 @@
         {
             if (editResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Caja '{boxDto.Code}' editada con éxito.");
+                SimpleNotifications.Success($"Caja '{boxDto.Code}' editada con éxito.");
                 await grid.Reload();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleDeleteBox(BoxDto boxDto)
     {
-        var result = await _dialogService.OpenAsync<DeleteBoxConfirmation>($"Confirmar eliminación",
+        var result = await DialogService.OpenAsync<DeleteBoxConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "BoxDto", boxDto } },
         new DialogOptions()
             {
@@ -165,19 +167,19 @@
         {
             if (deleteResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Caja '{boxDto.Code}' eliminada con éxito.");
+                SimpleNotifications.Success($"Caja '{boxDto.Code}' eliminada con éxito.");
                 await grid.Reload();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleCreateBox()
     {
-        var result = await _dialogService.OpenAsync<CreateBoxForm>("Crear una nueva caja",
+        var result = await DialogService.OpenAsync<CreateBoxForm>("Crear una nueva caja",
             new Dictionary<string, object>(),
             new DialogOptions()
             {
@@ -188,19 +190,19 @@
         {
             if (createResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Caja creada con éxito!");
-                _navigationManager.NavigateTo($"/cajas/{createResult.Value}");
+                SimpleNotifications.Success($"Caja creada con éxito!");
+                NavigationManager.NavigateTo($"/cajas/{createResult.Value}");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }
 
     public async Task ShowBoxProducts(BoxDto boxDto)
     {
-        await _dialogService.OpenAsync<BoxProductsGrid>($"Productos en la caja código '{boxDto.Code}'",
+        await DialogService.OpenAsync<BoxProductsGrid>($"Productos en la caja código '{boxDto.Code}'",
             new Dictionary<string, object>() { { "BoxDto", boxDto } },
             new DialogOptions()
             {
@@ -213,7 +215,7 @@
 
     public async Task AddProductToBox(BoxDto box)
     {
-        var result = await _dialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{box.Code}'",
+        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{box.Code}'",
             new Dictionary<string, object>() { { "BoxDto", box } },
             new DialogOptions()
             {
@@ -225,11 +227,11 @@
         {
             if (addProductsResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Los productos se agregaron a la caja.");
+                SimpleNotifications.Success($"Los productos se agregaron a la caja.");
             }
             else
             {
-                _simpleNotifications.Error($"No se pudieron agregar los productos a la caja.");
+                SimpleNotifications.Error($"No se pudieron agregar los productos a la caja.");
             }
         }
     }

@@ -2,11 +2,12 @@
 @using TodoSeUsa.Application.Features.Providers.Interfaces
 @using TodoSeUsa.BlazorServer.Validation
 
-@inject IProviderService providerService;
+@inject IProviderService ProviderService;
 
-@inject DialogService dialogService;
-@inject TooltipService tooltipService;
+@inject DialogService DialogService;
+@inject TooltipService TooltipService;
 
+@attribute [Authorize]
 
 <style>
     .filled-icon {
@@ -169,9 +170,9 @@
     async Task OnSubmit()
     {
         busy = true;
-        var result = await providerService.CreateAsync(createProviderDto, CancellationToken.None);
+        var result = await ProviderService.CreateAsync(createProviderDto, CancellationToken.None);
         busy = false;
-        dialogService.Close(result);
+        DialogService.Close(result);
     }
 
     private void OnEmailAddressChanged(string? value)
@@ -194,7 +195,7 @@
 
     void ShowTooltip(ElementReference elementReference)
     {
-        tooltipService.Open(elementReference, "Se necesita un método de contacto (Email o Número de tel.)");
+        TooltipService.Open(elementReference, "Se necesita un método de contacto (Email o Número de tel.)");
     }
 }
 

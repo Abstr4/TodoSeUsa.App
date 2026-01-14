@@ -5,9 +5,11 @@
 
 @inject IConsignmentService consignmentService;
 
-@inject DialogService _dialogService;
-@inject NavigationManager _navigationManager;
-@inject SimpleNotifications _simpleNotifications;
+@inject DialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+
+@attribute [Authorize]
 
 <style>
     .rz-custom-header {
@@ -140,12 +142,12 @@
 
     private void ViewConsignment(int consignmentId)
     {
-        _navigationManager.NavigateTo($"/consignaciones/{consignmentId}");
+        NavigationManager.NavigateTo($"/consignaciones/{consignmentId}");
     }
 
     private async Task HandleEditConsignment(ConsignmentDto consignment)
     {
-        var result = await _dialogService.OpenAsync<EditConsignmentForm>($"Editar consignación",
+        var result = await DialogService.OpenAsync<EditConsignmentForm>($"Editar consignación",
                new Dictionary<string, object>() { { "ConsignmentDto", consignment } },
                new DialogOptions()
                {
@@ -158,19 +160,19 @@
         {
             if (editResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Consignación editada con éxito.");
+                SimpleNotifications.Success($"Consignación editada con éxito.");
                 await grid.Reload();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleDeleteConsignment(ConsignmentDto consignment)
     {
-        var result = await _dialogService.OpenAsync<DeleteConsignmentConfirmation>($"Confirmar eliminación",
+        var result = await DialogService.OpenAsync<DeleteConsignmentConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "ConsignmentDto", consignment } },
         new DialogOptions()
         {
@@ -181,19 +183,19 @@
         {
             if (deleteResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Consignación eliminada con éxito.");
+                SimpleNotifications.Success($"Consignación eliminada con éxito.");
                 await grid.Reload();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleCreateConsignment()
     {
-        var result = await _dialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
+        var result = await DialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -205,19 +207,19 @@
         {
             if (createResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Consignación creada con éxito!");
-                _navigationManager.NavigateTo($"/consignaciones/{createResult.Value}");
+                SimpleNotifications.Success($"Consignación creada con éxito!");
+                NavigationManager.NavigateTo($"/consignaciones/{createResult.Value}");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }
 
     public async Task ShowConsignmentProducts(ConsignmentDto consignmentDto)
     {
-        await _dialogService.OpenAsync<ConsignmentProductsGrid>($"Productos en la consignación ID: {consignmentDto.Id}",
+        await DialogService.OpenAsync<ConsignmentProductsGrid>($"Productos en la consignación ID: {consignmentDto.Id}",
                new Dictionary<string, object>() { { "ConsignmentDto", consignmentDto } },
                new DialogOptions()
                {

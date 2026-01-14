@@ -6,13 +6,14 @@
 @using TodoSeUsa.Application.Features.Sales.Interfaces
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
 
-@inject ISaleService _saleService;
+@inject ISaleService SaleService;
 
-@inject NavigationManager _navigationManager;
-@inject DialogService _dialogService;
-@inject SimpleNotifications _simpleNotifications;
-@inject IJSRuntime _JS;
+@inject NavigationManager NavigationManager;
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
+@inject IJSRuntime JS;
 
+@attribute [Authorize]
 
 <style>
     .rz-fieldset-toggler {
@@ -45,7 +46,7 @@
                     <RadzenStack id="top-action-buttons" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
                         JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
 
-                        <RadzenButton Click="@(() => _JS.GoBackOrHomeAsync(_navigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+                        <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
 
                         <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
@@ -265,7 +266,7 @@
     else
     {
         <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Text="@errorMessage" />
-        <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => _JS.GoBackOrHomeAsync(_navigationManager, "/"))" />
+        <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" />
     }
 </RadzenStack>
 
@@ -299,7 +300,7 @@
         if (isLoading) return;
         isLoading = true;
 
-        var result = await _saleService.GetByIdAsync(Id, CancellationToken.None);
+        var result = await SaleService.GetByIdAsync(Id, CancellationToken.None);
         if (result.IsSuccess)
         {
             _sale = result.Value;
@@ -326,7 +327,7 @@
         isLoadingProducts = true;
 
         var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-        var result = await _saleService.GetItemsAsync(Id, request, CancellationToken.None);
+        var result = await SaleService.GetItemsAsync(Id, request, CancellationToken.None);
 
         if (result.IsSuccess)
         {
@@ -348,7 +349,7 @@
         isLoadingPayments = true;
 
         var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-        var result = await _saleService.GetPaymentsAsync(Id, request, CancellationToken.None);
+        var result = await SaleService.GetPaymentsAsync(Id, request, CancellationToken.None);
 
         if (result.IsSuccess)
         {
@@ -374,7 +375,7 @@
             Notes = _sale.Notes
         };
 
-        var result = await _dialogService.OpenAsync<EditSaleForm>($"Editar venta",
+        var result = await DialogService.OpenAsync<EditSaleForm>($"Editar venta",
                new Dictionary<string, object>() { { "SaleDto", editSaleDto } },
                new DialogOptions()
                {
@@ -386,9 +387,9 @@
         {
             if (editResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Venta editada con éxito.");
+                SimpleNotifications.Success($"Venta editada con éxito.");
 
-                var refreshed = await _saleService.GetByIdAsync(_sale.Id, CancellationToken.None);
+                var refreshed = await SaleService.GetByIdAsync(_sale.Id, CancellationToken.None);
                 if (refreshed.IsSuccess)
                 {
                     _sale = refreshed.Value;
@@ -397,7 +398,7 @@
             }
             else
             {
-                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
@@ -406,7 +407,7 @@
     {
         if (_sale is null) return;
 
-        var result = await _dialogService.OpenAsync<CancelSaleConfirmation>($"Confirmar cancelación",
+        var result = await DialogService.OpenAsync<CancelSaleConfirmation>($"Confirmar cancelación",
         new Dictionary<string, object>() { { "SaleDto", _sale } },
         new DialogOptions()
             {
@@ -418,12 +419,12 @@
         {
             if (cancelResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Venta cancelada con éxito.");
-                await NavigationHelpers.GoBackOrHomeAsync(_JS, _navigationManager, "/ventas");
+                SimpleNotifications.Success($"Venta cancelada con éxito.");
+                await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/ventas");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {cancelResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {cancelResult.Error.Description}");
             }
         }
     }

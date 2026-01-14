@@ -1,10 +1,11 @@
 ﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
 
-@inject IBoxService _boxService;
+@inject IBoxService BoxService;
 
-@inject DialogService _dialogService;
+@inject DialogService DialogService;
 
+@attribute [Authorize]
 
 <RadzenTemplateForm TItem="CreateBoxDto" Data=@createBoxDto Submit=@OnSubmit >
     <RadzenStack Gap="1rem">
@@ -37,7 +38,7 @@
 
     async Task OnSubmit(CreateBoxDto createBoxDto)
     {
-        var result = await _boxService.CreateAsync(createBoxDto, CancellationToken.None);
-        _dialogService.Close(result);
+        var result = await BoxService.CreateAsync(createBoxDto, CancellationToken.None);
+        DialogService.Close(result);
     }
 }

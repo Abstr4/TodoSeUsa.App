@@ -2,7 +2,9 @@
 @using TodoSeUsa.Application.Features.Products.Interfaces
 @using TodoSeUsa.Application.Features.Products.Services
 
-@inject IProductService _productService;
+@inject IProductService ProductService;
+
+@attribute [Authorize]
 
 <RadzenDataList TItem="ProductDto"
                 PageSize=@pageSize
@@ -110,7 +112,7 @@
         isLoading = true;
 
         QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-        var result = await _productService.GetByConsignmentIdAsync(request, ConsignmentId, CancellationToken.None);
+        var result = await ProductService.GetByConsignmentIdAsync(request, ConsignmentId, CancellationToken.None);
         if (result.IsSuccess)
         {
             products = result.Value.Items;

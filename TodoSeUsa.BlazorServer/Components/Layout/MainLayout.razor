@@ -7,36 +7,14 @@
 
 @inherits LayoutComponentBase;
 
-@inject IJSRuntime JS
+@inject IJSRuntime JS;
 
-@inject NavigationManager _navigationManager;
-@inject SimpleNotifications _simpleNotifications;
-@inject DialogService _dialogService;
-@inject CookieThemeService _cookieThemeService;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+@inject DialogService DialogService;
+@inject CookieThemeService CookieThemeService;
 
 <RadzenComponents @rendermode="InteractiveServer" />
-
-<style>
-
-    .fab-bottom-container {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        z-index: 10000;
-    }
-
-    .fab-top-container {
-        position: fixed;
-        top: 120px;
-        right: 10px;
-        z-index: 10000;
-    }
-
-    #myBtn {
-        display: none;
-    }
-
-</style>
 
 <div class="page">
     <div class="sidebar">
@@ -66,7 +44,7 @@
 </div>
 
 <div class="fab-top-container">
-    <RadzenFab id="myBtn" Click="ScrollToTop" Icon="arrow_upward" aria-label="back-to-top"/>
+    <RadzenFab id="myBtn" Click="ScrollToTop" Icon="arrow_upward" aria-label="back-to-top" Style="display: none !important"/>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
@@ -92,7 +70,7 @@
 
     private async Task HandleCreateBox()
     {
-        var result = await _dialogService.OpenAsync<CreateBoxForm>("Crear una nueva caja",
+        var result = await DialogService.OpenAsync<CreateBoxForm>("Crear una nueva caja",
             new Dictionary<string, object>(),
             new DialogOptions()
             {
@@ -103,19 +81,19 @@
         {
             if (createResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Caja creada con éxito!");
-                _navigationManager.NavigateTo($"/boxes/{createResult.Value}");
+                SimpleNotifications.Success($"Caja creada con éxito!");
+                NavigationManager.NavigateTo($"/boxes/{createResult.Value}");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleCreateConsignment()
     {
-        var result = await _dialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
+        var result = await DialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -127,24 +105,24 @@
         {
             if (createResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Consignación creada con éxito!");
-                _navigationManager.NavigateTo($"/consignaciones/{createResult.Value}");
+                SimpleNotifications.Success($"Consignación creada con éxito!");
+                NavigationManager.NavigateTo($"/consignaciones/{createResult.Value}");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }
 
     private void HandleCreateProduct()
     {
-        _navigationManager.NavigateTo($"/productos/registrar");
+        NavigationManager.NavigateTo($"/productos/registrar");
     }
 
     private async Task HandleCreateProvider()
     {
-        var result = await _dialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
+        var result = await DialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -156,18 +134,18 @@
         {
             if (createResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Proveedor creado con éxito!");
-                _navigationManager.NavigateTo($"/proveedores/{createResult.Value}");
+                SimpleNotifications.Success($"Proveedor creado con éxito!");
+                NavigationManager.NavigateTo($"/proveedores/{createResult.Value}");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }
 
     private void HandleCreateSale()
     {
-        _navigationManager.NavigateTo($"/ventas/registrar");
+        NavigationManager.NavigateTo($"/ventas/registrar");
     }
 }

@@ -1,9 +1,11 @@
 ﻿@using TodoSeUsa.Application.Features.Sales.DTOs
 @using TodoSeUsa.Application.Features.Sales.Interfaces
 
-@inject ISaleService _saleService;
+@inject ISaleService SaleService;
 
-@inject DialogService _dialogService;
+@inject DialogService DialogService;
+
+@attribute [Authorize]
 
 <RadzenTemplateForm TItem="EditSaleDto" Data=@_editableSaleDto Submit=@OnSubmit>
 
@@ -41,7 +43,7 @@
 
             <RadzenButton IsBusy=@_isSaveButtonBusy BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=!HasChanges() />
 
-            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => _dialogService.Close())" />
+            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
@@ -66,9 +68,9 @@
     async Task OnSubmit(EditSaleDto _editableSaleDto)
     {
         _isSaveButtonBusy = true;
-        var result = await _saleService.EditAsync(_editableSaleDto, CancellationToken.None);
+        var result = await SaleService.EditAsync(_editableSaleDto, CancellationToken.None);
         _isSaveButtonBusy = false;
-        _dialogService.Close(result);
+        DialogService.Close(result);
     }
 
     private void OnNotesChanged(string? value)

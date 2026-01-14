@@ -8,12 +8,14 @@
 @using TodoSeUsa.BlazorServer.UI.Notifications
 @using TodoSeUsa.BlazorServer.UI.Styling
 
-@inject IProductService _productService;
+@inject IProductService ProductService;
 
-@inject DialogService _dialogService;
-@inject SimpleNotifications _simpleNotifications;
-@inject NavigationManager _navigationManager;
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
+@inject NavigationManager NavigationManager;
 @inject IJSRuntime JS;
+
+@attribute [Authorize]
 
 <style>
     .product-table {
@@ -40,7 +42,7 @@
 
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Style="margin-bottom: 1rem">
 
-                    <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(_navigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+                    <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
 
                     <RadzenStack Orientation="Orientation.Horizontal">
                         <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditProduct(product))" />
@@ -173,7 +175,7 @@
         <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
             @errorMessage
         </RadzenAlert>
-        <RadzenButton Icon="arrow_back" Text="Volver" Click=@(async () => await NavigationHelpers.GoBackOrHomeAsync(JS, _navigationManager, "/productos")) />
+        <RadzenButton Icon="arrow_back" Text="Volver" Click=@(async () => await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/productos")) />
 
     }
 </RadzenStack>
@@ -197,7 +199,7 @@
         if (isLoading) return;
         isLoading = true;
 
-        var result = await _productService.GetByIdAsync(ProductId, CancellationToken.None);
+        var result = await ProductService.GetByIdAsync(ProductId, CancellationToken.None);
         if (result.IsSuccess)
         {
             product = result.Value;
@@ -211,7 +213,7 @@
 
     private async Task HandleEditProduct(ProductDto product)
     {
-        var result = await _dialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
+        var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
                new Dictionary<string, object>() { { "ProductDto", product } },
                new DialogOptions()
                {
@@ -223,19 +225,19 @@
         {
             if (editResult.IsSuccess)
             {                
-                _simpleNotifications.Success($"Producto con ID: {product.Id} editado con éxito.");
-                _navigationManager.NavigateTo(_navigationManager.Uri, forceLoad: true);
+                SimpleNotifications.Success($"Producto con ID: {product.Id} editado con éxito.");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else
             {
-                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleDeleteProduct(ProductDto product)
     {
-        var result = await _dialogService.OpenAsync<DeleteProductConfirmation>($"Confirmar eliminación",
+        var result = await DialogService.OpenAsync<DeleteProductConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "ProductDto", product } },
         new DialogOptions()
         {
@@ -246,12 +248,12 @@
         {
             if (deleteResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Producto con ID: {product.Id} eliminado con éxito.");
-                _navigationManager.NavigateTo("/productos");
+                SimpleNotifications.Success($"Producto con ID: {product.Id} eliminado con éxito.");
+                NavigationManager.NavigateTo("/productos");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {result.Error.Description}");
+                SimpleNotifications.Error($"Error: {result.Error.Description}");
             }
         }
     }

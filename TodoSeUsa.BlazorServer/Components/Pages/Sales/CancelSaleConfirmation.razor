@@ -1,9 +1,11 @@
 ﻿@using TodoSeUsa.Application.Features.Sales.DTOs
 @using TodoSeUsa.Application.Features.Sales.Interfaces
 
-@inject ISaleService _saleService;
+@inject ISaleService SaleService;
 
-@inject DialogService _dialogService;
+@inject DialogService DialogService;
+
+@attribute [Authorize]
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
 
@@ -45,9 +47,9 @@
         if (SaleDto is null) return;
 
         _isDeleteButtonBusy = true;
-        var result = await _saleService.CancelByIdAsync(SaleDto.Id, null, CancellationToken.None);
+        var result = await SaleService.CancelByIdAsync(SaleDto.Id, null, CancellationToken.None);
         _isDeleteButtonBusy = false;
 
-        _dialogService.Close(result);
+        DialogService.Close(result);
     }
 }

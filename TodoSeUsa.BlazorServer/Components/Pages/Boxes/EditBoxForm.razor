@@ -1,9 +1,11 @@
 ﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
 
-@inject IBoxService _boxService;
+@inject IBoxService BoxService;
 
-@inject DialogService _dialogService;
+@inject DialogService DialogService;
+
+@attribute [Authorize]
 
 <RadzenTemplateForm TItem="EditBoxDto" Data=@editBoxDto Submit=@OnSubmit>
     <RadzenStack Gap="1rem">
@@ -32,7 +34,7 @@
 
             <RadzenButton Icon="save" Text="Guardar" IsBusy="busy" BusyText="Editando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Disabled="!HasChanges()" />
 
-            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => _dialogService.Close())" />
+            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
         </RadzenStack>
 
     </RadzenStack>
@@ -55,14 +57,14 @@
         }
         else
         {
-            _dialogService.Close();
+            DialogService.Close();
         }
     }
 
     async Task OnSubmit(EditBoxDto editBoxDto)
     {
-        var result = await _boxService.EditBoxById(BoxDto.Id, editBoxDto, CancellationToken.None);
-        _dialogService.Close(result);
+        var result = await BoxService.EditBoxById(BoxDto.Id, editBoxDto, CancellationToken.None);
+        DialogService.Close(result);
     }
 
     private bool HasChanges()

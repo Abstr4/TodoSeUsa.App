@@ -1,11 +1,11 @@
 ﻿@using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 
-@inject IProductService _productService;
+@inject IProductService ProductService;
 
-@inject DialogService _dialogService;
-@inject SimpleNotifications _simpleNotifications;
-@inject NavigationManager _navigationManager;
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
+@inject NavigationManager NavigationManager;
 
 <RadzenDataGrid @ref="productsGrid" TItem="ProductDto" Data="@products" LoadData="@LoadData"
                 IsLoading="@isLoading" Count="@count" EmptyText="@GridMessage"
@@ -179,7 +179,7 @@
     private async Task LoadDefault(LoadDataArgs args)
     {
         var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-        var result = await _productService.GetAllAsync(request, CancellationToken.None);
+        var result = await ProductService.GetAllAsync(request, CancellationToken.None);
 
         if (result.IsSuccess)
         {
@@ -199,7 +199,7 @@
         if (!IsMainPage) return;
         try
         {
-            var result = await _dialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
+            var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
                    new Dictionary<string, object>() { { "ProductDto", product } },
                    new DialogOptions()
                    {
@@ -211,12 +211,12 @@
             {
                 if (deleteResult.IsSuccess)
                 {
-                    _simpleNotifications.Success($"Producto con ID: {product.Id} editado con éxito.");
+                    SimpleNotifications.Success($"Producto con ID: {product.Id} editado con éxito.");
                     await productsGrid.Reload();
                 }
                 else
                 {
-                    _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                    SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
                 }
             }
         }
@@ -233,7 +233,7 @@
 
         try
         {
-            var result = await _dialogService.OpenAsync<DeleteProductConfirmation>($"Confirmar eliminación",
+            var result = await DialogService.OpenAsync<DeleteProductConfirmation>($"Confirmar eliminación",
             new Dictionary<string, object>() { { "ProductDto", product } },
             new DialogOptions()
             {
@@ -244,12 +244,12 @@
             {
                 if (deleteResult.IsSuccess)
                 {
-                    _simpleNotifications.Success($"Producto con ID: {product.Id} eliminado con éxito.");
+                    SimpleNotifications.Success($"Producto con ID: {product.Id} eliminado con éxito.");
                     await productsGrid.Reload();
                 }
                 else
                 {
-                    _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                    SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
                 }
             }
         }
@@ -262,14 +262,14 @@
 
     private void HandleCreateProduct()
     {
-        _navigationManager.NavigateTo($"/productos/registrar");
+        NavigationManager.NavigateTo($"/productos/registrar");
     }
 
     private void ViewProduct(int productId)
     {
         if (!IsMainPage) return;
 
-        _navigationManager.NavigateTo($"/productos/{productId}");
+        NavigationManager.NavigateTo($"/productos/{productId}");
     }
 
     private async Task OnSplitButtonClick(RadzenSplitButtonItem item, ProductDto product)
@@ -305,7 +305,7 @@
     {
         if (!IsMainPage) return;
 
-        await _dialogService.OpenAsync<ProductDetails>("",
+        await DialogService.OpenAsync<ProductDetails>("",
            new Dictionary<string, object>() { { "ProductId", product.Id }, { "IsDialog", true } },
            new DialogOptions()
            {

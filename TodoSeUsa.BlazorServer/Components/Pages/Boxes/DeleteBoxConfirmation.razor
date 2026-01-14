@@ -1,9 +1,9 @@
 ﻿@using TodoSeUsa.Application.Features.Boxes.DTOs
 @using TodoSeUsa.Application.Features.Boxes.Interfaces
 
-@inject IBoxService _boxService;
+@inject IBoxService BoxService;
 
-@inject DialogService _dialogService;
+@inject DialogService DialogService;
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
     <RadzenText TextStyle="TextStyle.H6">¿Estás seguro que deseas borrar la caja '@BoxDto.Code'?</RadzenText>
@@ -16,6 +16,8 @@
     <RadzenButton Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@Delete"></RadzenButton>
 </RadzenStack>
 
+@attribute [Authorize]
+
 @code
 {
 
@@ -26,7 +28,7 @@
         if (BoxDto is null)
             return;
 
-        var result = await _boxService.DeleteBoxById(BoxDto.Id, CancellationToken.None);
-        _dialogService.Close(result);
+        var result = await BoxService.DeleteBoxById(BoxDto.Id, CancellationToken.None);
+        DialogService.Close(result);
     }
 }

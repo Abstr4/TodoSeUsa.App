@@ -3,7 +3,9 @@
 @using TodoSeUsa.Application.Features.Products.Interfaces
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
 
-@inject IProductService _productService; 
+@inject IProductService ProductService; 
+
+@attribute [Authorize]
 
 <ProductsDataGrid IsMainPage=false OnLoad="LoadProductsByBox" />
 
@@ -16,6 +18,6 @@
     private async Task<Result<PagedItems<ProductDto>>> LoadProductsByBox(LoadDataArgs args)
     {
         var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-        return await _productService.GetByBoxIdAsync(request, BoxDto.Id, CancellationToken.None);
+        return await ProductService.GetByBoxIdAsync(request, BoxDto.Id, CancellationToken.None);
     }
 }

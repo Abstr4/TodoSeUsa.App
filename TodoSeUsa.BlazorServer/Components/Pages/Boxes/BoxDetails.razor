@@ -6,14 +6,15 @@
 @using TodoSeUsa.Application.Features.Products.Interfaces
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
 
-@inject IBoxService _boxService;
-@inject IProductService _productService;
+@inject IBoxService BoxService;
+@inject IProductService ProductService;
 
-@inject NavigationManager _navigationManager;
-@inject DialogService _dialogService;
-@inject SimpleNotifications _simpleNotifications;
+@inject NavigationManager NavigationManager;
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
 @inject IJSRuntime JS;
 
+@attribute [Authorize]
 
 <style>
     .rz-fieldset-toggler {
@@ -44,7 +45,7 @@ else if (originalBox != null)
 
             <RadzenStack id="top-action-buttons" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
 
-                <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(_navigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+                <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
 
                 <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
@@ -159,7 +160,7 @@ else if (originalBox != null)
 else
 {
     <RadzenAlert Text="@errorMessage" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" />
-    <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => JS.GoBackOrHomeAsync(_navigationManager, "/"))" />
+    <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" />
 }
 
 
@@ -187,7 +188,7 @@ else
 
         isLoading = true;
 
-        var result = await _boxService.GetByIdAsync(Id, CancellationToken.None);
+        var result = await BoxService.GetByIdAsync(Id, CancellationToken.None);
         if (result.IsSuccess)
         {
             originalBox = result.Value;
@@ -202,14 +203,14 @@ else
     private async Task<Result<PagedItems<ProductDto>>> LoadProductsByBox(LoadDataArgs args)
     {
         var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-        return await _productService.GetByBoxIdAsync(request, Id, CancellationToken.None);
+        return await ProductService.GetByBoxIdAsync(request, Id, CancellationToken.None);
     }
 
     private async Task HandleEditBox()
     {
         if (originalBox is null) return;
 
-        var result = await _dialogService.OpenAsync<EditBoxForm>($"Editar caja código '{originalBox.Code}'",
+        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{originalBox.Code}'",
                new Dictionary<string, object>() { { "BoxDto", originalBox } },
                new DialogOptions()
                {
@@ -221,9 +222,9 @@ else
         {
             if (editResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Caja '{originalBox.Code}' editada con éxito.");
+                SimpleNotifications.Success($"Caja '{originalBox.Code}' editada con éxito.");
 
-                var refreshed = await _boxService.GetByIdAsync(originalBox.Id, CancellationToken.None);
+                var refreshed = await BoxService.GetByIdAsync(originalBox.Id, CancellationToken.None);
                 if (refreshed.IsSuccess)
                 {
                     originalBox = refreshed.Value;
@@ -232,7 +233,7 @@ else
             }
             else
             {
-                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
@@ -241,7 +242,7 @@ else
     {
         if (originalBox is null) return;
 
-        var result = await _dialogService.OpenAsync<DeleteBoxConfirmation>($"Confirmar eliminación",
+        var result = await DialogService.OpenAsync<DeleteBoxConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "BoxDto", originalBox } },
         new DialogOptions()
         {
@@ -252,12 +253,12 @@ else
         {
             if (deleteResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Caja '{originalBox.Code}' eliminada con éxito.");
-                await NavigationHelpers.GoBackOrHomeAsync(JS, _navigationManager, "/boxes");
+                SimpleNotifications.Success($"Caja '{originalBox.Code}' eliminada con éxito.");
+                await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/boxes");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
             }
         }
     }
@@ -266,7 +267,7 @@ else
     {
         if (originalBox is null) return;
 
-        var result = await _dialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{originalBox.Code}'",
+        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{originalBox.Code}'",
             new Dictionary<string, object>() { { "BoxDto", originalBox } },
             new DialogOptions()
             {
@@ -282,7 +283,7 @@ else
             }
             else
             {
-                _simpleNotifications.Error(addResult.Error.Description);
+                SimpleNotifications.Error(addResult.Error.Description);
             }
         }
     }

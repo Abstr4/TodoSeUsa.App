@@ -2,11 +2,12 @@
 @using TodoSeUsa.Application.Features.Consignments.Interfaces
 @using TodoSeUsa.BlazorServer.UI.Notifications
 
-@inject IConsignmentService _consignmentService;
+@inject IConsignmentService ConsignmentService;
 
-@inject DialogService _dialogService;
-@inject SimpleNotifications _simpleNotifications;
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
 
+@attribute [Authorize]
 
 <RadzenTemplateForm TItem="EditConsignmentDto" Data=@_editConsignmentDto Submit=@OnSubmit>
     <RadzenStack Gap="1rem">
@@ -66,7 +67,7 @@
 
             <RadzenButton IsBusy=@_busy BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=!HasChanges() />
 
-            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => _dialogService.Close())" />
+            <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
@@ -87,9 +88,9 @@
     async Task OnSubmit(EditConsignmentDto _editConsignmentDto)
     {
         _busy = true;
-        var result = await _consignmentService.EditByIdAsync(_editConsignmentDto, CancellationToken.None);
+        var result = await ConsignmentService.EditByIdAsync(_editConsignmentDto, CancellationToken.None);
         _busy = false;
-        _dialogService.Close(result);
+        DialogService.Close(result);
     }
 
     private void OnNotesChanged(string? value)

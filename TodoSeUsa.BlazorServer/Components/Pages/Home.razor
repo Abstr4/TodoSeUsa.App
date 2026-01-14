@@ -6,8 +6,10 @@
 @using TodoSeUsa.Application.Features.Sales.Interfaces
 @using TodoSeUsa.BlazorServer.UI.Constants
 
-@inject ISaleService _saleService;
-@inject IProductService _productService;
+@inject ISaleService SaleService;
+@inject IProductService ProductService;
+
+@attribute [Authorize]
 
 <style>
 
@@ -313,6 +315,7 @@ else
     <RadzenAlert AlertStyle="@AlertStyle.Danger" Style="width: 100%;" Text=@loadError />
 }
 
+
 @code
 {
     string? loadError;
@@ -397,20 +400,20 @@ else
         var ct = CancellationToken.None;
 
         // Products KPIs
-        var productsResult = await _productService.GetAvailableCountAsync(ct);
+        var productsResult = await ProductService.GetAvailableCountAsync(ct);
         if (!productsResult.IsSuccess) { loadError = "No se pudo cargar productos"; return; }
 
-        var inventoryValueResult = await _productService.GetAvailableInventoryValueAsync(ct);
+        var inventoryValueResult = await ProductService.GetAvailableInventoryValueAsync(ct);
         if (!inventoryValueResult.IsSuccess) { loadError = "No se pudo cargar valor total de productos"; return; }
 
         availableProductsCount = productsResult.Value;
         availableProductsValue = inventoryValueResult.Value;
 
         // This month KPIs
-        var monthSalesResult = await _saleService.GetTotalCountAsync(selectedYear, selectedMonth, ct);
+        var monthSalesResult = await SaleService.GetTotalCountAsync(selectedYear, selectedMonth, ct);
         if (!monthSalesResult.IsSuccess) { loadError = "No se pudo cargar ventas del mes"; return; }
 
-        var monthRevenueResult = await _saleService.GetRevenueAsync(selectedYear, selectedMonth, ct);
+        var monthRevenueResult = await SaleService.GetRevenueAsync(selectedYear, selectedMonth, ct);
         if (!monthRevenueResult.IsSuccess) { loadError = "No se pudo cargar ingresos del mes"; return; }
 
         thisMonthSalesCount = monthSalesResult.Value;
@@ -420,11 +423,11 @@ else
         var lastMonthYear = selectedMonth == 1 ? selectedYear - 1 : selectedYear;
 
         // Sales difference
-        var lastMonthSalesResult = await _saleService.GetTotalCountAsync(lastMonthYear, lastMonth, ct);
+        var lastMonthSalesResult = await SaleService.GetTotalCountAsync(lastMonthYear, lastMonth, ct);
         thisMonthSalesDiff = lastMonthSalesResult.IsSuccess ? thisMonthSalesCount - lastMonthSalesResult.Value : 0;
 
         // Revenue difference
-        var lastMonthRevenueResult = await _saleService.GetRevenueAsync(lastMonthYear, lastMonth, ct);
+        var lastMonthRevenueResult = await SaleService.GetRevenueAsync(lastMonthYear, lastMonth, ct);
         thisMonthRevenueDiff = lastMonthRevenueResult.IsSuccess ? thisMonthRevenue - lastMonthRevenueResult.Value : 0;
 
     }
@@ -456,14 +459,14 @@ else
     {
         var ct = CancellationToken.None;
 
-        var countResult = await _saleService.GetTotalCountAsync(selectedYear, selectedMonth, ct);
+        var countResult = await SaleService.GetTotalCountAsync(selectedYear, selectedMonth, ct);
         if (!countResult.IsSuccess)
         {
             loadError = "No se pudo cargar ventas del mes";
             return;
         }
 
-        var revenueResult = await _saleService.GetRevenueAsync(selectedYear, selectedMonth, ct);
+        var revenueResult = await SaleService.GetRevenueAsync(selectedYear, selectedMonth, ct);
         if (!revenueResult.IsSuccess)
         {
             loadError = "No se pudo cargar ingresos del mes";
@@ -478,7 +481,7 @@ else
     {
         var ct = CancellationToken.None;
 
-        var salesResult = await _saleService.GetSalesAsync(selectedYear, selectedMonth, ct);
+        var salesResult = await SaleService.GetSalesAsync(selectedYear, selectedMonth, ct);
         if (!salesResult.IsSuccess)
         {
             loadError = "No se pudo cargar ventas diarias";
@@ -492,14 +495,14 @@ else
     {
         var ct = CancellationToken.None;
 
-        var productsResult = await _productService.GetAvailableCountAsync(ct);
+        var productsResult = await ProductService.GetAvailableCountAsync(ct);
         if (!productsResult.IsSuccess)
         {
             loadError = "No se pudo cargar productos";
             return;
         }
 
-        var inventoryValueResult = await _productService.GetAvailableInventoryValueAsync(ct);
+        var inventoryValueResult = await ProductService.GetAvailableInventoryValueAsync(ct);
         if (!inventoryValueResult.IsSuccess)
         {
             loadError = "No se pudo cargar valor total de productos";
@@ -514,14 +517,14 @@ else
     {
         var ct = CancellationToken.None;
 
-        var yearlyCountResult = await _saleService.GetYearlyTotalCountAsync(selectedYear, ct);
+        var yearlyCountResult = await SaleService.GetYearlyTotalCountAsync(selectedYear, ct);
         if (!yearlyCountResult.IsSuccess)
         {
             loadError = "No se pudo cargar ventas anuales";
             return;
         }
 
-        var yearlyRevenueResult = await _saleService.GetYearlyRevenueAsync(selectedYear, ct);
+        var yearlyRevenueResult = await SaleService.GetYearlyRevenueAsync(selectedYear, ct);
         if (!yearlyRevenueResult.IsSuccess)
         {
             loadError = "No se pudo cargar ingresos anuales";
@@ -536,14 +539,14 @@ else
     {
         var ct = CancellationToken.None;
 
-        var monthlyCountResult = await _saleService.GetMonthlyCountAsync(selectedYear, ct);
+        var monthlyCountResult = await SaleService.GetMonthlyCountAsync(selectedYear, ct);
         if (!monthlyCountResult.IsSuccess)
         {
             loadError = "No se pudo cargar ventas mensuales";
             return;
         }
 
-        var monthlySalesResult = await _saleService.GetMonthlySalesAsync(selectedYear, ct);
+        var monthlySalesResult = await SaleService.GetMonthlySalesAsync(selectedYear, ct);
         if (!monthlySalesResult.IsSuccess)
         {
             loadError = "No se pudo cargar ingresos mensuales";

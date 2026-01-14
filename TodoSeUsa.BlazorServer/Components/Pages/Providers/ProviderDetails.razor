@@ -10,15 +10,16 @@
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
 
 
-@inject IProviderService _providerService;
-@inject IConsignmentService _consignmentService;
-@inject IProductService _productService;
+@inject IProviderService ProviderService;
+@inject IConsignmentService ConsignmentService;
+@inject IProductService ProductService;
 
-@inject NavigationManager _navigationManager;
-@inject DialogService _dialogService;
-@inject SimpleNotifications _simpleNotifications;
+@inject NavigationManager NavigationManager;
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
 @inject IJSRuntime JS;
 
+@attribute [Authorize]
 
 <style>
     .rz-fieldset-toggler {
@@ -54,7 +55,7 @@
                 <RadzenStack id="top-action-buttons" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
                     JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
 
-                    <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(_navigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+                    <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
 
                     <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
@@ -210,7 +211,7 @@
     else
     {
         <RadzenAlert AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" Text="@errorMessage" />
-        <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => JS.GoBackOrHomeAsync(_navigationManager, "/"))" />
+        <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" />
     }
 </RadzenStack>
 
@@ -236,7 +237,7 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        var result = await _providerService.GetByIdAsync(Id, CancellationToken.None);
+        var result = await ProviderService.GetByIdAsync(Id, CancellationToken.None);
         if (result.IsSuccess)
         {
             provider = result.Value;
@@ -251,7 +252,7 @@
     private async Task<Result<PagedItems<ProductDto>>> LoadProductsByProvider(LoadDataArgs args)
     {
         var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-        return await _productService.GetByProviderIdAsync(request, Id, CancellationToken.None);
+        return await ProductService.GetByProviderIdAsync(request, Id, CancellationToken.None);
     }
 
     private async Task LoadConsignments(LoadDataArgs args)
@@ -261,7 +262,7 @@
 
         QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
 
-        var result = await _consignmentService.GetByProviderIdAsync(request, Id, CancellationToken.None);
+        var result = await ConsignmentService.GetByProviderIdAsync(request, Id, CancellationToken.None);
 
         if (result.IsSuccess)
         {
@@ -280,7 +281,7 @@
     {
         if (provider is null) return;
 
-        var result = await _dialogService.OpenAsync<EditProviderForm>($"Editar proveedor",
+        var result = await DialogService.OpenAsync<EditProviderForm>($"Editar proveedor",
                new Dictionary<string, object>() { { "ProviderDto", provider } },
                new DialogOptions()
                {
@@ -293,9 +294,9 @@
         {
             if (editResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Proveedor editado con éxito.");
+                SimpleNotifications.Success($"Proveedor editado con éxito.");
 
-                var refreshed = await _providerService.GetByIdAsync(provider.Id, CancellationToken.None);
+                var refreshed = await ProviderService.GetByIdAsync(provider.Id, CancellationToken.None);
                 if (refreshed.IsSuccess)
                 {
                     provider = refreshed.Value;
@@ -304,7 +305,7 @@
             }
             else
             {
-                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
@@ -313,7 +314,7 @@
     {
         if (provider is null) return;
 
-        var result = await _dialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
+        var result = await DialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "ProviderDto", provider } },
         new DialogOptions()
         {
@@ -324,20 +325,20 @@
         {
             if (deleteResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Proveedor eliminado con éxito.");
-                await NavigationHelpers.GoBackOrHomeAsync(JS, _navigationManager, "/proveedores");
+                SimpleNotifications.Success($"Proveedor eliminado con éxito.");
+                await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/proveedores");
 
             }
             else
             {
-                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleAddProduct()
     {
-        var result = await _dialogService.OpenAsync<CreateProductForm>("Crear un producto nuevo",
+        var result = await DialogService.OpenAsync<CreateProductForm>("Crear un producto nuevo",
             new Dictionary<string, object>() { { "ProviderId", Id } },
             new DialogOptions()
            {
@@ -349,12 +350,12 @@
         {
             if (createResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Producto creado con éxito!");
+                SimpleNotifications.Success($"Producto creado con éxito!");
                 await productsGrid.ResetAsync();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }
@@ -366,12 +367,12 @@
 
     private void ViewConsignment(int consignmentId)
     {
-        _navigationManager.NavigateTo($"/consignaciones/{consignmentId}");
+        NavigationManager.NavigateTo($"/consignaciones/{consignmentId}");
     }
 
     private async Task HandleEditConsignment(ConsignmentDto consignment)
     {
-        var result = await _dialogService.OpenAsync<EditConsignmentForm>($"Editar consignación",
+        var result = await DialogService.OpenAsync<EditConsignmentForm>($"Editar consignación",
                new Dictionary<string, object>() { { "ConsignmentDto", consignment } },
                new DialogOptions()
                {
@@ -384,19 +385,19 @@
         {
             if (editResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Consignación editada con éxito.");
+                SimpleNotifications.Success($"Consignación editada con éxito.");
                 await consignmentsGrid.Reload();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleDeleteConsignment(ConsignmentDto consignment)
     {
-        var result = await _dialogService.OpenAsync<DeleteConsignmentConfirmation>($"Confirmar eliminación",
+        var result = await DialogService.OpenAsync<DeleteConsignmentConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "ConsignmentDto", consignment } },
         new DialogOptions()
         {
@@ -407,19 +408,19 @@
         {
             if (deleteResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Consignación eliminada con éxito.");
+                SimpleNotifications.Success($"Consignación eliminada con éxito.");
                 await consignmentsGrid.Reload();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
             }
         }
     }
 
     public async Task ShowConsignmentProducts(int consignmentId)
     {
-        await _dialogService.OpenAsync<ConsignmentProductsGrid>($"Productos en la consignación ID: {consignmentId}",
+        await DialogService.OpenAsync<ConsignmentProductsGrid>($"Productos en la consignación ID: {consignmentId}",
                new Dictionary<string, object>() { { "ConsignmentId", consignmentId } },
                new DialogOptions()
                {

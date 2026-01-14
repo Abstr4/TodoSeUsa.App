@@ -9,12 +9,14 @@
 @using TodoSeUsa.BlazorServer.UI.Notifications
 @using TodoSeUsa.BlazorServer.Validation
 
-@inject IProductService _productService;
-@inject ISaleService _saleService;
+@inject IProductService ProductService;
+@inject ISaleService SaleService;
 
-@inject TooltipService _tooltipService;
-@inject SimpleNotifications _simpleNotifications;
-@inject NavigationManager _navigationManager;
+@inject TooltipService TooltipService;
+@inject SimpleNotifications SimpleNotifications;
+@inject NavigationManager NavigationManager;
+
+@attribute [Authorize]
 
 <style> 
     .fieldset-disabled {
@@ -360,7 +362,7 @@
 
     async Task AddProductToSaleAsync()
     {
-        var result = await _productService.GetByCodeAsync(productCode, CancellationToken.None);
+        var result = await ProductService.GetByCodeAsync(productCode, CancellationToken.None);
 
         if (result.IsSuccess)
         {
@@ -368,13 +370,13 @@
 
             if (product.Status == ProductStatus.Sold)
             {
-                _simpleNotifications.Warning($"El producto con el código '{product.Code}' ya fue vendido.");
+                SimpleNotifications.Warning($"El producto con el código '{product.Code}' ya fue vendido.");
                 return;
             }
 
             if (addedProducts.Any(p => p.Code == product.Code))
             {
-                _simpleNotifications.Info($"El producto con el código '{product.Code}' ya está en la lista.");
+                SimpleNotifications.Info($"El producto con el código '{product.Code}' ya está en la lista.");
                 return;
             }
             totalAmount += product.Price;
@@ -383,7 +385,7 @@
         }
         else
         {
-            _simpleNotifications.Warning($"No se encontró un producto con el código '{productCode}'.");
+            SimpleNotifications.Warning($"No se encontró un producto con el código '{productCode}'.");
         }
         productCode = "";
     }
@@ -393,7 +395,7 @@
         var product = addedProducts.SingleOrDefault(p => p.Code == productCode);
         if (product is null)
         {
-            _simpleNotifications.Warning($"El producto con el código '{productCode}' no está en la lista.");
+            SimpleNotifications.Warning($"El producto con el código '{productCode}' no está en la lista.");
             return;
         }
         totalAmount -= product.Price;
@@ -405,12 +407,12 @@
     {
         if (paymentUiModel.Amount < 0)
         {
-            _simpleNotifications.Warning($"Monto de pago inválido.");
+            SimpleNotifications.Warning($"Monto de pago inválido.");
             return;
         }
         if (paymentUiModel.Amount + AmountPaid > totalAmount)
         {
-            _simpleNotifications.Warning($"El monto del pago no puede exceder el total a pagar.");
+            SimpleNotifications.Warning($"El monto del pago no puede exceder el total a pagar.");
             return;
         }
 
@@ -435,7 +437,7 @@
         var payment = addedPayments.SingleOrDefault(p => p.Id == paymentGuid);
         if (payment is null)
         {
-            _simpleNotifications.Warning($"El pago no está en la lista.");
+            SimpleNotifications.Warning($"El pago no está en la lista.");
             return;
         }
 
@@ -446,7 +448,7 @@
         );
         if (dto is null)
         {
-            _simpleNotifications.Warning($"El pago no está en la lista.");
+            SimpleNotifications.Warning($"El pago no está en la lista.");
             return;
         }
 
@@ -459,7 +461,7 @@
     {
         if (totalAmount - AmountPaid < 0)
         {
-            _simpleNotifications.Warning($"Datos inválidos.");
+            SimpleNotifications.Warning($"Datos inválidos.");
             return;
         }
         paymentUiModel.Amount = totalAmount - AmountPaid;
@@ -474,20 +476,20 @@
 
     void ShowTooltip(ElementReference elementReference)
     {
-        _tooltipService.Open(elementReference, "Es opcional, pero se recomienda al menos uno.");
+        TooltipService.Open(elementReference, "Es opcional, pero se recomienda al menos uno.");
     }
 
     async Task RegisterSale()
     {
-        var result = await _saleService.CreateAsync(createSaleDto, CancellationToken.None);
+        var result = await SaleService.CreateAsync(createSaleDto, CancellationToken.None);
         if (result.IsSuccess)
         {
             var id = result.Value;
-            _navigationManager.NavigateTo($"/ventas/{id}");
+            NavigationManager.NavigateTo($"/ventas/{id}");
         }
         else
         {
-            _simpleNotifications.Error($"{result.Error.Description}");
+            SimpleNotifications.Error($"{result.Error.Description}");
         }
     }
 }

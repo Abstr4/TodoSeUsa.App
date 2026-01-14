@@ -2,10 +2,11 @@
 @using TodoSeUsa.Application.Features.Consignments.Interfaces
 @using TodoSeUsa.BlazorServer.Validation
 
-@inject IConsignmentService _consignmentService;
+@inject IConsignmentService ConsignmentService;
 
-@inject DialogService _dialogService;
+@inject DialogService DialogService;
 
+@attribute [Authorize]
 
 <RadzenTemplateForm TItem="CreateConsignmentDto" Data=@createConsignmentDto Submit=@OnSubmit>
 
@@ -92,9 +93,9 @@
     async Task OnSubmit(CreateConsignmentDto createConsignmentDto)
     {
         busy = true;
-        var result = await _consignmentService.CreateAsync(createConsignmentDto, CancellationToken.None);
+        var result = await ConsignmentService.CreateAsync(createConsignmentDto, CancellationToken.None);
         busy = false;
-        _dialogService.Close(result);
+        DialogService.Close(result);
     }
 
     private void OnNotesChanged(string? value)

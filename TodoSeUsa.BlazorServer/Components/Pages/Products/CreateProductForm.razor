@@ -6,11 +6,13 @@
 @using TodoSeUsa.BlazorServer.UI.RadzenAdapters.Files
 @using TodoSeUsa.BlazorServer.Validation
 
-@inject IProductService _productService;
+@inject IProductService ProductService;
 
 @inject IJSRuntime JS;
-@inject NavigationManager _navigationManager;
-@inject SimpleNotifications _simpleNotifications;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+
+@attribute [Authorize]
 
 <style>
     #uploadWithDragAndDrop {
@@ -376,7 +378,7 @@
 
         if (createProductDto.Quantity == 1)
         {
-            var result = await _productService.CreateAsync(createProductDto, _imageStreams, CancellationToken.None);
+            var result = await ProductService.CreateAsync(createProductDto, _imageStreams, CancellationToken.None);
 
             createResult = result.IsSuccess;
 
@@ -389,7 +391,7 @@
 
         else
         {
-            var result = await _productService.CreateBatchAsync(createProductDto, _imageStreams, CancellationToken.None);
+            var result = await ProductService.CreateBatchAsync(createProductDto, _imageStreams, CancellationToken.None);
 
             createResult = result.IsSuccess;
 
@@ -404,8 +406,8 @@
 
         if (createResult)
         {
-            _navigationManager.NavigateTo("/productos");
-            _simpleNotifications.Success("Producto(s) creado(s) exitosamente.");
+            NavigationManager.NavigateTo("/productos");
+            SimpleNotifications.Success("Producto(s) creado(s) exitosamente.");
         }
     }
 

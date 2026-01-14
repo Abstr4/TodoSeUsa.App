@@ -3,11 +3,13 @@
 @using TodoSeUsa.Application.Features.Providers.DTOs
 @using TodoSeUsa.Application.Features.Providers.Interfaces
 
-@inject IProviderService providerService;
+@inject IProviderService ProviderService;
 
-@inject DialogService _dialogService;
-@inject NavigationManager _navigationManager;
-@inject SimpleNotifications _simpleNotifications;
+@inject DialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+
+@attribute [Authorize]
 
 <style>
     .rz-custom-header {
@@ -132,7 +134,7 @@
 
         QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
 
-        var result = await providerService.GetAllAsync(request, CancellationToken.None);
+        var result = await ProviderService.GetAllAsync(request, CancellationToken.None);
         if (result.IsSuccess)
         {
             providers = result.Value.Items;
@@ -153,12 +155,12 @@
 
     private void ViewProvider(int providerId)
     {
-        _navigationManager.NavigateTo($"/proveedores/{providerId}");
+        NavigationManager.NavigateTo($"/proveedores/{providerId}");
     }
 
     private async Task HandleEditProvider(ProviderDto provider)
     {
-        var result = await _dialogService.OpenAsync<EditProviderForm>($"Editar proveedor",
+        var result = await DialogService.OpenAsync<EditProviderForm>($"Editar proveedor",
                new Dictionary<string, object>() { { "ProviderDto", provider } },
                new DialogOptions()
                {
@@ -171,19 +173,19 @@
         {
             if (editResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Proveedor editado con éxito.");
+                SimpleNotifications.Success($"Proveedor editado con éxito.");
                 await grid.Reload();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {editResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleDeleteProvider(ProviderDto provider)
     {
-        var result = await _dialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
+        var result = await DialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "ProviderDto", provider } },
         new DialogOptions()
         {
@@ -194,19 +196,19 @@
         {
             if (deleteResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Proveedor eliminado con éxito.");
+                SimpleNotifications.Success($"Proveedor eliminado con éxito.");
                 await grid.Reload();
             }
             else
             {
-                _simpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
             }
         }
     }
 
     private async Task HandleCreateProvider()
     {
-        var result = await _dialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
+        var result = await DialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -218,12 +220,12 @@
         {
             if (createResult.IsSuccess)
             {
-                _simpleNotifications.Success($"Proveedor creado con éxito!");
-                _navigationManager.NavigateTo($"/proveedores/{createResult.Value}");
+                SimpleNotifications.Success($"Proveedor creado con éxito!");
+                NavigationManager.NavigateTo($"/proveedores/{createResult.Value}");
             }
             else
             {
-                _simpleNotifications.Error($"Error: {createResult.Error.Description}");
+                SimpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
     }
