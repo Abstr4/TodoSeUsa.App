@@ -1,7 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using TodoSeUsa.Infrastructure.Data
 
 @implements IDisposable
 
+@inject UserManager<ApplicationUser> UserManager
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
 @inject NavigationManager NavigationManager
 
 <div class="top-row ps-3 navbar navbar-dark">
@@ -16,51 +21,51 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house nav-icon" aria-hidden="true"></span> Inicio
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="cajas">
-                <span class="bi bi-box-seam nav-icon" aria-hidden="true"></span> Cajas
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="consignaciones">
-                <span class="bi bi-journal-text nav-icon" aria-hidden="true"></span> Consignaciones
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="productos">
-                <span class="bi bi-boxes nav-icon" aria-hidden="true"></span> Productos
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="proveedores">
-                <span class="bi bi-person-lines-fill nav-icon" aria-hidden="true"></span> Proveedores
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="ventas">
-                <span class="bi bi-receipt nav-icon" aria-hidden="true"></span> Ventas
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="acerca-de">
-                <span class="bi bi-info-circle nav-icon" aria-hidden="true"></span> Acerca de
-            </NavLink>
-        </div>
-
         <AuthorizeView>
             <Authorized>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <span class="bi bi-house nav-icon" aria-hidden="true"></span> Inicio
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="cajas">
+                        <span class="bi bi-box-seam nav-icon" aria-hidden="true"></span> Cajas
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="consignaciones">
+                        <span class="bi bi-journal-text nav-icon" aria-hidden="true"></span> Consignaciones
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="productos">
+                        <span class="bi bi-boxes nav-icon" aria-hidden="true"></span> Productos
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="proveedores">
+                        <span class="bi bi-person-lines-fill nav-icon" aria-hidden="true"></span> Proveedores
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="ventas">
+                        <span class="bi bi-receipt nav-icon" aria-hidden="true"></span> Ventas
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="acerca-de">
+                        <span class="bi bi-info-circle nav-icon" aria-hidden="true"></span> Acerca de
+                    </NavLink>
+                </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
@@ -76,28 +81,48 @@
                     </form>
                 </div>
             </Authorized>
+
             <NotAuthorized>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="acerca-de">
+                        <span class="bi bi-info-circle nav-icon" aria-hidden="true"></span> Acerca de
+                    </NavLink>
+                </div>
+
+                @if (!anyUserExists)
+                {
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Register">
                         <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
                     </NavLink>
                 </div>
+                }
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
                         <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
                     </NavLink>
                 </div>
+
             </NotAuthorized>
+
         </AuthorizeView>
     </nav>
 </div>
 
 
 @code {
+
+    private bool anyUserExists = false;
+
     private string? currentUrl;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+        anyUserExists = await context.Users.AnyAsync();
+
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
     }

@@ -1,6 +1,6 @@
-﻿using CurrieTechnologies.Razor.SweetAlert2;
-using Radzen;
+﻿using Radzen;
 using TodoSeUsa.BlazorServer.UI.Notifications;
+using TodoSeUsa.BlazorServer.UI.State;
 
 namespace TodoSeUsa.BlazorServer;
 
@@ -29,7 +29,7 @@ public static class DependencyInjection
             options.Duration = TimeSpan.FromDays(365);
         });
 
-        builder.Services.AddSweetAlert2();
         builder.Services.AddScoped<SimpleNotifications>();
+        builder.Services.AddScoped<RecoveryCodeSession>();
     }
 }

@@ -1,0 +1,137 @@
+﻿@page "/Account/RecoveryCode"
+
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using TodoSeUsa.Infrastructure.Data
+
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<style>
+    .copy-btn {
+        position: absolute;
+        top: 60%;
+        right: 6px;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .copy-btn::after {
+        content: "Copiado al portapapeles";
+        position: absolute;
+        right: 28px;
+        top: 50%;
+        transform: translateY(-50%) translateY(2px);
+        background: #222;
+        color: white;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .copy-btn.copied::after {
+        opacity: 1;
+        transform: translateY(-50%) translateY(-4px);
+    }
+
+</style>
+<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" class="page-wrapper">
+
+    <RadzenCard>
+
+        <h1 style="margin-bottom:1rem;">Estás registrado</h1>
+
+        <RadzenText Style="margin-bottom: 1rem">
+            Si pierdes tu contraseña, este código es tu mecanismo de seguridad para acceder a tu cuenta.
+        </RadzenText>
+
+        <RadzenStack Orientation="Orientation.Vertical">
+
+            <RadzenLabel Component="recovery-code" Style="margin-bottom: 0">Código de recuperación</RadzenLabel>
+
+            <RadzenStack Orientation="Orientation.Horizontal">
+
+                <div style="position: relative; width: 100%; margin-left: 6px">
+
+                    <RadzenTextBox Name="recovery-code" Value="@RecoveryCode" ReadOnly="true" Style="width: 100%; padding-right: 34px;" />
+
+                    <button class="copy-btn"
+                            type="button"
+                            onclick="
+                            navigator.clipboard.writeText(' @RecoveryCode');
+                            this.classList.add('copied');
+                            setTimeout(()=>
+                        this.classList.remove('copied'), 1400);
+                        ">
+
+                        <RadzenIcon Icon="content_copy" />
+                    </button>
+
+                </div>
+
+                <RadzenButton Icon="download" ButtonStyle="ButtonStyle.Secondary" Click="Download" />
+
+            </RadzenStack>
+
+            <RadzenAlert AlertStyle="AlertStyle.Warning" Style="margin-top:10px" AllowClose="false" >
+                <RadzenText>
+                    Guarda este código en un lugar seguro. No podrás verlo de nuevo.
+                </RadzenText>
+            </RadzenAlert>
+
+            <RadzenButton Style="margin-top:20px" Text="Continuar" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/"))" />
+        </RadzenStack>
+
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+
+    public string? RecoveryCode { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRecoveryCodeAsync();
+    }
+
+    private async Task LoadRecoveryCodeAsync()
+    {
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+
+        var user = await context.Users.SingleOrDefaultAsync();
+
+        if (user == null || user.RecoveryCodePageVisited || string.IsNullOrEmpty(user.TempRecoveryCode))
+        {
+            NavigationManager.NavigateTo("/error");
+            return;
+        }
+
+        RecoveryCode = user.TempRecoveryCode;
+
+        user.RecoveryCodePageVisited = true;
+        user.TempRecoveryCode = null;
+
+        context.Update(user);
+        await context.SaveChangesAsync();
+    }
+
+    private async Task Download()
+    {
+        if (string.IsNullOrWhiteSpace(RecoveryCode))
+            return;
+
+        var content = $"{RecoveryCode}";
+        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+        var base64 = Convert.ToBase64String(bytes);
+
+        await JS.InvokeVoidAsync("saveFile", "recovery-code.txt", RecoveryCode);
+    }
+}

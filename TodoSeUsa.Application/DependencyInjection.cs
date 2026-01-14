@@ -13,6 +13,7 @@ using TodoSeUsa.Application.Features.Providers.Interfaces;
 using TodoSeUsa.Application.Features.Providers.Services;
 using TodoSeUsa.Application.Features.Sales.Interfaces;
 using TodoSeUsa.Application.Features.Sales.Services;
+using TodoSeUsa.Application.Security;
 
 namespace TodoSeUsa.Application;
 
@@ -29,6 +30,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<IPersonService, PersonService>();
         builder.Services.AddScoped<ISaleService, SaleService>();
 
+        builder.Services.AddScoped<IRecoveryCodeHasher, RecoveryCodeHasher>();
         builder.Services.AddScoped<UniqueSaleCodeService>();
         builder.Services.AddScoped<UniqueConsignmentCodeService>();
         builder.Services.AddScoped<IProductImageService, ProductImageService>();

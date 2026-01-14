@@ -24,18 +24,19 @@ builder.Services.AddAuthentication(options =>
 })
     .AddIdentityCookies();
 
+builder.AddInfrastructureServices();
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.AddApplicationServices();
-builder.AddInfrastructureServices();
-builder.AddWebServices();
-
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
-
+ 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+builder.AddApplicationServices();
+builder.AddWebServices();
 
 var app = builder.Build();
 
@@ -53,9 +54,13 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseMigrationsEndPoint();
+}
+else
+{
+    app.UseExceptionHandler("/error", createScopeForErrors: true);
     app.UseHsts();
 }
 
@@ -70,6 +75,33 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseAuthentication();
+
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path;
+
+    if (path.Equals("/Account/Register", StringComparison.OrdinalIgnoreCase))
+    {
+        using var scope = app.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        if (await userManager.Users.AnyAsync())
+        {
+            context.Response.Redirect("/Account/Login?redirectedToLogin=registration-closed");
+            return;
+        }
+    }
+
+    if (path.Equals("/Account/Login", StringComparison.OrdinalIgnoreCase)
+    && context.User.Identity?.IsAuthenticated == true)
+    {
+        context.Response.Redirect("/");
+        return;
+    }
+
+    await next();
+});
+
 app.UseAuthorization();
 
 app.UseAntiforgery();

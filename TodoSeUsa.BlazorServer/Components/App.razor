@@ -12,22 +12,24 @@
     <link rel="stylesheet" href="@Assets["lib/bootstrap-icons/bootstrap-icons.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="/assets/icon.png" />
-    <HeadOutlet @rendermode="InteractiveServer" />
+    <HeadOutlet @rendermode="RenderModeForPage" />
     <RadzenTheme Theme="standard" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="RenderModeForPage" />
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
     <script src="_content/CurrieTechnologies.Razor.SweetAlert2/sweetAlert2.min.js"></script>
     <script src="lib/js/filePreviewClick.js"></script>
     <script src="lib/js/scrollToTop.js"></script>
+    <script src="lib/js/downloadFile.js"></script>
 </body>
 
 </html>
 
 @code {
+
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
@@ -60,4 +62,7 @@
             }
         }
     }
+
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account") ? null : new InteractiveServerRenderMode(prerender: false);
+
 }
