@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /TodoSeUsa.Infrastructure/Data/Migrations
 /TodoSeUsa.BlazorServer/Storage
 TodoSeUsa.BlazorServer/Components/Tests
+/TodoSeUsa.BlazorServer/Components/Test
