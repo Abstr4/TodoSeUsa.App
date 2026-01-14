@@ -1,7 +1,5 @@
 ﻿@page "/Account/RecoveryCode"
 
-@rendermode @(new InteractiveServerRenderMode(prerender: false))
-
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using TodoSeUsa.Infrastructure.Data
@@ -44,7 +42,28 @@
         transform: translateY(-50%) translateY(-4px);
     }
 
+    #downloadBtn {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    #continueBtn {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    #downloadBtn:hover, #continueBtn:hover {
+        opacity: 0.9;
+    }
+
 </style>
+
 <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" class="page-wrapper">
 
     <RadzenCard>
@@ -79,7 +98,11 @@
 
                 </div>
 
-                <RadzenButton Icon="download" ButtonStyle="ButtonStyle.Secondary" Click="Download" />
+                <RadzenButton id="downloadBtn" Icon="download"></RadzenButton>
+                @* <button id="downloadBtn" style="margin-right: 10px; padding: 0 2px"><RadzenIcon Icon="download"/></button> *@
+
+                <span id="recoveryCode" style="display:none">@RecoveryCode</span>
+
 
             </RadzenStack>
 
@@ -89,7 +112,9 @@
                 </RadzenText>
             </RadzenAlert>
 
-            <RadzenButton Style="margin-top:20px" Text="Continuar" ButtonStyle="ButtonStyle.Primary" Click="@(() => NavigationManager.NavigateTo("/"))" />
+            <RadzenButton id="continueBtn">Continuar</RadzenButton>
+            @* <button id="continueBtn" style="margin-top:20px;">Continuar</button> *@
+
         </RadzenStack>
 
     </RadzenCard>
@@ -97,43 +122,23 @@
 
 @code {
 
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
     public string? RecoveryCode { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await LoadRecoveryCodeAsync();
-    }
+        var code = HttpContext.Session.GetString("RecoveryCode");
 
-    private async Task LoadRecoveryCodeAsync()
-    {
-        await using var context = await DbContextFactory.CreateDbContextAsync();
-
-        var user = await context.Users.SingleOrDefaultAsync();
-
-        if (user == null || user.RecoveryCodePageVisited || string.IsNullOrEmpty(user.TempRecoveryCode))
+        if (string.IsNullOrWhiteSpace(code))
         {
             NavigationManager.NavigateTo("/error");
             return;
         }
 
-        RecoveryCode = user.TempRecoveryCode;
+        RecoveryCode = code;
 
-        user.RecoveryCodePageVisited = true;
-        user.TempRecoveryCode = null;
-
-        context.Update(user);
-        await context.SaveChangesAsync();
-    }
-
-    private async Task Download()
-    {
-        if (string.IsNullOrWhiteSpace(RecoveryCode))
-            return;
-
-        var content = $"{RecoveryCode}";
-        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
-        var base64 = Convert.ToBase64String(bytes);
-
-        await JS.InvokeVoidAsync("saveFile", "recovery-code.txt", RecoveryCode);
+        HttpContext.Session.Remove("RecoveryCode");
     }
 }

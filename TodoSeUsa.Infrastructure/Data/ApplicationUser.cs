@@ -8,8 +8,4 @@ public class ApplicationUser : IdentityUser
     public string RecoveryCodeHash { get; set; } = null!;
 
     public bool RecoveryCodePageVisited { get; set; } = false;
-
-    public string? TempRecoveryCode { get; set; }
-
-    public DateTime? TempRecoveryCodeIssuedAt { get; set; }
 }

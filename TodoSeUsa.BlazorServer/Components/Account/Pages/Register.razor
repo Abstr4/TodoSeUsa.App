@@ -57,6 +57,9 @@
 
 @code {
 
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
     private IEnumerable<IdentityError>? identityErrors;
 
     [SupplyParameterFromForm]
@@ -72,8 +75,6 @@
         var user = CreateUser();
 
         var plainCode = RecoveryCodeGenerator.Generate();
-        user.TempRecoveryCodeIssuedAt = DateTime.UtcNow;
-        user.TempRecoveryCode = plainCode;
         user.RecoveryCodePageVisited = false;
         user.RecoveryCodeHash = RecoveryCodeHasher.Hash(plainCode);
 
@@ -87,6 +88,8 @@
             identityErrors = result.Errors;
             return;
         }
+
+        HttpContext.Session.SetString("RecoveryCode", plainCode);
 
         Logger.LogInformation("User created a new account with password.");
 
