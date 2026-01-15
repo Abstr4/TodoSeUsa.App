@@ -1,68 +1,142 @@
 ﻿@page "/Account/RegisterConfirmation"
 
-@using System.Text
-@using TodoSeUsa.Infrastructure.Data
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.EntityFrameworkCore
+@using TodoSeUsa.Infrastructure.Data
 
-@inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender<ApplicationUser> EmailSender
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory;
 @inject NavigationManager NavigationManager
-@inject IdentityRedirectManager RedirectManager
+@inject IJSRuntime JS
 
-<PageTitle>Register confirmation</PageTitle>
+<style>
+    .copy-btn {
+        position: absolute;
+        top: 60%;
+        right: 6px;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+    }
 
-<h1>Register confirmation</h1>
+    .copy-btn::after {
+        content: "Copiado al portapapeles";
+        position: absolute;
+        right: 28px;
+        top: 50%;
+        transform: translateY(-50%) translateY(2px);
+        background: #222;
+        color: white;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .18s ease, transform .18s ease;
+    }
 
-<StatusMessage Message="@statusMessage" />
+    .copy-btn.copied::after {
+        opacity: 1;
+        transform: translateY(-50%) translateY(-4px);
+    }
 
-@if (emailConfirmationLink is not null)
-{
-    <p>
-        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-        Normally this would be emailed: <a href="@emailConfirmationLink">Click here to confirm your account</a>
-    </p>
-}
-else
-{
-    <p role="alert">Please check your email to confirm your account.</p>
-}
+    #downloadBtn {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    #continueBtn {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    #downloadBtn:hover, #continueBtn:hover {
+        opacity: 0.9;
+    }
+
+</style>
+
+<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" class="page-wrapper">
+
+    <RadzenCard>
+
+        <h1 style="margin-bottom:1rem;">Estás registrado</h1>
+
+        <RadzenText Style="margin-bottom: 1rem">
+            Si perdés tu contraseña, este código es tu mecanismo de seguridad para recuperarla.
+        </RadzenText>
+
+        <RadzenStack Orientation="Orientation.Vertical">
+
+            <RadzenLabel Component="recovery-code" Style="margin-bottom: 0">Código de recuperación</RadzenLabel>
+
+            <RadzenStack Orientation="Orientation.Horizontal">
+
+                <div style="position: relative; width: 100%; margin-left: 6px">
+
+                    <RadzenTextBox Name="recovery-code" Value="@RecoveryCode" ReadOnly="true" Style="width: 100%; padding-right: 34px;" />
+
+                    <button class="copy-btn"
+                            type="button"
+                            onclick="
+                            navigator.clipboard.writeText('@RecoveryCode');
+                            this.classList.add('copied');
+                            setTimeout(()=>
+                        this.classList.remove('copied'), 1400);
+                        ">
+
+                        <RadzenIcon Icon="content_copy" />
+                    </button>
+
+                </div>
+
+                <RadzenButton id="downloadBtn" Icon="download"></RadzenButton>
+
+                <span id="recoveryCode" style="display:none">@RecoveryCode</span>
+
+
+            </RadzenStack>
+
+            <RadzenAlert AlertStyle="AlertStyle.Warning" Style="margin-top:10px" AllowClose="false">
+                <RadzenText>
+                    Guarda este código en un lugar seguro. No podrás verlo de nuevo.
+                </RadzenText>
+            </RadzenAlert>
+
+            <RadzenButton id="continueBtn">Continuar</RadzenButton>
+
+        </RadzenStack>
+
+    </RadzenCard>
+</RadzenStack>
 
 @code {
-    private string? emailConfirmationLink;
-    private string? statusMessage;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromQuery]
-    private string? Email { get; set; }
+    public string? RecoveryCode { get; set; }
 
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        if (Email is null)
+        var code = HttpContext.Session.GetString("RecoveryCode");
+
+        HttpContext.Session.Remove("RecoveryCode");
+
+        if (string.IsNullOrWhiteSpace(code))
         {
-            RedirectManager.RedirectTo("");
+            NavigationManager.NavigateTo("/error");
+            return;
         }
 
-        var user = await UserManager.FindByEmailAsync(Email);
-        if (user is null)
-        {
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = "Error finding user for unspecified email";
-        }
-        else if (EmailSender is IdentityNoOpEmailSender)
-        {
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
-            var userId = await UserManager.GetUserIdAsync(user);
-            var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            emailConfirmationLink = NavigationManager.GetUriWithQueryParameters(
-                NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-                new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
-        }
+        RecoveryCode = code;
     }
 }
