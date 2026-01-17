@@ -12,20 +12,3 @@ public class FilterDescriptor
     public FilterOperator SecondFilterOperator { get; set; }
     public LogicalFilterOperator LogicalFilterOperator { get; set; }
 }
-
-public class SortDescriptor
-{
-    public string Property { get; set; } = string.Empty;
-    public SortOrder SortOrder { get; set; }
-}
-
-public class QueryRequest
-{
-    public int Skip { get; set; }
-    public int Take { get; set; }
-    public string? OrderBy { get; set; }
-    public string? Filter { get; set; }
-    public List<FilterDescriptor>? Filters { get; set; }
-    public List<SortDescriptor>? Sorts { get; set; }
-    public LogicalFilterOperator LogicalFilterOperator { get; set; } = LogicalFilterOperator.And;
-}
