@@ -1,8 +1,62 @@
 ﻿@page "/Account/Lockout"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using TodoSeUsa.Infrastructure.Data
 
-<PageTitle>Locked out</PageTitle>
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-<header>
-    <h1 class="text-danger">Locked out</h1>
-    <p class="text-danger" role="alert">This account has been locked out, please try again later.</p>
-</header>
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>Bloquead</PageTitle>
+
+<RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: 100vh: max-height: 100vh; width: 100%;">
+
+    <RadzenCard Variant="Variant.Outlined" Style="width: 720px">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+
+            <img src="/assets/lockedout/lockedout1.jpg" width="250" style="margin-right: 16px" />
+
+            <RadzenStack Orientation="Orientation.Vertical">
+                <h2 class="text-danger">Cuenta bloqueada</h2>
+                <p>Ésta cuenta ha sido bloqueada temporalmente por razones de seguridad, intenta de nuevo a la hora: <strong>@(UnlockAt.ToString("dd/MM/yyyy HH:mm"))</strong>.</p>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+
+    [SupplyParameterFromQuery(Name = "user")]
+    public string UserName { get; set; } = string.Empty;
+
+    private DateTimeOffset UnlockAt;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(UserName))
+        {
+            NavigationManager.NavigateTo("/error");
+            return;
+        }
+
+        var user = await UserManager.FindByNameAsync(UserName);
+
+        if (user is null)
+        {
+            NavigationManager.NavigateTo("/error");
+            return;
+        }
+
+        if (user?.LockoutEnd is not null)
+        {
+            UnlockAt = user.LockoutEnd.Value.ToLocalTime();
+        }
+
+        else
+        {
+            NavigationManager.NavigateTo("/error");
+            return;
+        }
+    }
+}

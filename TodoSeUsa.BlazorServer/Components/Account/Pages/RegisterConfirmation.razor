@@ -84,14 +84,7 @@
 
                     <RadzenTextBox Name="recovery-code" Value="@RecoveryCode" ReadOnly="true" Style="width: 100%; padding-right: 34px;" />
 
-                    <button class="copy-btn"
-                            type="button"
-                            onclick="
-                            navigator.clipboard.writeText('@RecoveryCode');
-                            this.classList.add('copied');
-                            setTimeout(()=>
-                        this.classList.remove('copied'), 1400);
-                        ">
+                    <button class="copy-btn" type="button" onclick="copyRecoveryCode('@RecoveryCode', this)">
 
                         <RadzenIcon Icon="content_copy" />
                     </button>

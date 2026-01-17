@@ -39,24 +39,23 @@
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
 
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                        Recordarme
-                    </label>
-                </div>
+                <RadzenStack AlignItems="AlignItems.Center" Orientation="Orientation.Horizontal" Gap="6px" Style="margin-bottom: 1rem">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" style="margin-top: 0px !important" />
+                        <span>Recordarme</span>
+                </RadzenStack>
 
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Ingresar</button>
+                    <RadzenButton ButtonType="ButtonType.Submit" Style="width: 100%;">Ingresar</RadzenButton>
                 </div>
-                <RadzenStack Style="margin-top:2rem;">
+
+                <RadzenStack Style="margin-top: 2rem;">
                     <p>
-                        <a href="Account/ForgotPassword">Olvidaste tu usuario o contraseña?</a>
+                        <a href="Account/ForgotPassword">¿Olvidaste tu contraseña?</a>
                     </p>
                     @if (!anyUserExists)
                     {
                         <p>
-                            <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Registrarse como nuevo usuario</a>
+                            <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">¿No tenés cuenta? Registrate</a>
                         </p>
                     }
                 </RadzenStack>
@@ -94,7 +93,8 @@
     {
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
@@ -109,11 +109,11 @@
         else if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
-            RedirectManager.RedirectTo("Account/Lockout");
+            RedirectManager.RedirectTo($"/Account/Lockout?user={Input.Email}");
         }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Error: Intento de logueo inválido.";
         }
     }
 
