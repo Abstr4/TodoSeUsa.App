@@ -69,3 +69,8 @@ h1:focus {
 {
     margin-top: 4rem;
 }
+
+.content-wrapper
+{
+    padding: 4rem 2rem;
+}
