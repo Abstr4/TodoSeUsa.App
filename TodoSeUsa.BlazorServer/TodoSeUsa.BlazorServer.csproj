@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Components\Account\Pages\Manage\Email.razor" />
     <Content Remove="Components\Pages\Boxes\ViewBoxProducts.razor" />
     <Content Remove="Components\Pages\Clients.razor" />
     <Content Remove="Components\Pages\LoanNotes.razor" />

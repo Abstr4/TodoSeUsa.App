@@ -1,0 +1,80 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using TodoSeUsa.Infrastructure.Data
+
+@implements IDisposable
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+@inject NavigationManager NavigationManager
+
+<RadzenStack class="top-row" Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+    <AuthorizeView>
+        <Authorized>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="2rem">
+
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="Account/Manage">
+                        <RadzenButton Variant="Variant.Outlined" Icon="logout" aria-hidden="true"> @context.User.Identity?.Name </RadzenButton>
+                    </NavLink>
+                </div>
+
+                <div class="nav-item">
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <RadzenButton ButtonStyle="ButtonStyle.Dark" Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Icon="logout" Text="Cerrar sesión" aria-hidden="true"/>
+                    </form>
+                </div>
+            </RadzenStack>
+        </Authorized>
+        <NotAuthorized>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="2rem">
+                @if (!anyUserExists)
+                {
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="Account/Register">
+                            <RadzenButton ButtonStyle="ButtonStyle.Dark" Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Icon="person_add" Text="Registrarse" aria-hidden="true"/>
+                        </NavLink>
+                    </div>
+
+                }
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="Account/Login">
+                        <RadzenButton ButtonStyle="ButtonStyle.Dark" Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Icon="login" Text="Loguearse" aria-hidden="true" />
+                    </NavLink>
+                </div>
+            </RadzenStack>
+        </NotAuthorized>
+    </AuthorizeView>
+</RadzenStack>
+
+
+
+@code {
+
+    private bool anyUserExists = false;
+
+    private string? currentUrl;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context = await DbContextFactory.CreateDbContextAsync();
+        anyUserExists = await context.Users.AnyAsync();
+
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
