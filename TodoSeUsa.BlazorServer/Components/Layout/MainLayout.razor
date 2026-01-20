@@ -17,6 +17,24 @@
 
 <RadzenComponents @rendermode="InteractiveServer" />
 
+<style>
+    main {
+        height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    header {
+        height: 3.5rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    article {
+        flex: 1 !important;
+        overflow: auto !important;
+    }
+</style>
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />

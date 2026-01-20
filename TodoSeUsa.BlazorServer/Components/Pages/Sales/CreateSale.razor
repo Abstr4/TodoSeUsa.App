@@ -132,13 +132,15 @@
                                     <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
 
                                         <RadzenLabel Component="Date">
-                                            Fecha de emisión <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                            Fecha del pago <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                                         </RadzenLabel>
 
                                         <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
-                                                <RadzenDatePicker Max="DateTime.Now" Name="Date" @bind-Value=@paymentUiModel.Date Style="flex-grow: 1;" Placeholder="Fecha de emisión..." />
+                                                <RadzenDatePicker Max="DateTime.Now" Name="Date" @bind-Value=@paymentUiModel.Date Style="flex-grow: 1;" Placeholder="Fecha del pago..." />
                                         </RadzenStack>
+
+                                        <RadzenCustomValidator Validator="@(() => paymentUiModel.Date == null || paymentUiModel.Date < DateTime.Now)" Text="La fecha debe estar en el pasado."></RadzenCustomValidator>
 
                                     </RadzenStack>
                                 </RadzenColumn>
@@ -209,8 +211,6 @@
                                             <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
                                                 <RadzenDatePicker Max="DateTime.Now" Name="DateIssued" @bind-Value=@createSaleDto.DateIssued Style="flex-grow: 1;" Placeholder="Fecha de emisión..." />
-
-                                                <RadzenButton Icon="alarm" Click="@(() => createSaleDto.DateIssued = DateTime.Now)" Text="Ahora" />
 
                                             </RadzenStack>
 

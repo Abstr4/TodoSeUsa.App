@@ -65,6 +65,6 @@
         }
     }
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account") ? null : new InteractiveServerRenderMode(prerender: false);
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Cuenta") ? null : new InteractiveServerRenderMode(prerender: false);
 
 }

@@ -15,13 +15,13 @@
             <RadzenStack Orientation="Orientation.Horizontal" Gap="2rem">
 
                 <div class="nav-item">
-                    <NavLink class="nav-link" href="Account/Manage">
+                    <NavLink class="nav-link" href="Cuenta/Administrar">
                         <RadzenButton Variant="Variant.Outlined" Icon="logout" aria-hidden="true"> @context.User.Identity?.Name </RadzenButton>
                     </NavLink>
                 </div>
 
                 <div class="nav-item">
-                    <form action="Account/Logout" method="post">
+                    <form action="Cuenta/CerrarSesion" method="post">
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                         <RadzenButton ButtonStyle="ButtonStyle.Dark" Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Icon="logout" Text="Cerrar sesión" aria-hidden="true"/>
@@ -34,14 +34,14 @@
                 @if (!anyUserExists)
                 {
                     <div class="nav-item">
-                        <NavLink class="nav-link" href="Account/Register">
+                        <NavLink class="nav-link" href="Cuenta/Registrarse">
                             <RadzenButton ButtonStyle="ButtonStyle.Dark" Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Icon="person_add" Text="Registrarse" aria-hidden="true"/>
                         </NavLink>
                     </div>
 
                 }
                 <div class="nav-item">
-                    <NavLink class="nav-link" href="Account/Login">
+                    <NavLink class="nav-link" href="Cuenta/Ingresar">
                         <RadzenButton ButtonStyle="ButtonStyle.Dark" Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Icon="login" Text="Loguearse" aria-hidden="true" />
                     </NavLink>
                 </div>

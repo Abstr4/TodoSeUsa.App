@@ -1,4 +1,4 @@
-﻿@page "/Account/Register"
+﻿@page "/Cuenta/Registrarse"
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -92,7 +92,7 @@
 
         Logger.LogInformation("User created a new account with password.");
 
-        NavigationManager.NavigateTo($"/Account/RegisterConfirmation");
+        NavigationManager.NavigateTo($"/Cuenta/Registrado");
     }
 
     private ApplicationUser CreateUser()

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +57,12 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
+{
+    options.LoginPath = "/Cuenta/Ingresar";
+    options.LogoutPath = "/Cuenta/CerrarSesion";
+    options.AccessDeniedPath = "/Cuenta/AccesoDenegado";
+});
 
 var app = builder.Build();
 
@@ -101,19 +108,19 @@ app.Use(async (context, next) =>
 {
     var path = context.Request.Path;
 
-    if (path.Equals("/Account/Register", StringComparison.OrdinalIgnoreCase))
+    if (path.Equals("/Cuenta/Registrarse", StringComparison.OrdinalIgnoreCase))
     {
         using var scope = app.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         if (await userManager.Users.AnyAsync())
         {
-            context.Response.Redirect("/Account/Login?redirectedToLogin=registration-closed");
+            context.Response.Redirect("/Cuenta/Ingresar?redirectedToLogin=registration-closed");
             return;
         }
     }
 
-    if (path.Equals("/Account/Login", StringComparison.OrdinalIgnoreCase)
+    if (path.Equals("/Cuenta/Ingresar", StringComparison.OrdinalIgnoreCase)
     && context.User.Identity?.IsAuthenticated == true)
     {
         context.Response.Redirect("/");
@@ -131,7 +138,7 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// Add additional endpoints required by the Identity /Account Razor components.
+// Add additional endpoints required by the Identity /Cuenta Razor components.
 app.MapAdditionalIdentityEndpoints();
 
 app.Run();

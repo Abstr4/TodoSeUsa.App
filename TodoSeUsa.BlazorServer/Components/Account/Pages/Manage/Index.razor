@@ -1,4 +1,4 @@
-﻿@page "/Account/Manage"
+﻿@page "/Cuenta/Administrar"
 
 @using System.ComponentModel.DataAnnotations
 @using TodoSeUsa.Infrastructure.Data
@@ -65,7 +65,7 @@
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
+        RedirectManager.RedirectToCurrentPageWithStatus("Tu perfil ha sido actualizado", HttpContext);
     }
 
     private sealed class InputModel

@@ -1,4 +1,4 @@
-﻿@page "/Account/Login"
+﻿@page "/Cuenta/Ingresar"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
@@ -50,12 +50,12 @@
 
                 <RadzenStack Style="margin-top: 2rem;">
                     <p>
-                        <a href="Account/ForgotPassword">¿Olvidaste tu contraseña?</a>
+                        <a href="Cuenta/ContraseñaOlvidada">¿Olvidaste tu contraseña?</a>
                     </p>
                     @if (!anyUserExists)
                     {
                         <p>
-                            <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">¿No tenés cuenta? Registrate</a>
+                            <a href="@(NavigationManager.GetUriWithQueryParameters("Cuenta/Registrarse", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">¿No tenés cuenta? Registrate</a>
                         </p>
                     }
                 </RadzenStack>
@@ -103,13 +103,13 @@
         else if (result.RequiresTwoFactor)
         {
             RedirectManager.RedirectTo(
-                "Account/LoginWith2fa",
+                "Cuenta/LoginWith2fa",
                 new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
         }
         else if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
-            RedirectManager.RedirectTo($"/Account/Lockout?user={Input.Email}");
+            RedirectManager.RedirectTo($"/Cuenta/Bloqueado?user={Input.Email}");
         }
         else
         {
@@ -127,7 +127,7 @@
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
-        [Display(Name = "Remember me?")]
+        [Display(Name = "¿Recordarme?")]
         public bool RememberMe { get; set; }
     }
 }

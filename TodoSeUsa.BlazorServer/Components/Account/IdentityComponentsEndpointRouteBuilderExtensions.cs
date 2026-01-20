@@ -6,21 +6,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using System.Text.Json;
-using TodoSeUsa.BlazorServer.Components.Account.Pages;
-using TodoSeUsa.BlazorServer.Components.Account.Pages.Manage;
 using TodoSeUsa.Infrastructure.Data;
 
 namespace TodoSeUsa.BlazorServer.Components.Account;
 
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {
-    // These endpoints are required by the Identity Razor components defined in the /Components/Account/Pages directory of this project.
+    // These endpoints are required by the Identity Razor components defined in the /Components/Cuenta/Pages directory of this project.
     public static IEndpointConventionBuilder MapAdditionalIdentityEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        var accountGroup = endpoints.MapGroup("/Account");
+        var accountGroup = endpoints.MapGroup("/Cuenta");
 
         accountGroup.MapPost("/PerformLogin", async (
         HttpContext context,
@@ -42,20 +39,20 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                     ["rememberMe"] = input.RememberMe.ToString()
                 };
                 var redirectUrl = QueryString.Create(query).ToUriComponent();
-                return TypedResults.Redirect($"/Account/LoginWith2fa{redirectUrl}");
+                return TypedResults.Redirect($"/Cuenta/LoginWith2fa{redirectUrl}");
             }
             else if (result.IsLockedOut)
             {
-                return TypedResults.Redirect("/Account/Lockout");
+                return TypedResults.Redirect("/Cuenta/Bloqueado");
             }
             else
             {
-                return TypedResults.Redirect($"/Account/Login?error=invalid&ReturnUrl={Uri.EscapeDataString(returnUrl ?? "/")}");
+                return TypedResults.Redirect($"/Cuenta/Ingresar?error=invalid&ReturnUrl={Uri.EscapeDataString(returnUrl ?? "/")}");
             }
         });
 
 
-        accountGroup.MapPost("/Logout", async (
+        accountGroup.MapPost("/CerrarSesion", async (
             ClaimsPrincipal user,
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromForm] string returnUrl) =>
@@ -64,7 +61,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return TypedResults.LocalRedirect($"~/{returnUrl}");
         });
 
-        var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
+        var manageGroup = accountGroup.MapGroup("/Administrar").RequireAuthorization();
 
 
         var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
