@@ -8,6 +8,7 @@ using TodoSeUsa.Domain.Enums;
 public sealed class DbSeeder
 {
     private readonly UniqueConsignmentCodeService _codeService;
+
     public DbSeeder(UniqueConsignmentCodeService codeService)
     {
         _codeService = codeService;
@@ -19,9 +20,6 @@ public sealed class DbSeeder
         await SeedProvidersAsync(context);
         await SeedConsignmentsAsync(context);
         await SeedProductsAsync(context);
-        // await SeedSalesAsync(context);
-        // await SeedClientsAsync(context);
-        // await SeedReservationsAsync(context);
     }
 
     private static async Task SeedBoxesAsync(ApplicationDbContext context)
@@ -108,112 +106,25 @@ public sealed class DbSeeder
 
         var products = new List<Product>
         {
-            new() { Price = 100.00m, Category = "Electronics", Description = "Wireless Mouse", Quality = ProductQuality.New, ConsignmentId = consignment.Id, BoxId = box.Id, Size = "S"},
-            new() { Price = 250.50m, Category = "Home", Description = "Blender", Quality = ProductQuality.Good, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Male, Size = "XS" },
-            new() { Price = 800.00m, Category = "Clothing", Description = "Jacket", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "XXXL" },
-            new() { Price = 2000.00m, Category = "CategoryTest1", Description = "DescriptionTest1", Quality = ProductQuality.New, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "XXXXXXL" },
-            new() { Price = 4030.75m, Category = "CategoryTest2", Description = "DescriptionTest2", Quality = ProductQuality.Poor, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "XXXXXXXXXXXXXXL" },
-            new() { Price = 6050.75m, Category = "CategoryTest3", Description = "DescriptionTest3", Quality = ProductQuality.LikeNew, ConsignmentId = consignment.Id, BoxId = box.Id, Size = "L" },
-            new() { Price = 12980.75m, Category = "CategoryTest4", Description = "DescriptionTest4", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Male, Size = "XL" },
-            new() { Price = 8130.75m, Category = "CategoryTest5", Description = "DescriptionTest5", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Unisex, Size = "XXL" }
+            new() { Price = 100.00m, Category = "Pants", Description = "Denim jeans", Quality = ProductQuality.New, ConsignmentId = consignment.Id, BoxId = box.Id, Size = "S" },
+
+            new() { Price = 250.50m, Category = "Tops", Description = "Cotton t-shirt", Quality = ProductQuality.Good, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Male, Size = "M" },
+
+            new() { Price = 800.00m, Category = "Outerwear", Description = "Winter jacket", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "L" },
+
+            new() { Price = 2000.00m, Category = "Dresses", Description = "Evening dress", Quality = ProductQuality.New, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "S" },
+
+            new() { Price = 4030.75m, Category = "Coats", Description = "Long wool coat", Quality = ProductQuality.Poor, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Female, Size = "XXXL" },
+
+            new() { Price = 6050.75m, Category = "Sweaters", Description = "Knit sweater", Quality = ProductQuality.LikeNew, ConsignmentId = consignment.Id, BoxId = box.Id, Size = "L" },
+
+            new() { Price = 12980.75m, Category = "Shirts", Description = "Formal button-up shirt", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Male, Size = "XS" },
+
+            new() { Price = 8130.75m, Category = "Hoodies", Description = "Unisex hoodie", Quality = ProductQuality.Fair, ConsignmentId = consignment.Id, BoxId = box.Id, Body = Body.Unisex, Size = "XXL" }
         };
 
         await context.Products.AddRangeAsync(products);
         await context.SaveChangesAsync();
+
     }
-
-    private static async Task SeedSalesAsync(ApplicationDbContext context)
-    {
-        if (await context.Sales.AnyAsync())
-            return;
-
-        var sales = new List<Sale>
-    {
-        new()
-        {
-            DateIssued = DateTime.Now,
-            Notes = "Sample sale 1",
-            Items =
-            {
-                new()
-                {
-                    ProductId = 10,
-                    Price = 100,
-                    Size = "M",
-                    Category = "Shirt",
-                    Description = "Blue shirt",
-                    Quality = ProductQuality.Good,
-                    Body = Body.Male,
-                    CreatedAt = DateTime.Now
-                },
-                new()
-                {
-                    ProductId = 11,
-                    Price = 200,
-                    Size = "L",
-                    Category = "Pants",
-                    Description = "Black pants",
-                    Quality = ProductQuality.Fair,
-                    Body = Body.Female,
-                    CreatedAt = DateTime.Now
-                }
-            },
-            Payments =
-            {
-                new()
-                {
-                    Amount = 150,
-                    Method = PaymentMethod.Cash,
-                    Date = DateTime.Now
-                }
-            }
-        },
-
-        new()
-        {
-            DateIssued = DateTime.Now,
-            Notes = "Sample sale 2",
-            Items =
-            {
-                new()
-                {
-                    ProductId = 12,
-                    Price = 500,
-                    Size = "S",
-                    Category = "Dress",
-                    Description = "Red dress",
-                    Quality = ProductQuality.Good,
-                    Body = Body.Unisex,
-                    CreatedAt = DateTime.Now
-                }
-            },
-            Payments =
-            {
-                new()
-                {
-                    Amount = 500,
-                    Method = PaymentMethod.CreditCard,
-                    Date = DateTime.Now
-                }
-            }
-        }
-    };
-
-        foreach (var sale in sales)
-        {
-            sale.TotalAmount = sale.Items.Sum(i => i.Price);
-            sale.AmountPaid = sale.Payments.Sum(p => p.Amount);
-            if (sale.AmountPaid == 0)
-                sale.Status = SaleStatus.Pending;
-            else if (sale.AmountPaid < sale.TotalAmount)
-                sale.Status = SaleStatus.PartiallyPaid;
-            else
-                sale.Status = SaleStatus.Paid;
-
-        }
-
-        await context.Sales.AddRangeAsync(sales);
-        await context.SaveChangesAsync();
-    }
-
 }
