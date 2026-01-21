@@ -3,11 +3,10 @@
 ## Project Description
 
 Hi, I'm **[Matias Margaritini](https://www.linkedin.com/in/matiasmargaritini/)** ([LinkedIn](https://www.linkedin.com/in/matiasmargaritini/)).
-.
-This project is a store management system built for our family clothing store TodoSeUsa, developed with Blazor, Radzen, and .NET, following Clean Architecture principles.
+
+This project is a store management system built for our family clothing store TodoSeUsa, developed with Blazor, Radzen, in .NET 9, following Clean Architecture principles.
 
 The system is designed to replace manual and physical processes, centralizing the store’s daily operations into a single digital platform.
-Hello  This project is a simple inventory management system made with **C# .NET 7** for our family clothing store **TodoSeUsa**.
 
 ## Features
 * Inventory, products, clients, and invoices management
