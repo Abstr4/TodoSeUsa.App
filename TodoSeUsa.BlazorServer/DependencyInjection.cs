@@ -1,6 +1,5 @@
 ﻿using Radzen;
 using TodoSeUsa.BlazorServer.UI.Notifications;
-using TodoSeUsa.BlazorServer.UI.State;
 
 namespace TodoSeUsa.BlazorServer;
 
@@ -30,6 +29,5 @@ public static class DependencyInjection
         });
 
         builder.Services.AddScoped<SimpleNotifications>();
-        builder.Services.AddScoped<RecoveryCodeSession>();
     }
 }
