@@ -10,5 +10,5 @@ public class QueryRequest
     public string? Filter { get; set; }
     public List<FilterDescriptor>? Filters { get; set; }
     public List<SortDescriptor>? Sorts { get; set; }
-    public LogicalFilterOperator LogicalFilterOperator { get; set; } = LogicalFilterOperator.And;
+    public LogicalFilterOperator LogicalFilterOperator { get; set; } = LogicalFilterOperator.Or;
 }
