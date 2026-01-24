@@ -8,7 +8,7 @@
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'recovery-code.txt';
+    a.download = 'tsu-recovery-code.txt';
     a.click();
 
     URL.revokeObjectURL(url);

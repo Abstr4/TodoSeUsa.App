@@ -4,7 +4,6 @@
         if (!container) return;
 
         container.querySelectorAll('.rz-fileupload-row img').forEach(img => {
-            // avoid double-assigning
             if (!img.dataset.clickAttached) {
                 img.style.cursor = 'pointer';
                 img.onclick = () => dotnetRef.invokeMethodAsync('ShowLargePreview', img.src);
