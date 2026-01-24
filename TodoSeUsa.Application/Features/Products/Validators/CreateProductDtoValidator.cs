@@ -1,5 +1,5 @@
-﻿using TodoSeUsa.Application.Features.Products.DTOs;
-using TodoSeUsa.Domain.Validators;
+﻿using TodoSeUsa.Application.Common.Validators;
+using TodoSeUsa.Application.Features.Products.DTOs;
 
 namespace TodoSeUsa.Application.Features.Products.Validators;
 
@@ -41,9 +41,5 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
         RuleFor(p => p.BoxId)
             .GreaterThan(0).WithMessage("El Id de la caja debe ser mayor que cero.")
             .When(p => p.BoxId.HasValue);
-
-        RuleFor(p => p.BoxCode)
-            .Must(code => code == null || CodesValidators.ValidateBoxCode(code))
-            .WithMessage("Código inválido.");
     }
 }

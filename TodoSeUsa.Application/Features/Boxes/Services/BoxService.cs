@@ -6,6 +6,7 @@ using TodoSeUsa.Application.Features.Boxes.Validators;
 using TodoSeUsa.Application.Features.Products;
 
 namespace TodoSeUsa.Application.Features.Boxes.Services;
+
 public class BoxService : IBoxService
 {
     private readonly ILogger<BoxService> _logger;
@@ -39,7 +40,6 @@ public class BoxService : IBoxService
                 Id = b.Id,
                 TotalProducts = b.Products.Count(),
                 Location = b.Location,
-                Code = b.Code,
                 CreatedAt = b.CreatedAt,
                 UpdatedAt = b.UpdatedAt,
             })
@@ -69,7 +69,6 @@ public class BoxService : IBoxService
                     Id = b.Id,
                     TotalProducts = b.Products.Count(),
                     Location = b.Location,
-                    Code = b.Code,
                     CreatedAt = b.CreatedAt,
                     UpdatedAt = b.UpdatedAt
                 })

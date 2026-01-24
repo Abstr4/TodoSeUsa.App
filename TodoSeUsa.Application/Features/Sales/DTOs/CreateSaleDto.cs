@@ -4,7 +4,7 @@ namespace TodoSeUsa.Application.Features.Sales.DTOs;
 
 public record CreateSaleDto
 {
-    public List<string> ProductCodes { get; set; } = [];
+    public List<int> ProductsIds { get; set; } = [];
 
     public List<CreatePaymentDto> Payments { get; set; } = [];
 

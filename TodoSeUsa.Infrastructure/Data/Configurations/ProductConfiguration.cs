@@ -14,9 +14,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.HasKey(c => c.Id);
 
-        builder.Property(p => p.Code)
-            .HasComputedColumnSql("'TSU-' + RIGHT('0000' + CAST(Id AS VARCHAR(4)), 4)", stored: true);
-
         builder.Property(p => p.RefurbishmentCost)
         .HasPrecision(18, 2);
 

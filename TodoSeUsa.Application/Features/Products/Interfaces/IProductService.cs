@@ -18,11 +18,13 @@ public interface IProductService
 
     Task<Result<ProductDto>> GetByIdAsync(int productId, CancellationToken ct);
 
-    Task<Result<ProductDto>> GetByCodeAsync(string productCode, CancellationToken ct);
-
     Task<Result<int>> CreateAsync(CreateProductDto dto, IReadOnlyList<Stream> imageStreams, CancellationToken ct);
 
+    Task<Result<int>> CreateAsync(CreateProductDto dto, CancellationToken ct);
+
     Task<Result<IReadOnlyList<int>>> CreateBatchAsync(CreateProductDto dto, IReadOnlyList<Stream> imageStreams, CancellationToken ct);
+
+    Task<Result<IReadOnlyList<int>>> CreateBatchAsync(CreateProductDto dto, CancellationToken ct);
 
     Task<Result> EditById(int productId, EditProductDto editProductDto, CancellationToken ct);
 

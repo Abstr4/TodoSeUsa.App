@@ -11,12 +11,6 @@ public static class QuerySortingCases
     new()
     {
         {
-            nameof(BoxDto.Code),
-            (q, desc) => desc
-                ? q.OrderByDescending(b => b.Id)
-                : q.OrderBy(b => b.Id)
-        },
-        {
             nameof(BoxDto.TotalProducts),
             (q, desc) => desc
                 ? q.OrderByDescending(b => b.Products.Count)

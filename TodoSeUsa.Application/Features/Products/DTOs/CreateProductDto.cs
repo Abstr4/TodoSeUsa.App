@@ -25,6 +25,4 @@ public record CreateProductDto
     public decimal? RefurbishmentCost { get; set; }
 
     public int? BoxId { get; set; }
-
-    public string? BoxCode { get; set; }
 }

@@ -6,8 +6,6 @@ public record BoxDto
 
     public int TotalProducts { get; init; }
 
-    public string Code { get; init; } = string.Empty;
-
     public string Location { get; init; } = string.Empty;
 
     public DateTime CreatedAt { get; init; }

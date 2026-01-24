@@ -337,7 +337,6 @@ public sealed class SaleService : ISaleService
                 .Select(si => new SaleItemDto
                 {
                     ProductId = si.ProductId,
-                    ProductCode = si.ProductCode,
                     Price = si.Price,
                     Size = si.Size,
                     Category = si.Category,
@@ -425,22 +424,22 @@ public sealed class SaleService : ISaleService
             var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var existingProducts = await context.Products
-                .Where(p => createSaleDto.ProductCodes.Contains(p.Code))
+                .Where(p => createSaleDto.ProductsIds.Contains(p.Id))
                 .ToListAsync(ct);
 
-            var soldProductsCodes = existingProducts.Where(p => p.Status == ProductStatus.Sold)
-                .Select(p => p.Code);
+            var soldProductsIds = existingProducts.Where(p => p.Status == ProductStatus.Sold)
+                .Select(p => p.Id);
 
-            if (soldProductsCodes.Any())
+            if (soldProductsIds.Any())
             {
-                _logger.LogError("Products with Codes [{soldProductsCodes}] are already sold.", string.Join(", ", soldProductsCodes));
+                _logger.LogError("Products with Codes [{soldProductsIds}] are already sold.", string.Join(", ", soldProductsIds));
                 return Result.Failure<int>(
-                    SaleErrors.Failure($"Los productos con los siguientes códigos ya están vendidos: {string.Join(", ", soldProductsCodes)}")
+                    SaleErrors.Failure($"Los productos con los siguientes códigos ya están vendidos: {string.Join(", ", soldProductsIds)}")
                 );
             }
 
-            var missingProducts = createSaleDto.ProductCodes
-                .Except(existingProducts.Select(p => p.Code))
+            var missingProducts = createSaleDto.ProductsIds
+                .Except(existingProducts.Select(p => p.Id))
                 .ToList();
 
             if (missingProducts.Count != 0)
@@ -839,7 +838,6 @@ public sealed class SaleService : ISaleService
         var saleItem = new SaleItem
         {
             ProductId = product.Id,
-            ProductCode = product.Code,
             Price = product.Price,
             Size = product.Size,
             Category = product.Category,

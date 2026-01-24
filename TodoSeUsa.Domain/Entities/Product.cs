@@ -6,7 +6,6 @@ public class Product : BaseAuditableEntity
     public string Size { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
     public ProductQuality Quality { get; set; }
     public ProductStatus Status { get; set; }
     public Body Body { get; set; }
