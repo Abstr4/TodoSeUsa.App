@@ -8,5 +8,5 @@ public static class RadzenDataGridDefaults
     public const bool AllowSorting = true;
     public const bool AllowPaging = true;
     public const bool AllowFiltering = true;
-    public const LogicalFilterOperator FilterOperator = LogicalFilterOperator.And;
+    public const LogicalFilterOperator FilterOperator = LogicalFilterOperator.Or;
 }
