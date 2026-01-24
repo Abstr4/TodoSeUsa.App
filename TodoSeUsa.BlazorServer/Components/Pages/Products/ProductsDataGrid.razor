@@ -1,6 +1,7 @@
 ﻿@using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
 
+@inject IJSRuntime JS;
 @inject IProductService ProductService;
 
 @inject DialogService DialogService;
@@ -19,7 +20,7 @@
 
         <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar un producto nuevo" Click="@HandleCreateProduct" Visible="IsMainPage" />
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un producto nuevo" Click="@HandleCreateProduct" Visible="IsMainPage" />
 
             <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@productsGrid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -43,11 +44,15 @@
             </RadzenDataGridColumn>
         }
 
-        <RadzenDataGridColumn Property="Code" Title="Código" Width="120px" MinWidth="200px" />
+        <RadzenDataGridColumn Property="Id" Title="Código" MinWidth="120px" Width="120px" >
+            <Template Context="product" >
+                TSU-@product.Id.ToString()
+            </Template>
+        </RadzenDataGridColumn>
 
-        <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="120px" Width="120px">
-            <Template Context="s">
-                @EnumTranslate.TranslateProductStatus(s.Status)
+        <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="160px" Width="160px">
+            <Template Context="product">
+                @EnumTranslate.TranslateProductStatus(product.Status)
             </Template>
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@selectedStatus"
@@ -56,7 +61,7 @@
                                 TextProperty="Text"
                                 ValueProperty="Value"
                                 AllowClear="true"
-                                Style="width:100%;">
+                                Style="width:100%;" >
                 </RadzenDropDown>
             </FilterTemplate>
         </RadzenDataGridColumn>
@@ -69,9 +74,9 @@
 
         <RadzenDataGridColumn Property="Size" Title="Talle" MinWidth="120px" Width="140px" />
 
-        <RadzenDataGridColumn Property="Body" Title="Cuerpo" FilterValue="@selectedBody" MinWidth="120px" Width="120px">
-            <Template Context="p">
-                @EnumTranslate.TranslateBody(p.Body)
+        <RadzenDataGridColumn Property="Body" Title="Cuerpo" FilterValue="@selectedBody" MinWidth="160px" Width="160px">
+            <Template Context="product">
+                @EnumTranslate.TranslateBody(product.Body)
             </Template>
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@selectedBody"
@@ -80,12 +85,12 @@
                                 TextProperty="Text"
                                 ValueProperty="Value"
                                 AllowClear="true"
-                                Style="width:100%;">
+                                Style="width:100%;" >
                 </RadzenDropDown>
             </FilterTemplate>
         </RadzenDataGridColumn>
 
-        <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality" MinWidth="120px" Width="120px">
+        <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality" MinWidth="160px" Width="160px">
             <Template Context="p">
                 @EnumTranslate.TranslateQuality(p.Quality)
             </Template>
@@ -96,7 +101,7 @@
                                 TextProperty="Text"
                                 ValueProperty="Value"
                                 AllowClear="true"
-                                Style="width:100%;">
+                                Style="width:100%;" >
                 </RadzenDropDown>
             </FilterTemplate>
         </RadzenDataGridColumn>
@@ -179,6 +184,7 @@
     private async Task LoadDefault(LoadDataArgs args)
     {
         var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
+
         var result = await ProductService.GetAllAsync(request, CancellationToken.None);
 
         if (result.IsSuccess)
@@ -188,7 +194,7 @@
         }
         else
         {
-            products = Array.Empty<ProductDto>();
+            products = [];
             count = 0;
             GridMessage = result.Error.Description;
         }
@@ -319,10 +325,8 @@
 
     public async Task ResetAsync()
     {
-        if (productsGrid != null)
-        {
-            await productsGrid.Reload();
-        }
+        productsGrid.Reset(true);
+        await productsGrid.FirstPage(true);
     }
 }
 

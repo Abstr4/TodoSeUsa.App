@@ -3,6 +3,8 @@
 @using TodoSeUsa.Application.Features.Sales.DTOs
 @using TodoSeUsa.Application.Features.Sales.Interfaces
 
+@inject IJSRuntime JS;
+
 @inject ISaleService SaleService;
 
 @inject DialogService DialogService;
@@ -38,7 +40,7 @@
 
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar una venta nueva" Click=@HandleCreateSale />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una venta nueva" Click=@HandleCreateSale />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -64,18 +66,18 @@
 
             <RadzenDataGridColumn Property="Code" Title="Código" Width="200px" MinWidth="120px" />
 
-            <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="200px" Width="200px">
-                <Template Context="s">
-                    @EnumTranslate.TranslateSaleStatus(s.Status)
+            <RadzenDataGridColumn @ref="statusColumn" Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="200px" Width="200px">
+                <Template Context="sale">
+                    @EnumTranslate.TranslateSaleStatus(sale.Status)
                 </Template>
                 <FilterTemplate>
                     <RadzenDropDown @bind-Value="@selectedStatus"
-                                    Placeholder="Seleccionar..."
+                                    Placeholder="Todos"
                                     Data="@EnumFilterLists.saleStatuses"
                                     TextProperty="Text"
                                     ValueProperty="Value"
                                     AllowClear="true"
-                                    Style="width:100%;">
+                                    Style="width:100%;" >
                     </RadzenDropDown>
                 </FilterTemplate>
             </RadzenDataGridColumn>
@@ -105,6 +107,9 @@
 
 @code
 {
+    private RadzenDataGridColumn<SaleDto> statusColumn = default!;
+
+
     private RadzenDataGrid<SaleDto> grid = null!;
 
     private IEnumerable<SaleDto>? sales;

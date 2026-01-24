@@ -65,7 +65,7 @@
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem" class="rz-mt-8">
 
-            <RadzenButton IsBusy=@_busy BusyText="Guardando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Guardar" Disabled=!HasChanges() />
+            <RadzenButton IsBusy=@_busy BusyText="Editando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Editar" Disabled=!HasChanges() />
 
             <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
         </RadzenStack>

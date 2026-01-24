@@ -13,7 +13,7 @@
 
 @attribute [Authorize]
 
-<RadzenTemplateForm TItem="string" Data="@productCode" Submit="@AddProductToBoxAsync" class="mb-4">
+<RadzenTemplateForm TItem="int" Data="@productId" Submit="@AddProductToBoxAsync" class="mb-4">
     <RadzenFieldset>
         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
 
@@ -21,15 +21,13 @@
 
             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap">
 
-                <RadzenTextBox Name="Code" @bind-Value="@productCode" Placeholder="'TSU-01234' o '01234'" />
+                <RadzenNumeric Name="Code" @bind-Value="@productId" Placeholder="ejemplo: 1" />
 
                 <RadzenButton ButtonType="ButtonType.Submit" Icon="add" Text="Agregar" />
 
             </RadzenStack>
 
-            <RadzenCustomValidator Component="Code"
-                                   Text="Código inválido, ingrese uno completo como 'TSU-01234' o sólo los números finales '01234'."
-                                   Validator="@(() => InputValidators.IsProductCodeValid(productCode))" />
+            <RadzenNumericRangeValidator Component="Code" Min="1" Text="El código debe ser mayor a cero" />
         </RadzenStack>
     </RadzenFieldset>
 </RadzenTemplateForm>
@@ -58,12 +56,12 @@
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
 
                             <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
-                                <b>Código: @p.Code</b>
+                                <b>Código: @p.Id</b>
                                 <span>@p.Category - @p.Description - @p.Body - Talle @p.Size - @p.Quality</span>
                                 <span>Precio: @p.Price.ToString("C")</span>
                             </RadzenStack>
 
-                            <RadzenButton Click="@(() => RemoveProductFromBox(p.Code))" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Medium" Icon="cancel" Style="height: 40px; width: 40px;" />
+                            <RadzenButton Click="@(() => RemoveProductFromBox(p.Id))" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Medium" Icon="cancel" Style="height: 40px; width: 40px;" />
 
                         </RadzenStack>
                     </RadzenCard>
@@ -97,13 +95,13 @@
 
     List<int> productIds = [];
 
-    string productCode = string.Empty;
+    int productId = 0;
 
     string ghostProductCodesValidator = "Trickery";
 
     async Task AddProductToBoxAsync()
     {
-        var result = await ProductService.GetByCodeAsync(productCode, CancellationToken.None);
+        var result = await ProductService.GetByIdAsync(productId, CancellationToken.None);
 
         if (result.IsSuccess)
         {
@@ -111,7 +109,7 @@
 
             if (product.Status == ProductStatus.Sold)
             {
-                SimpleNotifications.Warning($"El producto con el código '{product.Code}' ya fue vendido.");
+                SimpleNotifications.Warning($"El producto con el código '{product.Id}' ya fue vendido.");
                 return;
             }
 
@@ -127,7 +125,7 @@
                 return;
             }
 
-            if (addedProducts.Any(p => p.Code == product.Code))
+            if (addedProducts.Any(p => p.Id == product.Id))
             {
                 SimpleNotifications.Info($"El producto ya está en la lista.");
                 return;
@@ -137,14 +135,14 @@
         }
         else
         {
-            SimpleNotifications.Warning($"No se encontró un producto con el código '{productCode}'.");
+            SimpleNotifications.Warning($"No se encontró un producto con el código '{productId}'.");
         }
-        productCode = "";
+        productId = 0;
     }
 
-    void RemoveProductFromBox(string productCode)
+    void RemoveProductFromBox(int Id)
     {
-        var productToRemove = addedProducts.SingleOrDefault(p => p.Code == productCode);
+        var productToRemove = addedProducts.SingleOrDefault(p => p.Id == Id);
         if (productToRemove != null)
         {
             addedProducts.Remove(productToRemove);

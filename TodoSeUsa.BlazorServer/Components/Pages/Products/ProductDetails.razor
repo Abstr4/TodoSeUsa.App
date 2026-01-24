@@ -23,6 +23,7 @@
         flex-grow: 1;
     }
 </style>
+
 <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style=" padding-bottom: 1.1rem">
 
     @if (isLoading)
@@ -74,7 +75,7 @@
                     <tbody>
                         <tr>
                             <td>Código</td>
-                            <td>@product.Code</td>
+                            <td>@DisplayProductCode.IdToProductCode(product.Id)</td>
                         </tr>
                         <tr>
                             <td>Estado</td>
@@ -160,11 +161,11 @@
                     <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Creado el</RadzenText>
-                        <RadzenText><b>@(product.CreatedAt.ToString("yyyy/MM/dd HH:mm"))</b></RadzenText>
+                        <RadzenText><b>@(product.CreatedAt.ToString("D"))</b></RadzenText>
 
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Actualizado el</RadzenText>
-                        <RadzenText><b>@(product.UpdatedAt?.ToString("yyyy/MM/dd HH:mm"))</b></RadzenText>
+                        <RadzenText><b>@(product.UpdatedAt?.ToString("D"))</b></RadzenText>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenCard>
@@ -188,6 +189,7 @@
     private ProductDto? product;
     private bool isLoading;
     private string errorMessage = string.Empty;
+    private string ProductCode => DisplayProductCode.IdToProductCode(ProductId);
 
     protected override async Task OnInitializedAsync()
     {
@@ -213,7 +215,7 @@
 
     private async Task HandleEditProduct(ProductDto product)
     {
-        var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
+        var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' código: '{ProductCode}'",
                new Dictionary<string, object>() { { "ProductDto", product } },
                new DialogOptions()
                {
@@ -225,7 +227,7 @@
         {
             if (editResult.IsSuccess)
             {                
-                SimpleNotifications.Success($"Producto con ID: {product.Id} editado con éxito.");
+                SimpleNotifications.Success($"Producto código '{ProductCode}' editado con éxito.");
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else
@@ -248,7 +250,7 @@
         {
             if (deleteResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Producto con ID: {product.Id} eliminado con éxito.");
+                SimpleNotifications.Success($"Producto código '{ProductCode}' eliminado con éxito.");
                 NavigationManager.NavigateTo("/productos");
             }
             else

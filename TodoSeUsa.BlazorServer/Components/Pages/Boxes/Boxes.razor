@@ -9,6 +9,8 @@
 @inject NavigationManager NavigationManager;
 @inject SimpleNotifications SimpleNotifications;
 
+@rendermode InteractiveServer
+
 @attribute [Authorize]
 
 <style>
@@ -26,7 +28,7 @@
         <HeaderTemplate>
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar una caja nueva" Click="@HandleCreateBox" />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una caja nueva" Click="@HandleCreateBox" />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -42,9 +44,9 @@
 
                         <ChildContent>
                             <RadzenSplitButtonItem Text="Agregar producto(s)" Value="add_product" Icon="add" />
-                            <RadzenSplitButtonItem Text="Ver caja" Value="view" Icon="read_more" />
-                            <RadzenSplitButtonItem Text="Editar caja" Value="edit" Icon="edit" />
-                            <RadzenSplitButtonItem Text="Eliminar caja" Value="delete" Icon="delete" />
+                            <RadzenSplitButtonItem Text="Ver" Value="view" Icon="read_more" />
+                            <RadzenSplitButtonItem Text="Editar" Value="edit" Icon="edit" />
+                            <RadzenSplitButtonItem Text="Eliminar" Value="delete" Icon="delete" />
                         </ChildContent>
 
                     </RadzenSplitButton>
@@ -52,7 +54,11 @@
 
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.Code)" Title="Código" MinWidth="120px" Width="120px" />
+            <RadzenDataGridColumn TItem="BoxDto" Property="@nameof(BoxDto.Id)" Title="Código" MinWidth="120px" Width="120px" Filterable="true" Sortable="true">
+                <Template Context="box">
+                    BOX-@box.Id.ToString()
+                </Template>
+            </RadzenDataGridColumn>
 
             <RadzenDataGridColumn Filterable="false" Property="@nameof(BoxDto.TotalProducts)" Title="Cant. productos" MinWidth="120px" Width="120px">
 
@@ -63,7 +69,7 @@
                         <RadzenText>@box.TotalProducts</RadzenText>
                         @if (box.TotalProducts > 0)
                         {
-                            <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await ShowBoxProducts(box))" />
+                            <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await ShowBoxProducts(box))" />
                         }
                     </RadzenStack>
                 </Template>
@@ -75,9 +81,9 @@
 
             <RadzenDataGridColumn Sortable="false" TItem="BoxDto" Title="Acciones" MinWidth="120px" Width="120px">
                 <Template Context="box">
-                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditBox(box))" />
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditBox(box))" />
 
-                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleDeleteBox(box))" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleDeleteBox(box))" />
 
                     <RadzenButton Icon="read_more" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewBox(box.Id))" />
                 </Template>
@@ -112,7 +118,6 @@
         {
             boxes = result.Value.Items;
             count = result.Value.Count;
-            selectedBoxes = boxes.Take(1).ToList();
         }
         else
         {
@@ -132,7 +137,7 @@
 
     private async Task HandleEditBox(BoxDto boxDto)
     {
-        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxDto.Code}'",
+        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxDto.Id}'",
             new Dictionary<string, object>() { { "BoxDto", boxDto } },
             new DialogOptions()
             {
@@ -144,7 +149,7 @@
         {
             if (editResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Caja '{boxDto.Code}' editada con éxito.");
+                SimpleNotifications.Success($"Caja editada con éxito.");
                 await grid.Reload();
             }
             else
@@ -159,15 +164,15 @@
         var result = await DialogService.OpenAsync<DeleteBoxConfirmation>($"Confirmar eliminación",
         new Dictionary<string, object>() { { "BoxDto", boxDto } },
         new DialogOptions()
-            {
-                CloseDialogOnOverlayClick = true
-            }
+        {
+            CloseDialogOnOverlayClick = true
+        }
         );
         if (result is Result deleteResult)
         {
             if (deleteResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Caja '{boxDto.Code}' eliminada con éxito.");
+                SimpleNotifications.Success($"Caja eliminada con éxito.");
                 await grid.Reload();
             }
             else
@@ -202,11 +207,11 @@
 
     public async Task ShowBoxProducts(BoxDto boxDto)
     {
-        await DialogService.OpenAsync<BoxProductsGrid>($"Productos en la caja código '{boxDto.Code}'",
+        await DialogService.OpenAsync<BoxProductsGrid>($"Productos en la caja código '{boxDto.Id}'",
             new Dictionary<string, object>() { { "BoxDto", boxDto } },
             new DialogOptions()
             {
-                Width = "60%",
+                Width = "75%",
                 CloseDialogOnOverlayClick = true
             }
         );
@@ -215,7 +220,7 @@
 
     public async Task AddProductToBox(BoxDto box)
     {
-        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{box.Code}'",
+        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{box.Id}'",
             new Dictionary<string, object>() { { "BoxDto", box } },
             new DialogOptions()
             {

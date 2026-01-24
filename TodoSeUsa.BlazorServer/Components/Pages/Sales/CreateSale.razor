@@ -31,7 +31,7 @@
     <RadzenRow>
         <RadzenColumn SizeSM="4" Size="12" id="add-product-form">
 
-            <RadzenTemplateForm TItem="string" Data="@productCode" Submit="@AddProductToSaleAsync">
+            <RadzenTemplateForm TItem="int" Data="@productId" Submit="@AddProductToSaleAsync">
                 <RadzenFieldset class="mb-4">
 
                     <HeaderTemplate>
@@ -54,14 +54,14 @@
 
                             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap">
 
-                                <RadzenTextBox Style="flex-grow:1" Placeholder="TSU-01234 ó 01234" Name="Code" @bind-Value=@productCode />
+                                <RadzenNumeric Min="0" Name="Code" @bind-Value=@productId Placeholder="123..." Style="flex-grow:1" />
 
                                 <RadzenButton ButtonType="ButtonType.Submit" Icon="add" Text="Agregar" />
 
                             </RadzenStack>
-                            <RadzenCustomValidator Component="Code"
-                                                    Text="Código inválido, ingrese uno completo como 'TSU-01234' o sólo los números finales '01234'."
-                                                    Validator="@(() => InputValidators.IsProductCodeValid(productCode))" />
+
+                            <RadzenNumericRangeValidator Component="Code" Min="1" Text="El código debe ser mayor a cero" />
+
                         </RadzenStack>
                     </ChildContent>
                 </RadzenFieldset>
@@ -222,7 +222,7 @@
 
                             <RadzenTextBox @bind-Value="@saleValidatorGhost" Name="SaleGhost" Style="display:none"></RadzenTextBox>
 
-                            <RadzenCustomValidator Component="SaleGhost" Text="La venta debe contener al menos un producto." Validator=@(() => createSaleDto.ProductCodes.Count > 0) />
+                            <RadzenCustomValidator Component="SaleGhost" Text="La venta debe contener al menos un producto." Validator=@(() => createSaleDto.ProductsIds.Count > 0) />
 
                             <RadzenButton Text="Registrar venta" Icon="check_circle" ButtonStyle="ButtonStyle.Success" ButtonType="ButtonType.Submit" />
                         </RadzenStack>
@@ -261,14 +261,14 @@
                                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
 
                                         <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
-                                            <b>Código: @p.Code</b>
+                                            <b>Código: @p.Id</b>
                                             <span>@p.Category - @p.Description - @p.Body - Talle @p.Size - @p.Quality</span>
                                             <span>Precio: @p.Price.ToString("C")</span>
                                         </RadzenStack>
 
                                         <div class="@(addedPayments.Count == 0 ? "" : "fieldset-disabled")">
 
-                                            <RadzenButton Click="@(() => RemoveProductFromSale(p.Code))" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Medium" Icon="cancel" Style="height: 40px; width: 40px;" />
+                                            <RadzenButton Click="@(() => RemoveProductFromSale(p.Id))" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Medium" Icon="cancel" Style="height: 40px; width: 40px;" />
                                         </div>
 
                                     </RadzenStack>
@@ -349,7 +349,7 @@
     decimal AmountPaid;
 
     List<ProductDto> addedProducts = new();
-    string productCode = "";
+    int productId;
 
     List<CreatePaymentUiModel> addedPayments = new();
     CreatePaymentUiModel paymentUiModel = new();
@@ -362,7 +362,7 @@
 
     async Task AddProductToSaleAsync()
     {
-        var result = await ProductService.GetByCodeAsync(productCode, CancellationToken.None);
+        var result = await ProductService.GetByIdAsync(productId, CancellationToken.None);
 
         if (result.IsSuccess)
         {
@@ -370,37 +370,36 @@
 
             if (product.Status == ProductStatus.Sold)
             {
-                SimpleNotifications.Warning($"El producto con el código '{product.Code}' ya fue vendido.");
+                SimpleNotifications.Warning($"El producto con el código '{product.Id}' ya fue vendido.");
                 return;
             }
 
-            if (addedProducts.Any(p => p.Code == product.Code))
+            if (addedProducts.Any(p => p.Id == product.Id))
             {
-                SimpleNotifications.Info($"El producto con el código '{product.Code}' ya está en la lista.");
+                SimpleNotifications.Info($"El producto con el código '{product.Id}' ya está en la lista.");
                 return;
             }
             totalAmount += product.Price;
-            createSaleDto.ProductCodes.Add(product.Code);
+            createSaleDto.ProductsIds.Add(product.Id);
             addedProducts.Add(product);
         }
         else
         {
-            SimpleNotifications.Warning($"No se encontró un producto con el código '{productCode}'.");
+            SimpleNotifications.Warning($"No se encontró un producto con el código '{productId}'.");
         }
-        productCode = "";
     }
 
-    void RemoveProductFromSale(string productCode)
+    void RemoveProductFromSale(int productId)
     {
-        var product = addedProducts.SingleOrDefault(p => p.Code == productCode);
+        var product = addedProducts.SingleOrDefault(p => p.Id == productId);
         if (product is null)
         {
-            SimpleNotifications.Warning($"El producto con el código '{productCode}' no está en la lista.");
+            SimpleNotifications.Warning($"El producto con el código '{productId}' no está en la lista.");
             return;
         }
         totalAmount -= product.Price;
         addedProducts.Remove(product);
-        createSaleDto.ProductCodes.Remove(productCode);
+        createSaleDto.ProductsIds.Remove(productId);
     }
 
     void AddPaymentToSale()

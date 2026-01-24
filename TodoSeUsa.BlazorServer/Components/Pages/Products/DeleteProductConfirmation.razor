@@ -9,7 +9,7 @@
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
 
-    <RadzenText TextStyle="TextStyle.H6">¿Estás seguro que deseas borrar el producto: '@ProductDto.Category - @ProductDto.Description' ID: @ProductDto.Id ?</RadzenText>
+    <RadzenText TextStyle="TextStyle.H6">¿Estás seguro que deseas borrar el producto: '@ProductDto.Category - @ProductDto.Description' código: '@DisplayProductCode.IdToProductCode(ProductDto.Id)'?</RadzenText>
 
 </RadzenStack>
 

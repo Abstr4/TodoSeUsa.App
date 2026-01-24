@@ -6,7 +6,7 @@
 @inject DialogService DialogService;
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
-    <RadzenText TextStyle="TextStyle.H6">¿Estás seguro que deseas borrar la caja '@BoxDto.Code'?</RadzenText>
+    <RadzenText TextStyle="TextStyle.H6">¿Estás seguro de borrar la caja código BOX-@BoxDto.Id.ToString("D3")?</RadzenText>
 </RadzenStack>
 <RadzenCard Variant="Variant.Outlined" Style="border-color: red;" class="d-flex align-content-center align-items-center rz-mb-4">
     <RadzenIcon Icon="warning" IconStyle="IconStyle.Danger" Style="font-size: 2rem" class="me-1"></RadzenIcon>

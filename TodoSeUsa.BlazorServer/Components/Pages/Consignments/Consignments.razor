@@ -35,7 +35,7 @@
         <HeaderTemplate>
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar una consignación nueva" Click="@HandleCreateConsignment" />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una consignación nueva" Click="@HandleCreateConsignment" />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -104,7 +104,7 @@
     private IList<ConsignmentDto>? selectedConsignments;
     private int count;
     private bool isLoading = false;
-    private string GridMessage = "No hay consignacións para mostrar.";
+    private string GridMessage = "No hay consignaciones para mostrar.";
 
     private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
 
@@ -112,32 +112,26 @@
     {
         if (isLoading) return;
 
-        try
+        isLoading = true;
+
+        QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+        var result = await consignmentService.GetAllAsync(request, CancellationToken.None);
+        if (result.IsSuccess)
         {
-            isLoading = true;
-
-            QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-
-            var result = await consignmentService.GetAllAsync(request, CancellationToken.None);
-            if (result.IsSuccess)
-            {
-                consignments = result.Value.Items;
-                count = result.Value.Count;
-                selectedConsignments = consignments.Take(1).ToList();
-            }
-            else
-            {
-                consignments = [];
-                selectedConsignments = [];
-                count = 0;
-                GridMessage = result.Error.Description;
-            }
+            consignments = result.Value.Items;
+            count = result.Value.Count;
+            selectedConsignments = consignments.Take(1).ToList();
         }
-        finally
+        else
         {
-            isLoading = false;
-
+            consignments = [];
+            selectedConsignments = [];
+            count = 0;
+            GridMessage = result.Error.Description;
         }
+
+        isLoading = false;
     }
 
     private void ViewConsignment(int consignmentId)
@@ -179,6 +173,7 @@
             CloseDialogOnOverlayClick = true
         }
         );
+
         if (result is Result deleteResult)
         {
             if (deleteResult.IsSuccess)
@@ -203,6 +198,7 @@
                    CloseDialogOnOverlayClick = true
                }
         );
+
         if (result is Result<int> createResult)
         {
             if (createResult.IsSuccess)
@@ -219,7 +215,7 @@
 
     public async Task ShowConsignmentProducts(ConsignmentDto consignmentDto)
     {
-        await DialogService.OpenAsync<ConsignmentProductsGrid>($"Productos en la consignación ID: {consignmentDto.Id}",
+        await DialogService.OpenAsync<ConsignmentProductsGrid>($"Productos en la consignación código '{consignmentDto.Id}'",
                new Dictionary<string, object>() { { "ConsignmentDto", consignmentDto } },
                new DialogOptions()
                {

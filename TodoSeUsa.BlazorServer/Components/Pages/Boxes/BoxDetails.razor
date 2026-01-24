@@ -86,15 +86,6 @@ else if (originalBox != null)
 
                     <RadzenTableRow>
                         <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código de la caja" style="font-weight:bold;" />
-                        </RadzenTableCell>
-                        <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.Code" />
-                        </RadzenTableCell>
-                    </RadzenTableRow>
-
-                    <RadzenTableRow>
-                        <RadzenTableCell>
                             <RadzenText TextStyle="TextStyle.Subtitle1" Text="Ubicación" style="font-weight:bold;" />
                         </RadzenTableCell>
                         <RadzenTableCell>
@@ -125,7 +116,9 @@ else if (originalBox != null)
                             <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizada el" style="font-weight:bold;" />
                         </RadzenTableCell>
                         <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")" />
+                            <RadzenText TextStyle="TextStyle.Subtitle1"> 
+                                @(originalBox.UpdatedAt == null ? "N/A" : originalBox.UpdatedAt.Value.ToString("g¿"))
+                            </RadzenText>
                         </RadzenTableCell>
                     </RadzenTableRow>
                 </RadzenTableBody>
@@ -210,7 +203,7 @@ else
     {
         if (originalBox is null) return;
 
-        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{originalBox.Code}'",
+        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{originalBox.Id.ToString("D3")}'",
                new Dictionary<string, object>() { { "BoxDto", originalBox } },
                new DialogOptions()
                {
@@ -222,7 +215,7 @@ else
         {
             if (editResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Caja '{originalBox.Code}' editada con éxito.");
+                SimpleNotifications.Success($"Caja editada con éxito.");
 
                 var refreshed = await BoxService.GetByIdAsync(originalBox.Id, CancellationToken.None);
                 if (refreshed.IsSuccess)
@@ -253,7 +246,7 @@ else
         {
             if (deleteResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Caja '{originalBox.Code}' eliminada con éxito.");
+                SimpleNotifications.Success($"Caja eliminada con éxito.");
                 await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/boxes");
             }
             else
@@ -267,7 +260,7 @@ else
     {
         if (originalBox is null) return;
 
-        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{originalBox.Code}'",
+        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código 'BOX-{originalBox.Id.ToString("D3")}'",
             new Dictionary<string, object>() { { "BoxDto", originalBox } },
             new DialogOptions()
             {
