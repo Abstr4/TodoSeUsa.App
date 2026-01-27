@@ -51,7 +51,7 @@
 
                         <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
-                            <RadzenButton Icon="add" Text="Crear producto en la consignación" ButtonStyle="ButtonStyle.Success"
+                            <RadzenButton Icon="add" Text="Agregar producto a la consignación" ButtonStyle="ButtonStyle.Success"
                                         Click=@HandleAddProduct Style="flex-grow: 1;" />
 
                             <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
@@ -85,10 +85,20 @@
                             <RadzenTableRow id="id-row">
 
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="ID" style="font-weight:bold" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código interno" style="font-weight:bold" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.Id.ToString()" />
+                                </RadzenTableCell>
+                            </RadzenTableRow>
+
+                            <RadzenTableRow id="code-row">
+
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código público" style="font-weight:bold" />
+                                </RadzenTableCell>
+                                <RadzenTableCell>
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.Code" />
                                 </RadzenTableCell>
                             </RadzenTableRow>
 
@@ -99,7 +109,7 @@
                                 </RadzenTableCell>
                                 <RadzenTableCell>
                                 <RadzenText TextStyle="TextStyle.Subtitle1">
-                                    @consignment.ProviderFullName - ID: @consignment.ProviderId.ToString()
+                                    @consignment.ProviderFullName - Código '@consignment.ProviderId.ToString()'
                                     <RadzenLink Path=@($"/proveedores/{consignment.ProviderId}") style="vertical-align: super">
                                         <RadzenIcon Icon="info" IconStyle="IconStyle.Info" />
                                     </RadzenLink>
@@ -113,7 +123,7 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="Notas" style="font-weight:bold" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.Notes" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1"> @(string.IsNullOrWhiteSpace(consignment.Notes) ? "N/A" : consignment.Notes)</RadzenText>
                                 </RadzenTableCell>
                             </RadzenTableRow>
 
@@ -131,7 +141,7 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="Emitida el" style="font-weight:bold;" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.DateIssued.ToString("dd/MM/yyyy HH:mm")" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.DateIssued.ToString("f")" />
                                 </RadzenTableCell>
                             </RadzenTableRow>
 
@@ -140,7 +150,7 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creada el" style="font-weight:bold;" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.CreatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.CreatedAt.ToString("f")" />
                                 </RadzenTableCell>
                             </RadzenTableRow>
 
@@ -149,7 +159,8 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizada el" style="font-weight:bold;" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignment.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" >
+                                    @(consignment.UpdatedAt is null ? "N/A" : consignment.UpdatedAt.Value.ToString("f"))</RadzenText>
                                 </RadzenTableCell>
                             </RadzenTableRow>
                         </RadzenTableBody>
@@ -221,9 +232,9 @@
         return await ProductService.GetByConsignmentIdAsync(request, Id, CancellationToken.None);
     }
 
-    private async Task HandleAddProduct()
+    private async Task HandleAddProductDialog()
     {
-        var result = await DialogService.OpenAsync<CreateProductForm>("Crear un producto nuevo",
+        var result = await DialogService.OpenAsync<CreateProductForm>("Registrar nuevo producto",
             new Dictionary<string, object>() { { "ConsignmentId", Id } },
             new DialogOptions()
            {
@@ -243,6 +254,11 @@
                 SimpleNotifications.Error($"Error: {createResult.Error.Description}");
             }
         }
+    }
+
+    private void HandleAddProduct()
+    {
+        NavigationManager.NavigateTo($"productos/registrar?consignacion={Id}");
     }
 
     private async Task HandleEditConsignment()

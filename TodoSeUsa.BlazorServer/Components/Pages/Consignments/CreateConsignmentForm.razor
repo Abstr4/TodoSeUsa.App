@@ -20,12 +20,12 @@
                         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
 
                             <RadzenLabel Component="ProviderId">
-                                ID del proveedor <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                                Código del proveedor <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
 
                             <RadzenNumeric Name="ProviderId" @bind-Value=@createConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" Disabled="@(ProviderId != null)" />
-                            <RadzenRequiredValidator Component="ProviderId" Text="El ID del proveedor es requerido." />
-                            <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El ID del proveedor debe ser mayor a cero." />
+                            <RadzenRequiredValidator Component="ProviderId" Text="El código del proveedor es requerido." />
+                            <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El código del proveedor debe ser mayor a cero." />
 
                         </RadzenStack>
                     </RadzenColumn>
@@ -63,7 +63,7 @@
             </RadzenStack>
         </RadzenFieldset>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-8">
-            <RadzenButton IsBusy="@busy" BusyText="Creando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Crear" />
+            <RadzenButton IsBusy="@isCreating" BusyText="Creando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Crear" />
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
@@ -72,23 +72,23 @@
 {
     [Parameter] public int? ProviderId { get; set; }
 
-    private bool busy;
+    private bool isCreating;
 
     private CreateConsignmentDto createConsignmentDto = new();
 
     protected override void OnInitialized()
     {
-        createConsignmentDto = new CreateConsignmentDto
+        if (ProviderId != null && ProviderId > 0)
         {
-            ProviderId = ProviderId ?? 0,
-        };
+            createConsignmentDto.ProviderId = ProviderId.Value;
+        }
     }
 
     async Task OnSubmit(CreateConsignmentDto createConsignmentDto)
     {
-        busy = true;
+        isCreating = true;
         var result = await ConsignmentService.CreateAsync(createConsignmentDto, CancellationToken.None);
-        busy = false;
+        isCreating = false;
         DialogService.Close(result);
     }
 

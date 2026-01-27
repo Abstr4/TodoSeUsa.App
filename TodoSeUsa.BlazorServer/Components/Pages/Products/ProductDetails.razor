@@ -90,7 +90,7 @@
                             <td>$ @product.Price</td>
                         </tr>
                         <tr>
-                            <td>Id de la consignación</td>
+                            <td>Código de la consignación</td>
                             <td>
                                 <span>@product.ConsignmentId</span>
                                 <RadzenLink Path=@($"/consignaciones/{product.ConsignmentId}") style="vertical-align: super" >
@@ -124,17 +124,17 @@
                     <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Temporada</RadzenText>
-                        <RadzenText><b>@product.Season</b></RadzenText>
+                        <RadzenText><b>@(product.Season is null ? "N/A" : product.Season.ToString())</b></RadzenText>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Costo del arreglo</RadzenText>
-                        <RadzenText><b>@(product.RefurbishmentCost != null ? "$ " + product.RefurbishmentCost.ToString() : '-')</b></RadzenText>
+                        <RadzenText><b>@(product.RefurbishmentCost is null ? "N/A" : product.RefurbishmentCost.Value.ToString("C"))</b></RadzenText>
                     </RadzenColumn>
 
                     <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
 
-                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">En caja Id</RadzenText>
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">En caja código</RadzenText>
                         <RadzenText>
-                            <b>@(product.BoxId != null ? product.BoxId.ToString() : '-')</b>
+                            <b>@(product.BoxId is null ? "N/A" : DisplayBoxCode.IdToBoxCode(product.BoxId.Value))</b>
                             @if (product.BoxId != null)
                             {
                                 <RadzenLink Path=@($"/cajas/{product.BoxId}") style="vertical-align: super">
@@ -143,10 +143,10 @@
                             }
                         </RadzenText>
 
-                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">En venta Id</RadzenText>
+                        <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">En venta código</RadzenText>
                         <RadzenText>
                             <b>
-                                @(product.SaleId != null ? product.SaleId.ToString() : '-')
+                                @(product.SaleId is null ? "N/A" : product.SaleId.ToString())
                             </b>
                             @if (product.SaleId != null)
                             {                            
@@ -161,11 +161,11 @@
                     <RadzenColumn Size=6 SizeMD=6 SizeLG=3>
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Creado el</RadzenText>
-                        <RadzenText><b>@(product.CreatedAt.ToString("D"))</b></RadzenText>
+                        <RadzenText><b>@(product.CreatedAt.ToString("f"))</b></RadzenText>
 
 
                         <RadzenText class="rz-display-flex rz-mt-4 rz-mb-0">Actualizado el</RadzenText>
-                        <RadzenText><b>@(product.UpdatedAt?.ToString("D"))</b></RadzenText>
+                        <RadzenText><b>@(product.UpdatedAt is null ? "N/A" : product.UpdatedAt.Value.ToString("f"))</b></RadzenText>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenCard>

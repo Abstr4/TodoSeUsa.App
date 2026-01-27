@@ -28,7 +28,7 @@
         <HeaderTemplate>
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una caja nueva" Click="@HandleCreateBox" />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar nueva caja" Click="@HandleCreateBox" />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -37,7 +37,7 @@
 
         <Columns>
 
-            <RadzenDataGridColumn TItem="BoxDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+            <RadzenDataGridColumn TItem="BoxDto" Sortable="false" Filterable="false" Width="60px" MinWidth="60px">
 
                 <Template Context="box">
                     <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, box)) Icon="read_more">
@@ -184,7 +184,7 @@
 
     private async Task HandleCreateBox()
     {
-        var result = await DialogService.OpenAsync<CreateBoxForm>("Crear una nueva caja",
+        var result = await DialogService.OpenAsync<CreateBoxForm>("Registrar nueva caja",
             new Dictionary<string, object>(),
             new DialogOptions()
             {

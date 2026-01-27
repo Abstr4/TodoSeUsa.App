@@ -310,7 +310,7 @@
                                             <b>Monto: @p.Amount</b>
                                             <span>Método: @EnumTranslate.TranslatePaymentMethod(p.Method)</span>
                                             <span>Notas: @(p.Notes ?? "N/A")</span>
-                                            <span>Fecha de emisión: @(p.Date?.ToString("yyyy/MM/dd HH:mm") ?? "N/A")</span>
+                                            <span>Fecha de emisión: @(p.Date?.ToString("D") ?? "N/A")</span>
                                         </RadzenStack>
 
                                         <RadzenButton Click="@(() => RemovePaymentFromSale(p.Id))" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Medium" Icon="cancel" Style="height: 40px; width: 40px;" />

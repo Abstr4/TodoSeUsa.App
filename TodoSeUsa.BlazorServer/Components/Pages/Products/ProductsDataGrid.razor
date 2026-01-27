@@ -20,7 +20,7 @@
 
         <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un producto nuevo" Click="@HandleCreateProduct" Visible="IsMainPage" />
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar nuevo producto" Click="@HandleCreateProduct" Visible="IsMainPage" />
 
             <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@productsGrid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -205,7 +205,7 @@
         if (!IsMainPage) return;
         try
         {
-            var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' ID: {product.Id}",
+            var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' código '{product.Id}'",
                    new Dictionary<string, object>() { { "ProductDto", product } },
                    new DialogOptions()
                    {
@@ -217,7 +217,7 @@
             {
                 if (deleteResult.IsSuccess)
                 {
-                    SimpleNotifications.Success($"Producto con ID: {product.Id} editado con éxito.");
+                    SimpleNotifications.Success($"Producto código '{product.Id}' editado con éxito.");
                     await productsGrid.Reload();
                 }
                 else
@@ -250,7 +250,7 @@
             {
                 if (deleteResult.IsSuccess)
                 {
-                    SimpleNotifications.Success($"Producto con ID: {product.Id} eliminado con éxito.");
+                    SimpleNotifications.Success($"Producto código '{product.Id}' eliminado con éxito.");
                     await productsGrid.Reload();
                 }
                 else

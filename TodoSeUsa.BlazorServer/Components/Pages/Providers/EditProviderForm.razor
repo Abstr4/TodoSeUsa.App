@@ -150,7 +150,7 @@
 
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem" class="rz-mt-8">
 
-            <RadzenButton IsBusy=@busy BusyText="Editando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Editando" Disabled=@(!HasChanges()) />
+            <RadzenButton IsBusy=@busy BusyText="Editando..." ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Editar" Disabled=@(!HasChanges()) />
 
             <RadzenButton Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Base" Icon="cancel" Text="Cancelar" Click="@(() => DialogService.Close())" />
         </RadzenStack>
@@ -231,7 +231,7 @@
 
     void ShowTooltip(ElementReference elementReference)
     {
-        TooltipService.Open(elementReference, "Se necesita un método de contacto (Email o Número de tel.)");
+        TooltipService.Open(elementReference, "Se necesita un método de contacto (Email o número de tel.)");
     }
 }
 

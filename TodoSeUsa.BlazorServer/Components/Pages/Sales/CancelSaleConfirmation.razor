@@ -14,8 +14,7 @@
     </RadzenText>
 
     <RadzenText TextStyle="TextStyle.H6">
-        ¿Estás seguro que deseas cancelar la venta código: <b>@SaleDto.Code</b> con <b>ID: @SaleDto.Id </b>
-        y emitida el: <b>@SaleDto.DateIssued.ToString("yyyy/MM/dd HH:mm")?</b>
+        ¿Estás seguro que deseas cancelar la venta código <b>'@SaleDto.Id'</b> (código público <b>'@SaleDto.Code'</b>) emitida el: <b>@SaleDto.DateIssued.ToString("D")?</b>
     </RadzenText>
 </RadzenStack>
 
@@ -32,7 +31,7 @@
              Gap="3rem" 
              Wrap="FlexWrap.Wrap">
 
-    <RadzenButton IsBusy="_isDeleteButtonBusy" Icon="cancel" Text="Cancelar" BusyText="Cancelando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@Delete" />
+    <RadzenButton IsBusy="_isCancelButtonBusy" Icon="cancel" Text="Cancelar" BusyText="Cancelando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@Cancel" />
 
 </RadzenStack>
 
@@ -40,15 +39,15 @@
 {
     [Parameter] public required DetailedSaleDto SaleDto { get; set; }
 
-    private bool _isDeleteButtonBusy = false;
+    private bool _isCancelButtonBusy = false;
 
-    async Task Delete()
+    async Task Cancel()
     {
         if (SaleDto is null) return;
 
-        _isDeleteButtonBusy = true;
+        _isCancelButtonBusy = true;
         var result = await SaleService.CancelByIdAsync(SaleDto.Id, null, CancellationToken.None);
-        _isDeleteButtonBusy = false;
+        _isCancelButtonBusy = false;
 
         DialogService.Close(result);
     }

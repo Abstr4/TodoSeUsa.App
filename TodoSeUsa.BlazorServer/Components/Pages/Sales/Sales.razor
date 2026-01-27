@@ -40,7 +40,7 @@
 
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una venta nueva" Click=@HandleCreateSale />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar nueva venta" Click=@HandleCreateSale />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -64,7 +64,9 @@
 
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Property="Code" Title="Código" Width="200px" MinWidth="120px" />
+            <RadzenDataGridColumn Property="Id" Title="Código interno" Width="200px" MinWidth="120px" />
+
+            <RadzenDataGridColumn Property="Code" Title="Código público" Width="200px" MinWidth="120px" />
 
             <RadzenDataGridColumn @ref="statusColumn" Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="200px" Width="200px">
                 <Template Context="sale">
@@ -188,7 +190,7 @@
 
     public async Task ShowSaleProducts(int saleId)
     {
-        await DialogService.OpenAsync<SaleProducts>($"Productos en la venta ID: {saleId}",
+        await DialogService.OpenAsync<SaleProducts>($"Productos en la venta código '{saleId}'",
                new Dictionary<string, object>() { { "SaleId", saleId } },
                new DialogOptions()
                {

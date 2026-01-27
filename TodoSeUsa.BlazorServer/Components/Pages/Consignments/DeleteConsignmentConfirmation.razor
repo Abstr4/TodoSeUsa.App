@@ -11,7 +11,7 @@
     <RadzenText TextStyle="TextStyle.H6">
         ¿Estás seguro que deseas borrar la consignación con <b>ID: @ConsignmentDto.Id </b>
         de <b>@ConsignmentDto.ProviderFullName </b>
-        y emitida el: <b>@ConsignmentDto.DateIssued.ToString("yyyy/MM/dd HH:mm")</b>?</RadzenText>
+        y emitida el: <b>@ConsignmentDto.DateIssued.ToString("D")</b>?</RadzenText>
 </RadzenStack>
 <RadzenCard Variant="Variant.Outlined" Style="border-color: red;" class="d-flex align-content-center align-items-center rz-mb-4">
     <RadzenIcon Icon="warning" IconStyle="IconStyle.Danger" Style="font-size: 2rem" class="me-1"></RadzenIcon>

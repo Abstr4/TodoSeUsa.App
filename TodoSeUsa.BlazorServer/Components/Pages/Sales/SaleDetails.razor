@@ -80,7 +80,7 @@
                             <RadzenTableRow id="id-row">
 
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="ID" style="font-weight:bold" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código interno" style="font-weight:bold" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="@_sale.Id.ToString()" />
@@ -90,7 +90,7 @@
                         <RadzenTableRow id="code-row">
 
                             <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código" style="font-weight:bold" />
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código público" style="font-weight:bold" />
                             </RadzenTableCell>
                             <RadzenTableCell>
                                 <RadzenText TextStyle="TextStyle.Subtitle1" Text="@_sale.Code" />
@@ -150,7 +150,7 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="Emitida el" style="font-weight:bold;" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@_sale.DateIssued.ToString("dd/MM/yyyy HH:mm")" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@_sale.DateIssued.ToString("f")" />
                                 </RadzenTableCell>
                             </RadzenTableRow>
 
@@ -169,7 +169,7 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creada el" style="font-weight:bold;" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@_sale.CreatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@_sale.CreatedAt.ToString("f")" />
                                 </RadzenTableCell>
                             </RadzenTableRow>
 
@@ -178,7 +178,9 @@
                                     <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizada el" style="font-weight:bold;" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="@_sale.UpdatedAt?.ToString("dd/MM/yyyy HH:mm")" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1"> 
+                                        @(_sale.UpdatedAt is null ? "N/A" : _sale.UpdatedAt.Value.ToString("f"))
+                                        </RadzenText>
                                 </RadzenTableCell>
                             </RadzenTableRow>
                         </RadzenTableBody>
@@ -204,7 +206,7 @@
                                             AndOperatorText="Y" OrOperatorText="O">
 
                                 <Columns>
-                                    <RadzenDataGridColumn Property="ProductCode" Title="Código" Width="200px" MinWidth="120px" />
+                                    <RadzenDataGridColumn Property="ProductId" Title="Código" Width="200px" MinWidth="120px" />
                                     <RadzenDataGridColumn Property="Price" Title="Precio" Width="200px" MinWidth="120px" />
                                     <RadzenDataGridColumn Property="Category" Title="Categoría" Width="200px" MinWidth="120px" />
                                     <RadzenDataGridColumn Property="Description" Title="Descripción" Width="200px" MinWidth="120px" />
@@ -243,7 +245,7 @@
                                             AndOperatorText="Y" OrOperatorText="O">
 
                             <Columns>
-                                <RadzenDataGridColumn Property="Id" Title="ID" />
+                                <RadzenDataGridColumn Property="Id" Title="Código" />
                                 <RadzenDataGridColumn Property="Amount" Title="Monto" />
                                 <RadzenDataGridColumn Property="Method" Title="Método" />
                                 <RadzenDataGridColumn Property="Date" Title="Fecha" />

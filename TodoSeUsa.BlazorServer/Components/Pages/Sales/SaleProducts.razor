@@ -58,17 +58,17 @@
                         </RadzenText>
 
                         <RadzenText class="rz-display-flex rz-mb-0" Text="Creado el" />
-                        <RadzenText> <b>@(product.CreatedAt.ToString(format: "yyyy/MM/dd HH:mm"))</b> </RadzenText>
+                        <RadzenText> <b>@(product.CreatedAt.ToString("f"))</b> </RadzenText>
                     </RadzenColumn>
 
                     <RadzenColumn>
                         <RadzenText class="rz-display-flex rz-mb-0" Text="Costo del arreglo" />
                         <RadzenText id="refurbishmentCost-text">
-                            <b>@(product.RefurbishmentCost != null ? "$ " + product.RefurbishmentCost.ToString() : '-')</b>
+                            <b>@(product.RefurbishmentCost != null ? product.RefurbishmentCost.Value.ToString("C") : "N/A")</b>
                         </RadzenText>
 
                         <RadzenText class="rz-display-flex rz-mb-0" Text="Actualizado el" />
-                        <RadzenText> <b>@(product.UpdatedAt?.ToString(format: "yyyy/MM/dd HH:mm"))</b> </RadzenText>
+                        <RadzenText> <b>@(product.UpdatedAt is null ? "N/A" : product.UpdatedAt.Value.ToString("f"))</b> </RadzenText>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenStack>

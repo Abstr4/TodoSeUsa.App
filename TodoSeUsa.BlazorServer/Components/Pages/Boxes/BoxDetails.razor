@@ -77,10 +77,10 @@ else if (originalBox != null)
                 <RadzenTableBody>
                     <RadzenTableRow>
                         <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="ID" style="font-weight:bold" />
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código" style="font-weight:bold" />
                         </RadzenTableCell>
                         <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.Id.ToString()" />
+                            <RadzenText TextStyle="TextStyle.Subtitle1">@DisplayBoxCode.IdToBoxCode(originalBox.Id)</RadzenText>
                         </RadzenTableCell>
                     </RadzenTableRow>
 
@@ -107,7 +107,7 @@ else if (originalBox != null)
                             <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creada el" style="font-weight:bold;" />
                         </RadzenTableCell>
                         <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.CreatedAt.ToString("dd/MM/yyyy HH:mm")" />
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.CreatedAt.ToString("f")" />
                         </RadzenTableCell>
                     </RadzenTableRow>
 
@@ -117,7 +117,7 @@ else if (originalBox != null)
                         </RadzenTableCell>
                         <RadzenTableCell>
                             <RadzenText TextStyle="TextStyle.Subtitle1"> 
-                                @(originalBox.UpdatedAt == null ? "N/A" : originalBox.UpdatedAt.Value.ToString("g¿"))
+                                @(originalBox.UpdatedAt == null ? "N/A" : originalBox.UpdatedAt.Value.ToString("f"))
                             </RadzenText>
                         </RadzenTableCell>
                     </RadzenTableRow>

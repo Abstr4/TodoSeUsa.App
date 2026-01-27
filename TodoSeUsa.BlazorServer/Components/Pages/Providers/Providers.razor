@@ -53,7 +53,7 @@
 
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear un proveedor nuevo" Click="@HandleCreateProvider" />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar nuevo proveedor" Click="@HandleCreateProvider" />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -61,7 +61,7 @@
         </HeaderTemplate>
 
         <Columns>
-            <RadzenDataGridColumn TItem="ProviderDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+            <RadzenDataGridColumn TItem="ProviderDto" Sortable="false" Filterable="false" Width="80px" MinWidth="80px">
 
                 <Template Context="provider">
                     <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, provider)) Icon="read_more">
@@ -77,10 +77,9 @@
 
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Property="Id" Title="ID" TextAlign="TextAlign.Center" MinWidth="80px" Width="80px" />
+            <RadzenDataGridColumn Property="Id" Title="Código" MinWidth="80px" Width="80px" />
 
-            <RadzenDataGridColumn TItem="ProviderDto" Property="CommissionPercent" Title="Comisión (%)"
-                                  TextAlign="TextAlign.Center" MinWidth="140px" Width="140px">
+            <RadzenDataGridColumn TItem="ProviderDto" Property="CommissionPercent" Title="Comisión (%)" MinWidth="140px" Width="140px">
                 <Template Context="data">
                     @($"{data.CommissionPercent:0}%")
                 </Template>
@@ -212,7 +211,7 @@
 
     private async Task HandleCreateProvider()
     {
-        var result = await DialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
+        var result = await DialogService.OpenAsync<CreateProviderForm>("Registrar nuevo proveedor",
                new Dictionary<string, object>(),
                new DialogOptions()
                {

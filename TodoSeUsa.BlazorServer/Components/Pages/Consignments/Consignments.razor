@@ -35,7 +35,7 @@
         <HeaderTemplate>
             <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
 
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Crear una consignación nueva" Click="@HandleCreateConsignment" />
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar nueva consignación" Click="@HandleCreateConsignment" />
 
                 <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
 
@@ -60,7 +60,9 @@
 
             </RadzenDataGridColumn>
 
-            <RadzenDataGridColumn Property="Code" Title="Código" TextAlign="TextAlign.Center" MinWidth="120px" Width="200px" />
+            <RadzenDataGridColumn Property="Id" Title="Código interno" MinWidth="80px" Width="160px" />
+
+            <RadzenDataGridColumn Property="Code" Title="Código público" MinWidth="120px" Width="200px" />
 
             <RadzenDataGridColumn Filterable="false" Property="TotalProducts" Title="Cant. productos" MinWidth="80px" Width="140px">
                 <Template Context="consignment">
@@ -190,7 +192,7 @@
 
     private async Task HandleCreateConsignment()
     {
-        var result = await DialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
+        var result = await DialogService.OpenAsync<CreateConsignmentForm>("Registrar nueva consignación",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
