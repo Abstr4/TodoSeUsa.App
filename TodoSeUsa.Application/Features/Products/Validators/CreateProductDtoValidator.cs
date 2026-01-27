@@ -1,5 +1,4 @@
-﻿using TodoSeUsa.Application.Common.Validators;
-using TodoSeUsa.Application.Features.Products.DTOs;
+﻿using TodoSeUsa.Application.Features.Products.DTOs;
 
 namespace TodoSeUsa.Application.Features.Products.Validators;
 
