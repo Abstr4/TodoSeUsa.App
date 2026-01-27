@@ -14,7 +14,10 @@ public record SaleDto
 
     public SaleStatus Status { get; init; }
 
+    public string? Notes { get; init; }
+
     public DateTime DateIssued { get; init; }
 
-    public string? Notes { get; init; }
+    public DateTime CreatedAt { get; init; }
+
 }

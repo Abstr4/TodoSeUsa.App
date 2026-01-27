@@ -139,7 +139,6 @@ public sealed class SaleService : ISaleService
         }
     }
 
-
     public async Task<Result<int>> GetTotalCountAsync(int year, int month, CancellationToken ct)
     {
         if (year < 1 || month < 1 || month > 12)
@@ -233,7 +232,6 @@ public sealed class SaleService : ISaleService
         }
     }
 
-
     public async Task<Result<PagedItems<SaleDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
     {
         var _context = await _contextFactory.CreateDbContextAsync(ct);
@@ -252,15 +250,16 @@ public sealed class SaleService : ISaleService
         query = query.Skip(request.Skip).Take(request.Take);
 
         var items = await query
-            .Select(c => new SaleDto
+            .Select(s => new SaleDto
             {
-                Id = c.Id,
-                Code = c.Code,
-                TotalAmount = c.TotalAmount,
-                AmountPaid = c.AmountPaid,
-                Status = c.Status,
-                DateIssued = c.DateIssued,
-                Notes = c.Notes
+                Id = s.Id,
+                Code = s.Code,
+                TotalAmount = s.TotalAmount,
+                AmountPaid = s.AmountPaid,
+                Status = s.Status,
+                DateIssued = s.DateIssued,
+                CreatedAt = s.CreatedAt,
+                Notes = s.Notes
             })
         .ToListAsync(ct);
 
