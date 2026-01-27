@@ -20,6 +20,7 @@ The system is designed to replace manual and physical processes, centralizing th
 * [Quick View](#quick-view)
 * [Features](#features)
 * [Contribution](#contribution)
+* [Contact](#contact)
 * [License](#license)
 
 ## Quick View
@@ -35,13 +36,12 @@ This video provides a quick overview of the core workflow: creating a provider, 
 
 ## Contribution
 
-Your contributions are always welcome and appreciated:
+Your contributions are always welcome and appreciated. If you think you have encountered a bug or want to request a feature, feel free to do it directly to me via email or twitter in the [Contact](#contact) section down below.
 
-- **Report a Bug or request a feature:**
-  If you think you have encountered a bug or want to request a feature, feel free to do it directly to me via [Twitter](https://x.com/Abstr4_) or [LinkedIn](https://www.linkedin.com/in/matiasrojasmargaritini).
+## Contact
 
-- **Contact:**
-  You can reach out to me via [contact.abstr4@gmail.com](mailto:contact.abstr4@gmail.com), [Twitter](https://x.com/Abstr4_) or [LinkedIn](https://www.linkedin.com/in/matiasrojasmargaritini).
+  You can contact me via [Email](mailto:contact.abstr4@gmail.com) for questions related to this project, or reach out on [LinkedIn](https://www.linkedin.com/in/matiasmargaritini) for professional inquiries. You can also find me on [Twitter](https://x.com/Abstr4_) for technical discussions.
+
 
 ## License
 
