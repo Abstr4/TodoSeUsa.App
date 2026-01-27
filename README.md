@@ -24,7 +24,8 @@ The system is designed to replace manual and physical processes, centralizing th
 
 ## Quick View
 
-[![Watch the system working](https://img.youtube.com/vi/TxKybTo2rJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TxKybTo2rJU)
+This video provides a quick overview of the core workflow: creating a provider, adding a consignment, registering products and sales.
+[![Quick view video](https://img.youtube.com/vi/TxKybTo2rJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TxKybTo2rJU)
 
 ## Features
 * Inventory, products, clients, and invoices management
