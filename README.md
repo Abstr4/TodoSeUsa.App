@@ -17,20 +17,21 @@ The system is designed to replace manual and physical processes, centralizing th
 
 ## Table of contents
 * [Introduction](#project-description)
-* [Quick View](#quick-view)
+* [Overview](#overview)
 * [Features](#features)
 * [Contribution](#contribution)
 * [Contact](#contact)
 * [License](#license)
 
-## Quick View
+## Overview
 
 This video provides a quick overview of the core workflow: creating a provider, adding a consignment, registering products and sales.
 [![Quick view video](https://img.youtube.com/vi/TxKybTo2rJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TxKybTo2rJU)
 
 ## Features
-* Inventory, products, clients, and invoices management
-* Authentication and access control
+*  Reports and statistics
+* Products, providers, consignments and sales management
+* Authentication and access control (single user register-login with secure recovery codes)
 * Data persistence with SQL Server and Entity Framework Core
 * Clear separation of concerns (Domain, Application, Infrastructure, UI)
 
@@ -41,8 +42,7 @@ Your contributions are always welcome and appreciated. If you think you have enc
 ## Contact
 
   You can contact me via [Email](mailto:contact.abstr4@gmail.com) for questions related to this project, or reach out on [LinkedIn](https://www.linkedin.com/in/matiasmargaritini) for professional inquiries. You can also find me on [Twitter](https://x.com/Abstr4_) for technical discussions.
-
-
+  
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
