@@ -9,11 +9,13 @@ This project is a store management system built for our family clothing store To
 The system is designed to replace manual and physical processes, centralizing the store’s daily operations into a single digital platform.
 
 ## Features
-* Inventory, products, clients, and invoices management
-* Authentication and access control
+* Products, providers, consignments and sales management
+* Authentication and access control (single user register-login with secure recovery codes)
 * Data persistence with SQL Server and Entity Framework Core
 * Clear separation of concerns (Domain, Application, Infrastructure, UI)
-* Focused on maintainability and long-term evolution
+* Reports and statistics*  
+
+\* Dashboard with monthly sales summary and key metrics.
 
 ## Table of contents
 * [Introduction](#project-description)
@@ -27,15 +29,6 @@ The system is designed to replace manual and physical processes, centralizing th
 
 This video provides a quick overview of the core workflow: creating a provider, adding a consignment, registering products and sales.
 [![Quick view video](https://img.youtube.com/vi/TxKybTo2rJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TxKybTo2rJU)
-
-## Features
-* Products, providers, consignments and sales management
-* Authentication and access control (single user register-login with secure recovery codes)
-* Data persistence with SQL Server and Entity Framework Core
-* Clear separation of concerns (Domain, Application, Infrastructure, UI)
-* Reports and statistics*  
-
-\* Dashboard with monthly sales summary and key metrics.
 
 ## Contribution
 
