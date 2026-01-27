@@ -29,11 +29,13 @@ This video provides a quick overview of the core workflow: creating a provider, 
 [![Quick view video](https://img.youtube.com/vi/TxKybTo2rJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TxKybTo2rJU)
 
 ## Features
-*  Reports and statistics
 * Products, providers, consignments and sales management
 * Authentication and access control (single user register-login with secure recovery codes)
 * Data persistence with SQL Server and Entity Framework Core
 * Clear separation of concerns (Domain, Application, Infrastructure, UI)
+* Reports and statistics*  
+
+\* Dashboard with monthly sales summary and key metrics.
 
 ## Contribution
 
