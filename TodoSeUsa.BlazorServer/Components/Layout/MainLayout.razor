@@ -91,7 +91,7 @@
 
     private async Task HandleCreateBox()
     {
-        var result = await DialogService.OpenAsync<CreateBoxForm>("Crear una nueva caja",
+        var result = await DialogService.OpenAsync<CreateBoxForm>("Registrar nueva caja",
             new Dictionary<string, object>(),
             new DialogOptions()
             {
@@ -114,7 +114,7 @@
 
     private async Task HandleCreateConsignment()
     {
-        var result = await DialogService.OpenAsync<CreateConsignmentForm>("Crear una nueva consignación",
+        var result = await DialogService.OpenAsync<CreateConsignmentForm>("Registrar nueva consignación",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -143,7 +143,7 @@
 
     private async Task HandleCreateProvider()
     {
-        var result = await DialogService.OpenAsync<CreateProviderForm>("Crear un nuevo proveedor",
+        var result = await DialogService.OpenAsync<CreateProviderForm>("Registrar nuevo proveedor",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
