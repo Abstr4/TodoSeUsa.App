@@ -239,21 +239,19 @@ public class ProviderService : IProviderService
             provider.Person.PhoneNumber = dto.PhoneNumber ?? provider.Person.PhoneNumber;
             provider.Person.Address = dto.Address ?? provider.Person.Address;
 
-            try
+            await _personService.UpdateAsync(provider.Person, ct);
+            var saved = await _context.SaveChangesAsync(ct) > 0;
+            if (saved)
             {
-                await _personService.UpdateAsync(provider.Person, ct);
+                return Result.Success();
             }
-            catch (ValidationException ex)
-            {
-                return Result.Failure(PersonErrors.Failure(ex.Message));
-            }
-
-            return Result.Success();
+            return Result.Failure(PersonErrors.Failure("No se registraron cambios en el proveedor."));
+            
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error editing provider {providerId}", providerId);
-            return Result.Failure(ProviderErrors.Failure("Ocurrió un error inesperado."));
+            return Result.Failure(ProviderErrors.Failure("Ocurrió un error inesperado al intentar actualizar al proveedor."));
         }
     }
 }
