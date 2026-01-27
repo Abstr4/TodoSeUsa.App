@@ -17,51 +17,14 @@ The system is designed to replace manual and physical processes, centralizing th
 
 ## Table of contents
 * [Introduction](#project-description)
-* [Showcase](#showcase)
+* [Quick View](#quick-view)
 * [Features](#features)
 * [Contribution](#contribution)
 * [License](#license)
 
-## Showcase
+## Quick View
 
-### Login and Register pages
-<div> 
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/LoginAndRegisterScreen.png" alt="Login and Register View" width="75%" />
-  </p>
-</div>
-
-### Menu
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/Menu.png" alt="Menu View" width="100%" />
-  </p>
-
-### Clients page
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/ClientsScreen.png" alt="Clients View" width="100%" />
-  </p>
-  
-### Invoices page
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/BillsScreen.png" alt="Bills View" width="100%" />
-  </p>
-
-### Products page
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/ProductsScreen.png" alt="Products View" width="100%" />
-  </p>
-  
-### Each client, invoice and product has a dropdown menu to view detailed info.
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/ClientDropdown.png" alt="Clien Dropdown" width="45%" />
-    <img src="TodoSeUsaNet7/Images/BillDropdown.png" alt="Bill Dropdown" width="45%" />
-    <img src="TodoSeUsaNet7/Images/ProductDropdown.png" alt="Product Dropdown" width="45%" />
-  </p>
+[![Watch the system working](https://img.youtube.com/vi/TxKybTo2rJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TxKybTo2rJU)
 
 ## Features
 * Inventory, products, clients, and invoices management
