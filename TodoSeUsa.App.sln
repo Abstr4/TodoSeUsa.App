@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoSeUsa.Domain", "TodoSeU
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoSeUsa.Infrastructure", "TodoSeUsa.Infrastructure\TodoSeUsa.Infrastructure.csproj", "{D4D6716A-053E-5468-4023-7F4DEA65DFBD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "migration", "migration", "{39806ECF-2E56-472C-BC8D-8B425F805C6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataMigration", "DataMigration\DataMigration.csproj", "{B4FC3E6D-2C37-48C9-96BB-3C71272656EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +39,10 @@ Global
 		{D4D6716A-053E-5468-4023-7F4DEA65DFBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4D6716A-053E-5468-4023-7F4DEA65DFBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4D6716A-053E-5468-4023-7F4DEA65DFBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4FC3E6D-2C37-48C9-96BB-3C71272656EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4FC3E6D-2C37-48C9-96BB-3C71272656EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4FC3E6D-2C37-48C9-96BB-3C71272656EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4FC3E6D-2C37-48C9-96BB-3C71272656EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +52,7 @@ Global
 		{3C97D66C-59A4-4673-06F7-9DA0573B2200} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{2C4CA622-EF2C-CA09-9E6C-D81250D4160A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{D4D6716A-053E-5468-4023-7F4DEA65DFBD} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{B4FC3E6D-2C37-48C9-96BB-3C71272656EE} = {39806ECF-2E56-472C-BC8D-8B425F805C6D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CE5141DB-FC33-44C2-9A45-1231D84E385B}
