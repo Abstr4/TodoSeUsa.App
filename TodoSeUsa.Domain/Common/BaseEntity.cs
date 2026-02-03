@@ -2,7 +2,7 @@
 
 public abstract class BaseEntity
 {
-    public int Id { get; private set; }
+    public int Id { get; set; }
 
-    public Guid PublicIdentifier { get; private set; } = Guid.NewGuid();
+    public Guid PublicIdentifier { get; set; } = Guid.NewGuid();
 }
