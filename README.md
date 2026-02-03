@@ -9,76 +9,35 @@ This project is a store management system built for our family clothing store To
 The system is designed to replace manual and physical processes, centralizing the store’s daily operations into a single digital platform.
 
 ## Features
-* Inventory, products, clients, and invoices management
-* Authentication and access control
+* Products, providers, consignments and sales management
+* Authentication and access control (single user register-login with secure recovery codes)
 * Data persistence with SQL Server and Entity Framework Core
 * Clear separation of concerns (Domain, Application, Infrastructure, UI)
-* Focused on maintainability and long-term evolution
+* Reports and statistics*  
+
+\* Dashboard with monthly sales summary and key metrics.
 
 ## Table of contents
 * [Introduction](#project-description)
-* [Showcase](#showcase)
+* [Overview](#overview)
 * [Features](#features)
 * [Contribution](#contribution)
+* [Contact](#contact)
 * [License](#license)
 
-## Showcase
+## Overview
 
-### Login and Register pages
-<div> 
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/LoginAndRegisterScreen.png" alt="Login and Register View" width="75%" />
-  </p>
-</div>
-
-### Menu
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/Menu.png" alt="Menu View" width="100%" />
-  </p>
-
-### Clients page
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/ClientsScreen.png" alt="Clients View" width="100%" />
-  </p>
-  
-### Invoices page
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/BillsScreen.png" alt="Bills View" width="100%" />
-  </p>
-
-### Products page
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/ProductsScreen.png" alt="Products View" width="100%" />
-  </p>
-  
-### Each client, invoice and product has a dropdown menu to view detailed info.
-
-  <p align="center">
-    <img src="TodoSeUsaNet7/Images/ClientDropdown.png" alt="Clien Dropdown" width="45%" />
-    <img src="TodoSeUsaNet7/Images/BillDropdown.png" alt="Bill Dropdown" width="45%" />
-    <img src="TodoSeUsaNet7/Images/ProductDropdown.png" alt="Product Dropdown" width="45%" />
-  </p>
-
-## Features
-* Inventory, products, clients, and invoices management
-* Authentication and access control
-* Data persistence with SQL Server and Entity Framework Core
-* Clear separation of concerns (Domain, Application, Infrastructure, UI)
+This video provides a quick overview of the core workflow: creating a provider, adding a consignment, registering products and sales.
+[![Quick view video](https://img.youtube.com/vi/TxKybTo2rJU/maxresdefault.jpg)](https://www.youtube.com/watch?v=TxKybTo2rJU)
 
 ## Contribution
 
-Your contributions are always welcome and appreciated:
+Your contributions are always welcome and appreciated. If you think you have encountered a bug or want to request a feature, feel free to do it directly to me via email or twitter in the [Contact](#contact) section down below.
 
-- **Report a Bug or request a feature:**
-  If you think you have encountered a bug or want to request a feature, feel free to do it directly to me via [Twitter](https://x.com/Abstr4_) or [LinkedIn](https://www.linkedin.com/in/matiasrojasmargaritini).
+## Contact
 
-- **Contact:**
-  You can reach out to me via [contact.abstr4@gmail.com](mailto:contact.abstr4@gmail.com), [Twitter](https://x.com/Abstr4_) or [LinkedIn](https://www.linkedin.com/in/matiasrojasmargaritini).
-
+  You can contact me via [Email](mailto:contact.abstr4@gmail.com) for questions related to this project, or reach out on [LinkedIn](https://www.linkedin.com/in/matiasmargaritini) for professional inquiries. You can also find me on [Twitter](https://x.com/Abstr4_) for technical discussions.
+  
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
