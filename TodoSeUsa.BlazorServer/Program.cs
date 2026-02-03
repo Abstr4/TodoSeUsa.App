@@ -13,7 +13,19 @@ using TodoSeUsa.Infrastructure.Persistance.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var storagePathFromConfiguration =
+    builder.Configuration["Storage:BasePath"] ?? "Storage";
+
+var storagePath = Path.Combine(
+    builder.Environment.ContentRootPath,
+    storagePathFromConfiguration
+);
+
+Directory.CreateDirectory(storagePath);
+
+
 builder.Services.AddCascadingAuthenticationState();
+
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
@@ -27,10 +39,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.AddInfrastructureServices();
 
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+}
 
-builder.Services
-    .AddIdentityCore<ApplicationUser>(options =>
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
         options.Lockout.AllowedForNewUsers = true;
 
@@ -96,9 +110,7 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        builder.Configuration["Storage:BasePath"]!
-    ),
+    FileProvider = new PhysicalFileProvider(storagePath),
     RequestPath = "/files"
 });
 
