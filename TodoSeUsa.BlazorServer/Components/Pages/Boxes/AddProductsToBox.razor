@@ -109,19 +109,19 @@
 
             if (product.Status == ProductStatus.Sold)
             {
-                SimpleNotifications.Warning($"El producto con el código '{product.Id}' ya fue vendido.");
+                SimpleNotifications.Warning($"El producto código TSU-{product.Id} ya fue vendido.");
                 return;
             }
 
             if (product.BoxId == BoxDto.Id)
             {
-                SimpleNotifications.Warning($"El producto ya está en ésta caja.");
+                SimpleNotifications.Info($"El producto código TSU-{product.Id}  ya está en ésta caja.");
                 return;
             }
 
             if (product.BoxId != null)
             {
-                SimpleNotifications.Warning($"El producto está en otra caja.");
+                SimpleNotifications.Info($"El producto código TSU-{product.Id} ya está en otra caja.");
                 return;
             }
 
@@ -130,12 +130,13 @@
                 SimpleNotifications.Info($"El producto ya está en la lista.");
                 return;
             }
-            addedProducts.Add(product);
+
+            addedProducts.Insert(0, product);
             productIds.Add(product.Id);
         }
         else
         {
-            SimpleNotifications.Warning($"No se encontró un producto con el código '{productId}'.");
+            SimpleNotifications.Warning($"No se encontró un producto con el código TSU-{productId}.");
         }
         productId = 0;
     }

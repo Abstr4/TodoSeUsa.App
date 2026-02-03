@@ -6,10 +6,16 @@
         margin-bottom: 2rem !important;
     }
 
-    .social-icon
-    {
-        font-size: 16px
+    .icon-hover {
+        font-size: 2rem !important;
+        transition: transform 0.2s ease-in-out !important;
+        display: inline-block !important;
     }
+
+    .icon-link:hover .icon-hover {
+        transform: scale(1.2) !important;
+    }
+
 </style>
 
 <RadzenCard Variant="Variant.Outlined" Style="max-width: 720px; margin: 2rem auto;">
@@ -51,12 +57,12 @@
 
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
 
-                <RadzenLink Href="https://www.linkedin.com/in/matiasrojasmargaritini" Target="_blank">
-                    <i class="bi bi-linkedin" style="font-size: 2rem; color: dodgerblue;"></i>
+                <RadzenLink class="icon-link" Href="https://www.linkedin.com/in/matiasrojasmargaritini" Target="_blank">
+                    <i class="bi bi-linkedin icon-hover" style="color: dodgerblue;"></i>
                 </RadzenLink>
 
-                <RadzenLink Href="https://github.com/Abstr4" Target="_blank">
-                    <i class="bi bi-github" style="font-size: 2rem; color: black;"></i>
+                <RadzenLink class="icon-link" Href="https://github.com/Abstr4" Target="_blank">
+                    <i class="bi bi-github icon-hover" style="color: black;"></i>
                 </RadzenLink>
 
             </RadzenStack>

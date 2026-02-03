@@ -137,7 +137,7 @@
 
     private async Task HandleEditBox(BoxDto boxDto)
     {
-        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{boxDto.Id}'",
+        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código 'BOX-{boxDto.Id}'",
             new Dictionary<string, object>() { { "BoxDto", boxDto } },
             new DialogOptions()
             {
@@ -207,7 +207,7 @@
 
     public async Task ShowBoxProducts(BoxDto boxDto)
     {
-        await DialogService.OpenAsync<BoxProductsGrid>($"Productos en la caja código '{boxDto.Id}'",
+        await DialogService.OpenAsync<BoxProductsGrid>($"Productos en la caja código 'BOX-{boxDto.Id}'",
             new Dictionary<string, object>() { { "BoxDto", boxDto } },
             new DialogOptions()
             {
@@ -220,10 +220,11 @@
 
     public async Task AddProductToBox(BoxDto box)
     {
-        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código '{box.Id}'",
+        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código 'BOX-{box.Id}'",
             new Dictionary<string, object>() { { "BoxDto", box } },
             new DialogOptions()
             {
+                Height = "80%",
                 CloseDialogOnOverlayClick = true
             }
         );
@@ -233,6 +234,7 @@
             if (addProductsResult.IsSuccess)
             {
                 SimpleNotifications.Success($"Los productos se agregaron a la caja.");
+                await ResetAsync();
             }
             else
             {
