@@ -7,6 +7,9 @@ using TodoSeUsa.Infrastructure;
 using TodoSeUsa.Infrastructure.Hosting;
 using TodoSeUsa.Infrastructure.Persistance;
 
+if (!SingleInstanceGuard.TryAcquire("TodoSeUsa.Offline.SingleInstance"))
+    return;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var paths = AppPathInitializer.Initialize(builder);
