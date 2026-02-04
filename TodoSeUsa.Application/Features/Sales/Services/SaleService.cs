@@ -356,7 +356,6 @@ public sealed class SaleService : ISaleService
             _logger.LogError(ex, "An error occurred while retrieving products for sale ID {saleId}.", saleId);
             return Result.Failure<PagedItems<SaleItemDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos de la venta."));
         }
-
     }
 
     public async Task<Result<PagedItems<PaymentDto>>> GetPaymentsAsync(int saleId, QueryRequest request, CancellationToken ct)
@@ -711,7 +710,6 @@ public sealed class SaleService : ISaleService
 
             if (item == null)
                 return Result.Failure(SaleErrors.SaleItemNotFound(saleId));
-
 
             var result = ReturnProduct(sale, item);
             if (result.IsFailure)

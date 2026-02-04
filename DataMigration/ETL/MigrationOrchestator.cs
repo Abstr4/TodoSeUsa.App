@@ -63,5 +63,4 @@ public class MigrationOrchestrator
             .Where(p => p.Active && (!p.Sold || p.SaleId == null) && activeBillIds.Contains(p.BillId))
             .ToListAsync();
     }
-
 }

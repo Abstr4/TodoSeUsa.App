@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TodoSeUsa.Application.Common.Querying.CustomCases;
+﻿using TodoSeUsa.Application.Common.Querying.CustomCases;
 using TodoSeUsa.Application.Features.Products.DTOs;
 using TodoSeUsa.Application.Features.Products.Interfaces;
 using TodoSeUsa.Application.Features.Products.Validators;
@@ -126,7 +125,6 @@ public partial class ProductService : IProductService
             _logger.LogError(ex, "An error occurred while retrieving products for box ID {boxId}.", boxId);
             return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos de la caja."));
         }
-
     }
 
     public async Task<Result<PagedItems<ProductDto>>> GetByConsignmentIdAsync(QueryRequest request, int consignmentId, CancellationToken ct)

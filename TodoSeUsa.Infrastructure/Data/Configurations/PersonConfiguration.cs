@@ -26,7 +26,6 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
                 stored: false
             );
 
-
         builder.Property(p => p.FirstName).IsRequired().HasMaxLength(100);
         builder.Property(p => p.LastName).IsRequired().HasMaxLength(100);
 

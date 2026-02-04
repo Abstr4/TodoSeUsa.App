@@ -5,7 +5,6 @@ namespace TodoSeUsa.Domain.Validators;
 
 public static class DomainValidators
 {
-
     public static bool PhoneValidator(string phone)
     {
         /* Matches:
@@ -18,7 +17,6 @@ public static class DomainValidators
         */
         return Regex.IsMatch(phone, @"^[0-9]+([ -][0-9]+)*$");
     }
-
 
     public static bool EmailValidator(string email)
     {

@@ -65,12 +65,10 @@ h1:focus {
     width: 100%;
 }
 
-.page-wrapper
-{
+.page-wrapper {
     margin-top: 4rem;
 }
 
-.content-wrapper
-{
+.content-wrapper {
     padding: 4rem 2rem;
 }

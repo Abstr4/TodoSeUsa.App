@@ -13,6 +13,7 @@ public sealed class DbSeeder
     {
         _codeService = codeService;
     }
+
     public async Task SeedAsync(ApplicationDbContext context)
     {
         await SeedBoxesAsync(context);
@@ -125,6 +126,5 @@ public sealed class DbSeeder
 
         await context.Products.AddRangeAsync(products);
         await context.SaveChangesAsync();
-
     }
 }

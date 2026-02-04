@@ -13,7 +13,6 @@ public class UniqueConsignmentCodeService
 
     public async Task<string> GenerateAsync(CancellationToken ct = default)
     {
-
         var context = await _dbContextFactory.CreateDbContextAsync(ct);
 
         string code;
@@ -25,7 +24,6 @@ public class UniqueConsignmentCodeService
 
             exists = await context.Consignments
                 .AnyAsync(s => s.Code == code, ct);
-
         } while (exists);
 
         return code;

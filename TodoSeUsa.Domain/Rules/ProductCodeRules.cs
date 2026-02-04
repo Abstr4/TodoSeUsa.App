@@ -24,4 +24,5 @@ public static class ProductCodeRules
     }
 }
 
-public sealed class InvalidProductCodeException(string message) : DomainException(message) { }
+public sealed class InvalidProductCodeException(string message) : DomainException(message)
+{ }

@@ -143,6 +143,4 @@ public class MigrationValidator
         if (condition)
             throw new InvalidOperationException(message);
     }
-
-
 }

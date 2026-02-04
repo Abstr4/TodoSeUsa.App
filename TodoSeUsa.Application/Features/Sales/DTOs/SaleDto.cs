@@ -19,5 +19,4 @@ public record SaleDto
     public DateTime DateIssued { get; init; }
 
     public DateTime CreatedAt { get; init; }
-
 }

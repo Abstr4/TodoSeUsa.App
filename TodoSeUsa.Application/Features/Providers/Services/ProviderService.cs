@@ -31,7 +31,6 @@ public class ProviderService : IProviderService
             .AsNoTracking()
             .AsQueryable();
 
-
         query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProviderFilters);
 
         query = QueryableExtensions.ApplyCustomSorting(query, request.Sorts, QuerySortingCases.ProviderSorts);
@@ -246,7 +245,6 @@ public class ProviderService : IProviderService
                 return Result.Success();
             }
             return Result.Failure(PersonErrors.Failure("No se registraron cambios en el proveedor."));
-            
         }
         catch (Exception ex)
         {

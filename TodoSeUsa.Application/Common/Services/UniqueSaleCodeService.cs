@@ -13,7 +13,6 @@ public class UniqueSaleCodeService
 
     public async Task<string> GenerateAsync(CancellationToken ct = default)
     {
-
         var context = await _dbContextFactory.CreateDbContextAsync(ct);
 
         string code;
@@ -25,7 +24,6 @@ public class UniqueSaleCodeService
 
             exists = await context.Sales
                 .AnyAsync(s => s.Code == code, ct);
-
         } while (exists);
 
         return code;

@@ -2,7 +2,7 @@
 
 namespace TodoSeUsa.Infrastructure.Hosting;
 
-public sealed record AppPaths( string AppData, string Storage, string Certificate);
+public sealed record AppPaths(string AppData, string Storage, string Certificate);
 
 public static class AppPathInitializer
 {

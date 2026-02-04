@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using TodoSeUsa.Infrastructure.Data;
@@ -51,7 +47,6 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             }
         });
 
-
         accountGroup.MapPost("/CerrarSesion", async (
             ClaimsPrincipal user,
             [FromServices] SignInManager<ApplicationUser> signInManager,
@@ -62,7 +57,6 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
         });
 
         var manageGroup = accountGroup.MapGroup("/Administrar").RequireAuthorization();
-
 
         var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
         var downloadLogger = loggerFactory.CreateLogger("DownloadPersonalData");
