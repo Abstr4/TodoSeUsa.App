@@ -67,8 +67,20 @@
 
     private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
 
+    protected override async Task OnInitializedAsync()
+    {
+        var anyUser = await UserManager.Users.AnyAsync();
+        if (anyUser)
+            RedirectManager.RedirectToWithStatus("/Cuenta/Ingresar", "Ya existe una cuenta registrada. Por favor inicie sesión.", HttpContext);
+    }
+
     public async Task RegisterUser(EditContext editContext)
     {
+        var anyUser = await UserManager.Users.AnyAsync();
+
+        if (anyUser)
+            RedirectManager.RedirectToWithStatus("/error", "Ya existe una cuenta registrada.", HttpContext);
+
         var user = CreateUser();
 
         var plainCode = RecoveryCodeGenerator.Generate();

@@ -80,6 +80,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (HttpContext.User.Identity?.IsAuthenticated == true)
+        {
+            HttpContext.Response.Redirect("/");
+            return;
+        }
         await using var context = await DbContextFactory.CreateDbContextAsync();
         anyUserExists = await UserManager.Users.AnyAsync();
         if (HttpMethods.IsGet(HttpContext.Request.Method))
