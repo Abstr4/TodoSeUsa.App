@@ -1,16 +1,11 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using TodoSeUsa.Application;
 using TodoSeUsa.BlazorServer;
 using TodoSeUsa.BlazorServer.Components;
 using TodoSeUsa.BlazorServer.Components.Account;
 using TodoSeUsa.Infrastructure;
-using TodoSeUsa.Infrastructure.Data;
 using TodoSeUsa.Infrastructure.Hosting;
 using TodoSeUsa.Infrastructure.Persistance;
-using TodoSeUsa.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,5 +54,16 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapAdditionalIdentityEndpoints();
+
+if (app.Environment.IsProduction())
+{
+    const string url = "https://localhost:5050";
+
+    Process.Start(new ProcessStartInfo
+    {
+        FileName = url,
+        UseShellExecute = true
+    });
+}
 
 app.Run();

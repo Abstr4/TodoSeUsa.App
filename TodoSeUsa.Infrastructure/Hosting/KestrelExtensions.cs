@@ -8,7 +8,7 @@ public static class KestrelExtensions
     {
         host.ConfigureKestrel(options =>
         {
-            options.ListenLocalhost(5001, listen =>
+            options.ListenLocalhost(5050, listen =>
             {
                 listen.UseHttps(certPath, password);
             });
