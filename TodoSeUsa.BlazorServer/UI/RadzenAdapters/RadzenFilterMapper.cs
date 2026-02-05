@@ -38,12 +38,12 @@ public static class RadzenFilterMapper
         };
     }
 
-    public static Application.Common.Querying.Enums.SortOrder Map(SortOrder order)
+    public static Application.Common.Querying.Enums.SortOrder Map(Radzen.SortOrder order)
     {
         return order switch
         {
-            SortOrder.Ascending => Application.Common.Querying.Enums.SortOrder.Ascending,
-            SortOrder.Descending => Application.Common.Querying.Enums.SortOrder.Descending,
+            Radzen.SortOrder.Ascending => Application.Common.Querying.Enums.SortOrder.Ascending,
+            Radzen.SortOrder.Descending => Application.Common.Querying.Enums.SortOrder.Descending,
             _ => Application.Common.Querying.Enums.SortOrder.Ascending
         };
     }

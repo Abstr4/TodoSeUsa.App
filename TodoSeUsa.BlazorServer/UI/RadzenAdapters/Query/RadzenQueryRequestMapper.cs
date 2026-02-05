@@ -37,7 +37,7 @@ public static class RadzenQueryRequestMapper
         return new Application.Common.Models.SortDescriptor
         {
             Property = s.Property,
-            SortOrder = RadzenFilterMapper.Map(s.SortOrder ?? SortOrder.Ascending)
+            SortOrder = RadzenFilterMapper.Map(s.SortOrder ?? Radzen.SortOrder.Ascending)
         };
     }
 }

@@ -1,9 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+      
+    <OutputType>WinExe</OutputType>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+    <TargetPlatformMinVersion>7.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +21,7 @@
     <Content Remove="Components\Pages\Products\ProductCard.razor" />
     <Content Remove="Components\Pages\Reservations.razor" />
   </ItemGroup>
-
+    
   <ItemGroup>
     <PackageReference Include="Blazor.Radzen.Theming" Version="8.5.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.11">
