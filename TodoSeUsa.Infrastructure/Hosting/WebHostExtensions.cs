@@ -10,6 +10,6 @@ public static class WebHostExtensions
         if (builder.Environment.IsDevelopment())
             return;
 
-        builder.WebHost.ConfigureHttps();
+        builder.WebHost.ConfigureHttp();
     }
 }

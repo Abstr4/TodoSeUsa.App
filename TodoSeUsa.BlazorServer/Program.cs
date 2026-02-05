@@ -57,7 +57,7 @@ app.MapAdditionalIdentityEndpoints();
 
 if (app.Environment.IsProduction())
 {
-    const string url = "https://localhost:5050";
+    const string url = "http://localhost:5050";
 
     Process.Start(new ProcessStartInfo
     {

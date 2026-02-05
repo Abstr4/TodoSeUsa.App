@@ -4,7 +4,7 @@ namespace TodoSeUsa.Infrastructure.Hosting;
 
 public static class KestrelExtensions
 {
-    public static void ConfigureHttps(this IWebHostBuilder host)
+    public static void ConfigureHttp(this IWebHostBuilder host)
     {
         host.ConfigureKestrel(options =>
             {
