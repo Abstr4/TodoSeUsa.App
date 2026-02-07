@@ -4,9 +4,11 @@
 
 Hi, I'm **[Matias Margaritini](https://www.linkedin.com/in/matiasmargaritini/)** ([LinkedIn](https://www.linkedin.com/in/matiasmargaritini/)).
 
-This project is a store management system built for our family clothing store TodoSeUsa, developed with Blazor, Radzen, in .NET 9, following Clean Architecture principles.
+This project is a store management system built for our family clothing store TodoSeUsa. It is built with Blazor Server and Radzen on .NET 9, following Clean Architecture principles.
 
 The system is designed to replace manual and physical processes, centralizing the store’s daily operations into a single digital platform.
+
+It runs locally on a single machine, uses a local SQL Server database, and initializes and updates the schema automatically using EF Core migrations, allowing the store to operate without an internet connection or external services.
 
 ## Features
 * Products, providers, consignments and sales management
