@@ -16,7 +16,6 @@ It runs locally on a single machine, uses a **local SQL Server database**, and *
 * Data persistence with SQL Server and Entity Framework Core
 * Clear separation of concerns (Domain, Application, Infrastructure, UI)
 * Reports and statistics*
-* Tray icon 
 
 \* Dashboard with monthly sales summary and key metrics.
 
