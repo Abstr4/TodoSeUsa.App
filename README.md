@@ -38,7 +38,7 @@ Your contributions are always welcome and appreciated. If you think you have enc
 
 ## Contact
 
-  You can contact me via [Email](mailto:contact.abstr4@gmail.com) for questions related to this project, or reach out on [LinkedIn](https://www.linkedin.com/in/matiasmargaritini) for professional inquiries. You can also find me on [Twitter](https://x.com/Abstr4_) for technical discussions.
+  You can contact me via [Email](mailto:contact.abstr4@gmail.com) for questions related to this project, or reach out on [LinkedIn](https://www.linkedin.com/in/matiasmargaritini) for professional inquiries. You can also find me on [Twitter](https://x.com/Abstr4_).
   
 ## License
 
