@@ -10,7 +10,7 @@ public interface IConsignmentService
 
     Task<Result<ConsignmentDto>> GetByIdAsync(int consignmentId, CancellationToken ct);
 
-    Task<Result<PagedItems<ConsignmentDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken ct);
+    Task<Result<PagedItems<ConsignmentDto>>> GetByConsignorIdAsync(QueryRequest request, int consignorId, CancellationToken ct);
 
     Task<Result> EditByIdAsync(EditConsignmentDto editConsignmentDto, CancellationToken ct);
 

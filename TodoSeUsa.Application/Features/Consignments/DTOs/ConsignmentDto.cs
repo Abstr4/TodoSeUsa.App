@@ -6,11 +6,11 @@ public record ConsignmentDto
 
     public string Code { get; init; } = string.Empty;
 
-    public string ProviderFirstName { get; init; } = string.Empty;
+    public string ConsignorFirstName { get; init; } = string.Empty;
 
-    public string ProviderLastName { get; init; } = string.Empty;
+    public string ConsignorLastName { get; init; } = string.Empty;
 
-    public int ProviderId { get; init; }
+    public int ConsignorId { get; init; }
 
     public string? Notes { get; init; }
 
@@ -22,5 +22,5 @@ public record ConsignmentDto
 
     public DateTime? UpdatedAt { get; init; }
 
-    public string ProviderFullName => $"{ProviderFirstName} {ProviderLastName}";
+    public string ConsignorFullName => $"{ConsignorFirstName} {ConsignorLastName}";
 }

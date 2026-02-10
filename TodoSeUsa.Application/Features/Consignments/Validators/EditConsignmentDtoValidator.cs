@@ -9,8 +9,8 @@ public class EditConsignmentDtoValidator : AbstractValidator<EditConsignmentDto>
         RuleFor(x => x.Id)
             .GreaterThan(0).WithMessage("El Id del remito debe ser mayor que 0.");
 
-        RuleFor(x => x.ProviderId)
-            .GreaterThan(0).WithMessage("El Id del proveedor debe ser mayor que 0.");
+        RuleFor(x => x.ConsignorId)
+            .GreaterThan(0).WithMessage("El Id del consignador debe ser mayor que 0.");
 
         RuleFor(x => x.DateIssued)
             .LessThanOrEqualTo(DateTime.Now).WithMessage("La fecha de emisión no puede ser en el futuro.");

@@ -14,14 +14,14 @@
         <RadzenFieldset Text="Info. de la consignación">
             <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
                 <RadzenRow>
-                    <RadzenColumn Size="6" id="ProviderId-column">
+                    <RadzenColumn Size="6" id="ConsignorId-column">
                         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
-                            <RadzenLabel Component="ProviderId">
-                                ID del proveedor <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            <RadzenLabel Component="ConsignorId">
+                                ID del consignador <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
-                            <RadzenNumeric Name="ProviderId" @bind-Value=@_editConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" />
-                            <RadzenRequiredValidator Component="ProviderId" Text="El ID del proveedor es requerido." />
-                            <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El ID del proveedor debe ser mayor a cero." />
+                            <RadzenNumeric Name="ConsignorId" @bind-Value=@_editConsignmentDto.ConsignorId Style="width: 100%;" TValue="int" Min="0" />
+                            <RadzenRequiredValidator Component="ConsignorId" Text="El ID del consignador es requerido." />
+                            <RadzenNumericRangeValidator Component="ConsignorId" Min="1" Text="El ID del consignador debe ser mayor a cero." />
                         </RadzenStack>
                     </RadzenColumn>
                     <RadzenColumn Size="6" id="dateIssued-column">
@@ -117,7 +117,7 @@
         _editConsignmentDto = new EditConsignmentDto
         {
             Id = ConsignmentDto.Id,
-            ProviderId = ConsignmentDto.ProviderId,
+            ConsignorId = ConsignmentDto.ConsignorId,
             DateIssued = ConsignmentDto.DateIssued,
             Notes = ConsignmentDto.Notes
         };

@@ -8,9 +8,9 @@ public class Consignment : BaseAuditableEntity
 
     public string? Notes { get; set; } = string.Empty;
 
-    public int ProviderId { get; set; }
+    public int ConsignorId { get; set; }
 
-    public Provider Provider { get; set; } = null!;
+    public Consignor Consignor { get; set; } = null!;
 
     public ICollection<Product> Products { get; set; } = [];
 }

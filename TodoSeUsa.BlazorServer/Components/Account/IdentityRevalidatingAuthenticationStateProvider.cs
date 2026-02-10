@@ -7,9 +7,9 @@ using TodoSeUsa.Infrastructure.Data;
 
 namespace TodoSeUsa.BlazorServer.Components.Account;
 
-// This is a server-side AuthenticationStateProvider that revalidates the security stamp for the connected user
+// This is a server-side AuthenticationStateConsignor that revalidates the security stamp for the connected user
 // every 30 minutes an interactive circuit is connected.
-internal sealed class IdentityRevalidatingAuthenticationStateProvider(
+internal sealed class IdentityRevalidatingAuthenticationStateConsignor(
         ILoggerFactory loggerFactory,
         IServiceScopeFactory scopeFactory,
         IOptions<IdentityOptions> options)

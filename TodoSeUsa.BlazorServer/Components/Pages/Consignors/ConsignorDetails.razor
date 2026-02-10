@@ -1,17 +1,17 @@
-﻿@page "/proveedores/{Id:int}"
+﻿@page "/consignadores/{Id:int}"
 
 @using TodoSeUsa.Application.Features.Consignments.DTOs
 @using TodoSeUsa.Application.Features.Consignments.Interfaces
 @using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
-@using TodoSeUsa.Application.Features.Providers.DTOs
-@using TodoSeUsa.Application.Features.Providers.Interfaces
+@using TodoSeUsa.Application.Features.Consignors.DTOs
+@using TodoSeUsa.Application.Features.Consignors.Interfaces
 @using TodoSeUsa.BlazorServer.Components.Pages.Consignments
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
 
 @rendermode InteractiveServer
 
-@inject IProviderService ProviderService;
+@inject IConsignorService ConsignorService;
 @inject IConsignmentService ConsignmentService;
 @inject IProductService ProductService;
 
@@ -44,10 +44,10 @@
     {
         <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="height: calc(100vh - 5.7rem);">
             <RadzenProgressBarCircular Size="ProgressBarCircularSize.Large" ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" AriaLabel="Primary loading" />
-            <RadzenText Text="Cargando proveedor..." />
+            <RadzenText Text="Cargando consignador..." />
         </RadzenStack>
     }
-    else if (provider != null)
+    else if (consignor != null)
     {
         <RadzenCard class="rz-shadow-5" Style="width: 100%; min-width: calc(250px + 2*(2rem));">
 
@@ -64,16 +64,16 @@
                                     Click=@HandleAddConsignment Style="flex-grow: 1;" />
 
                         <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
-                                    Click=@HandleEditProvider Style="flex-grow: 1;" />
+                                    Click=@HandleEditConsignor Style="flex-grow: 1;" />
 
                         <RadzenButton  Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger"
-                                        Click=@HandleDeleteProvider Style="flex-grow: 1;" />
+                                        Click=@HandleDeleteConsignor Style="flex-grow: 1;" />
                     </RadzenStack>
                 </RadzenStack>
 
-                <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important">Detalles del proveedor </RadzenText>
+                <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important">Detalles del consignador </RadzenText>
 
-                <RadzenTable id="provider-details-t" Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
+                <RadzenTable id="consignor-details-t" Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
 
                     <RadzenTableHeader id="property-value-header">
                         <RadzenTableHeaderRow>
@@ -95,7 +95,7 @@
                                 <RadzenText TextStyle="TextStyle.Subtitle1" Text="Nombre y Apellido" style="font-weight:bold;" />
                             </RadzenTableCell>
                             <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.FullName" />
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignor.FullName" />
                             </RadzenTableCell>
                         </RadzenTableRow>
 
@@ -104,7 +104,7 @@
                                 <RadzenText TextStyle="TextStyle.Subtitle1" Text="Información de contacto" style="font-weight:bold;" />
                             </RadzenTableCell>
                             <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.ContactInfo" />
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignor.ContactInfo" />
                             </RadzenTableCell>
                         </RadzenTableRow>
 
@@ -114,7 +114,7 @@
                                 <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código" style="font-weight:bold" />
                             </RadzenTableCell>
                             <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.Id.ToString()" />
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignor.Id.ToString()" />
                             </RadzenTableCell>
                         </RadzenTableRow>
 
@@ -123,7 +123,7 @@
                                 <RadzenText TextStyle="TextStyle.Subtitle1" Text="Porcentaje de comisión" style="font-weight:bold;" />
                             </RadzenTableCell>
                             <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@($"{provider.CommissionPercent:0.#}%")" />
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@($"{consignor.CommissionPercent:0.#}%")" />
                             </RadzenTableCell>
                         </RadzenTableRow>
 
@@ -132,7 +132,7 @@
                             <RadzenText TextStyle="TextStyle.Subtitle1" Text="Cant. consignaciones" style="font-weight:bold;" />
                         </RadzenTableCell>
                         <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.TotalConsignments.ToString()" />
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignor.TotalConsignments.ToString()" />
                         </RadzenTableCell>
                     </RadzenTableRow>
 
@@ -141,7 +141,7 @@
                             <RadzenText TextStyle="TextStyle.Subtitle1" Text="Cant. productos" style="font-weight:bold;" />
                         </RadzenTableCell>
                         <RadzenTableCell>
-                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.TotalProducts.ToString()" />
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignor.TotalProducts.ToString()" />
                         </RadzenTableCell>
                     </RadzenTableRow>
 
@@ -150,7 +150,7 @@
                                 <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creado el" style="font-weight:bold;" />
                             </RadzenTableCell>
                             <RadzenTableCell>
-                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@provider.CreatedAt.ToString("f")" />
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Text="@consignor.CreatedAt.ToString("f")" />
                             </RadzenTableCell>
                         </RadzenTableRow>
 
@@ -160,38 +160,38 @@
                             </RadzenTableCell>
                             <RadzenTableCell>
                                 <RadzenText TextStyle="TextStyle.Subtitle1">
-                                    @(@provider.UpdatedAt is null ? "N/A" : provider.UpdatedAt.Value.ToString("f"))
+                                    @(@consignor.UpdatedAt is null ? "N/A" : consignor.UpdatedAt.Value.ToString("f"))
                                 </RadzenText>
                             </RadzenTableCell>
                         </RadzenTableRow>
                     </RadzenTableBody>
                 </RadzenTable>
 
-                <RadzenFieldset id="provider-products-fs" AllowCollapse="true" Collapsed="true" class="w-100 rz-mt-4">
+                <RadzenFieldset id="consignor-products-fs" AllowCollapse="true" Collapsed="true" class="w-100 rz-mt-4">
 
                     <HeaderTemplate>
                         <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
-                            <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos del proveedor</b>
+                            <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos del consignador</b>
                         </RadzenText>
                     </HeaderTemplate>
 
                     <ChildContent>
-                        <ProductsDataGrid OnLoad="LoadProductsByProvider" IsMainPage=false />
+                        <ProductsDataGrid OnLoad="LoadProductsByConsignor" IsMainPage=false />
                     </ChildContent>
 
                     <SummaryTemplate>
                         <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
-                            <b>@provider.TotalProducts Productos</b>
+                            <b>@consignor.TotalProducts Productos</b>
                         </RadzenCard>
                     </SummaryTemplate>
 
                 </RadzenFieldset>
 
-                <RadzenFieldset id="provider-consignments-fs" AllowCollapse="true" Collapsed="true" class="w-100 rz-mt-4">
+                <RadzenFieldset id="consignor-consignments-fs" AllowCollapse="true" Collapsed="true" class="w-100 rz-mt-4">
 
                     <HeaderTemplate>
                         <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
-                            <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Consignaciones del proveedor</b>
+                            <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Consignaciones del consignador</b>
                         </RadzenText>
                     </HeaderTemplate>
 
@@ -199,7 +199,7 @@
 
                         <RadzenDataGrid @ref="consignmentsGrid" IsLoading="@isLoading" TItem="ConsignmentDto" Data="@consignments"
                                          LoadData="@LoadConsignments"
-                                        Count="@consignmentsCount" EmptyText="Éste proveedor no registra consignaciones." PageSize="5"
+                                        Count="@consignmentsCount" EmptyText="Éste consignador no registra consignaciones." PageSize="5"
                                         AllowSorting="false" AllowFiltering="false" AllowPaging="true" AllowColumnResize=true
                                         GridLines="DataGridGridLines.Both" PagerHorizontalAlign="HorizontalAlign.Center"
                                         ColumnWidth="200px">
@@ -240,7 +240,7 @@
 
                     <SummaryTemplate>
                         <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
-                            <b>@provider.TotalConsignments Consignaciones</b>
+                            <b>@consignor.TotalConsignments Consignaciones</b>
                         </RadzenCard>
                     </SummaryTemplate>
 
@@ -264,7 +264,7 @@
 
     private RadzenDataGrid<ConsignmentDto> consignmentsGrid = default!;
 
-    ProviderDto provider = default!;
+    ConsignorDto consignor = default!;
     bool isLoading = false;
 
     IEnumerable<ConsignmentDto>? consignments;
@@ -278,24 +278,24 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        var result = await ProviderService.GetByIdAsync(Id, CancellationToken.None);
+        var result = await ConsignorService.GetByIdAsync(Id, CancellationToken.None);
         if (result.IsSuccess)
         {
-            provider = result.Value;
+            consignor = result.Value;
         }
         else
         {
             errorMessage = result.Error.Description;
             SimpleNotifications.Error($"{errorMessage}");
-            NavigationManager.NavigateTo("/proveedores");
+            NavigationManager.NavigateTo("/consignadores");
         }
         isLoading = false;
     }
 
-    private async Task<Result<PagedItems<ProductDto>>> LoadProductsByProvider(LoadDataArgs args)
+    private async Task<Result<PagedItems<ProductDto>>> LoadProductsByConsignor(LoadDataArgs args)
     {
         var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
-        return await ProductService.GetByProviderIdAsync(request, Id, CancellationToken.None);
+        return await ProductService.GetByConsignorIdAsync(request, Id, CancellationToken.None);
     }
 
     private async Task LoadConsignments(LoadDataArgs args)
@@ -305,7 +305,7 @@
 
         QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
 
-        var result = await ConsignmentService.GetByProviderIdAsync(request, Id, CancellationToken.None);
+        var result = await ConsignmentService.GetByConsignorIdAsync(request, Id, CancellationToken.None);
 
         if (result.IsSuccess)
         {
@@ -320,10 +320,10 @@
         isLoadingConsignments = false;
     }
 
-    private async Task HandleEditProvider()
+    private async Task HandleEditConsignor()
     {
-        var result = await DialogService.OpenAsync<EditProviderForm>($"Editar proveedor",
-               new Dictionary<string, object>() { { "ProviderDto", provider } },
+        var result = await DialogService.OpenAsync<EditConsignorForm>($"Editar consignador",
+               new Dictionary<string, object>() { { "ConsignorDto", consignor } },
                new DialogOptions()
                {
                    Width = "50%",
@@ -335,12 +335,12 @@
         {
             if (editResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Proveedor editado con éxito.");
+                SimpleNotifications.Success($"Consignador editado con éxito.");
 
-                var refreshed = await ProviderService.GetByIdAsync(provider.Id, CancellationToken.None);
+                var refreshed = await ConsignorService.GetByIdAsync(consignor.Id, CancellationToken.None);
                 if (refreshed.IsSuccess)
                 {
-                    provider = refreshed.Value;
+                    consignor = refreshed.Value;
                 }
                 StateHasChanged();
             }
@@ -351,10 +351,10 @@
         }
     }
 
-    private async Task HandleDeleteProvider()
+    private async Task HandleDeleteConsignor()
     {
-        var result = await DialogService.OpenAsync<DeleteProviderConfirmation>($"Confirmar eliminación",
-        new Dictionary<string, object>() { { "ProviderDto", provider } },
+        var result = await DialogService.OpenAsync<DeleteConsignorConfirmation>($"Confirmar eliminación",
+        new Dictionary<string, object>() { { "ConsignorDto", consignor } },
         new DialogOptions()
         {
             CloseDialogOnOverlayClick = true
@@ -364,8 +364,8 @@
         {
             if (deleteResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Proveedor eliminado con éxito.");
-                await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/proveedores");
+                SimpleNotifications.Success($"Consignador eliminado con éxito.");
+                await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/consignadores");
 
             }
             else
@@ -377,8 +377,8 @@
 
     private async Task HandleAddConsignment()
     {
-        var result = await DialogService.OpenAsync<CreateConsignmentForm>($"Regitrar nueva consignación para el proveedor {provider.FirstName} {provider.LastName} código '{provider.Id}'",
-               new Dictionary<string, object>() { { "ProviderId", Id } },
+        var result = await DialogService.OpenAsync<CreateConsignmentForm>($"Regitrar nueva consignación para el consignador {consignor.FirstName} {consignor.LastName} código '{consignor.Id}'",
+               new Dictionary<string, object>() { { "ConsignorId", Id } },
                new DialogOptions()
                    {
                        Width = "50%",

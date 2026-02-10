@@ -63,7 +63,7 @@ logger.LogInformation("Starting data migration...\n");
 
 await migrator.RunAsync();
 
-logger.LogInformation("Data migration completed: active providers, bills and products.\n");
+logger.LogInformation("Data migration completed: active consignors, bills and products.\n");
 
 logger.LogInformation("Validating migrated data...\n");
 

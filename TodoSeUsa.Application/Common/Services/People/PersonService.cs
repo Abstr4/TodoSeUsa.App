@@ -21,7 +21,7 @@ internal class PersonService : IPersonService
 
         return await _context.Persons
             .Include(p => p.Client)
-            .Include(p => p.Provider)
+            .Include(p => p.Consignor)
             .FirstOrDefaultAsync(p =>
                 email != null && p.EmailAddress == email ||
                 phoneNumber != null && p.PhoneNumber == phoneNumber,
@@ -52,13 +52,13 @@ internal class PersonService : IPersonService
 
         var person = await _context.Persons
             .Include(p => p.Client)
-            .Include(p => p.Provider)
+            .Include(p => p.Consignor)
             .FirstOrDefaultAsync(p => p.Id == personId, ct);
 
         if (person == null)
             return;
 
-        if (person.Client == null && person.Provider == null)
+        if (person.Client == null && person.Consignor == null)
         {
             _context.Persons.Remove(person);
             await _context.SaveChangesAsync(ct);

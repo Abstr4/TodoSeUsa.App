@@ -22,16 +22,16 @@ public class MigrationOrchestrator
         var personMap = oldClients.ToDictionary(c => c.ClientId, Transforms.ToPerson);
         await Loader.BulkInsertAsync(_new, personMap.Values);
 
-        var providerMap = personMap.ToDictionary(
+        var consignorMap = personMap.ToDictionary(
             kv => kv.Key,
-            kv => Transforms.ToProvider(kv.Value)
+            kv => Transforms.ToConsignor(kv.Value)
         );
-        await Loader.BulkInsertAsync(_new, providerMap.Values);
+        await Loader.BulkInsertAsync(_new, consignorMap.Values);
 
         var oldBills = await GetActiveBillsAsync(oldClients.Select(c => c.ClientId));
         var consignmentMap = oldBills.ToDictionary(
             b => b.BillId,
-            b => Transforms.ToConsignment(b, providerMap[b.ClientId].Id)
+            b => Transforms.ToConsignment(b, consignorMap[b.ClientId].Id)
         );
         await Loader.BulkInsertAsync(_new, consignmentMap.Values);
 

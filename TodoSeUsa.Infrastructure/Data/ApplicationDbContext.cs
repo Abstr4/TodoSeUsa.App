@@ -13,7 +13,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<LoanNote> LoanNotes => Set<LoanNote>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Product> Products => Set<Product>();
-    public DbSet<Provider> Providers => Set<Provider>();
+    public DbSet<Consignor> Consignors => Set<Consignor>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<Sale> Sales => Set<Sale>();
     public DbSet<SaleItem> SaleItems => Set<SaleItem>();

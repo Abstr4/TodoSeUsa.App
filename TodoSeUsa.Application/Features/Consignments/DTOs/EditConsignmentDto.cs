@@ -8,5 +8,5 @@ public class EditConsignmentDto
 
     public string? Notes { get; set; }
 
-    public int ProviderId { get; set; }
+    public int ConsignorId { get; set; }
 }

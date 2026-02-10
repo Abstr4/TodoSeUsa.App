@@ -15,17 +15,17 @@ public static class Transforms
         Address = c.Address
     };
 
-    public static Provider ToProvider(Person p) => new()
+    public static Consignor ToConsignor(Person p) => new()
     {
         PersonId = p.Id,
         CommissionPercent = 0m
     };
 
-    public static Consignment ToConsignment(OldBillRow bill, int providerId) => new()
+    public static Consignment ToConsignment(OldBillRow bill, int consignorId) => new()
     {
         Code = $"LEGACY-{bill.BillId}",
         DateIssued = bill.DateCreated,
-        ProviderId = providerId
+        ConsignorId = consignorId
     };
 
     public static Product ToProduct(OldProductRow p, int consignmentId) => new()

@@ -28,6 +28,8 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
             modelBuilder.HasSequence("ConsignmentSequence");
 
+            modelBuilder.HasSequence("ConsignorSequence");
+
             modelBuilder.HasSequence("LoanedProductSequence");
 
             modelBuilder.HasSequence("LoanNoteSequence");
@@ -39,8 +41,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
             modelBuilder.HasSequence("ProductImageSequence");
 
             modelBuilder.HasSequence("ProductSequence");
-
-            modelBuilder.HasSequence("ProviderSequence");
 
             modelBuilder.HasSequence("ReservationSequence");
 
@@ -259,6 +259,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ConsignorId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -272,7 +275,41 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<int>("ProviderId")
+                    b.Property<Guid>("PublicIdentifier")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConsignorId");
+
+                    b.ToTable("Consignments", (string)null);
+
+                    b.UseTpcMappingStrategy();
+                });
+
+            modelBuilder.Entity("TodoSeUsa.Domain.Entities.Consignor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValueSql("NEXT VALUE FOR [ConsignorSequence]");
+
+                    SqlServerPropertyBuilderExtensions.UseSequence(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CommissionPercent")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PersonId")
                         .HasColumnType("int");
 
                     b.Property<Guid>("PublicIdentifier")
@@ -283,9 +320,10 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProviderId");
+                    b.HasIndex("PersonId")
+                        .IsUnique();
 
-                    b.ToTable("Consignments", (string)null);
+                    b.ToTable("Consignors", (string)null);
 
                     b.UseTpcMappingStrategy();
                 });
@@ -621,44 +659,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.UseTpcMappingStrategy();
                 });
 
-            modelBuilder.Entity("TodoSeUsa.Domain.Entities.Provider", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValueSql("NEXT VALUE FOR [ProviderSequence]");
-
-                    SqlServerPropertyBuilderExtensions.UseSequence(b.Property<int>("Id"));
-
-                    b.Property<decimal>("CommissionPercent")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PersonId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("PublicIdentifier")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PersonId")
-                        .IsUnique();
-
-                    b.ToTable("Providers", (string)null);
-
-                    b.UseTpcMappingStrategy();
-                });
-
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Reservation", b =>
                 {
                     b.Property<int>("Id")
@@ -962,13 +962,24 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Consignment", b =>
                 {
-                    b.HasOne("TodoSeUsa.Domain.Entities.Provider", "Provider")
+                    b.HasOne("TodoSeUsa.Domain.Entities.Consignor", "Consignor")
                         .WithMany("Consignments")
-                        .HasForeignKey("ProviderId")
+                        .HasForeignKey("ConsignorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Provider");
+                    b.Navigation("Consignor");
+                });
+
+            modelBuilder.Entity("TodoSeUsa.Domain.Entities.Consignor", b =>
+                {
+                    b.HasOne("TodoSeUsa.Domain.Entities.Person", "Person")
+                        .WithOne("Consignor")
+                        .HasForeignKey("TodoSeUsa.Domain.Entities.Consignor", "PersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.LoanNote", b =>
@@ -1051,17 +1062,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("TodoSeUsa.Domain.Entities.Provider", b =>
-                {
-                    b.HasOne("TodoSeUsa.Domain.Entities.Person", "Person")
-                        .WithOne("Provider")
-                        .HasForeignKey("TodoSeUsa.Domain.Entities.Provider", "PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Reservation", b =>
                 {
                     b.HasOne("TodoSeUsa.Domain.Entities.Client", "Client")
@@ -1116,6 +1116,11 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("TodoSeUsa.Domain.Entities.Consignor", b =>
+                {
+                    b.Navigation("Consignments");
+                });
+
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.LoanNote", b =>
                 {
                     b.Navigation("LoanedProducts");
@@ -1125,17 +1130,12 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 {
                     b.Navigation("Client");
 
-                    b.Navigation("Provider");
+                    b.Navigation("Consignor");
                 });
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Product", b =>
                 {
                     b.Navigation("Images");
-                });
-
-            modelBuilder.Entity("TodoSeUsa.Domain.Entities.Provider", b =>
-                {
-                    b.Navigation("Consignments");
                 });
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Reservation", b =>

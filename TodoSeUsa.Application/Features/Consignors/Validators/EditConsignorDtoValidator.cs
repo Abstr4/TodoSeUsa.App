@@ -1,11 +1,11 @@
-﻿using TodoSeUsa.Application.Features.Providers.DTOs;
+﻿using TodoSeUsa.Application.Features.Consignors.DTOs;
 using TodoSeUsa.Domain.Validators;
 
-namespace TodoSeUsa.Application.Features.Providers.Validators;
+namespace TodoSeUsa.Application.Features.Consignors.Validators;
 
-public class EditProviderDtoValidator : AbstractValidator<EditProviderDto>
+public class EditConsignorDtoValidator : AbstractValidator<EditConsignorDto>
 {
-    public EditProviderDtoValidator()
+    public EditConsignorDtoValidator()
     {
         RuleFor(p => p.CommissionPercent)
             .GreaterThanOrEqualTo(0).WithMessage("El porcentaje de comisión debe ser mayor o igual a 0.")

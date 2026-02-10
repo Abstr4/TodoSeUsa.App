@@ -2,7 +2,7 @@
 
 namespace TodoSeUsa.Domain.Entities;
 
-public class Provider : BaseAuditableEntity, IPerson
+public class Consignor : BaseAuditableEntity, IPerson
 {
     public decimal CommissionPercent { get; set; } = 0m;
 

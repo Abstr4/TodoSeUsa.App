@@ -17,7 +17,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<IdentityUserAccessor>();
         builder.Services.AddScoped<IdentityRedirectManager>();
         builder.Services.AddScoped<AuthenticationStateProvider,
-            IdentityRevalidatingAuthenticationStateProvider>();
+            IdentityRevalidatingAuthenticationStateConsignor>();
 
         builder.Services.AddAuthentication(options =>
         {

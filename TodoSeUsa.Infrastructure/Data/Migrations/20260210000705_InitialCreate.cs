@@ -21,6 +21,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 name: "ConsignmentSequence");
 
             migrationBuilder.CreateSequence(
+                name: "ConsignorSequence");
+
+            migrationBuilder.CreateSequence(
                 name: "LoanedProductSequence");
 
             migrationBuilder.CreateSequence(
@@ -37,9 +40,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateSequence(
                 name: "ProductSequence");
-
-            migrationBuilder.CreateSequence(
-                name: "ProviderSequence");
 
             migrationBuilder.CreateSequence(
                 name: "ReservationSequence");
@@ -256,10 +256,10 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Providers",
+                name: "Consignors",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [ProviderSequence]"),
+                    Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [ConsignorSequence]"),
                     CommissionPercent = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     PersonId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -269,9 +269,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Providers", x => x.Id);
+                    table.PrimaryKey("PK_Consignors", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Providers_People_PersonId",
+                        name: "FK_Consignors_People_PersonId",
                         column: x => x.PersonId,
                         principalTable: "People",
                         principalColumn: "Id",
@@ -365,7 +365,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateIssued = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    ProviderId = table.Column<int>(type: "int", nullable: false),
+                    ConsignorId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -375,9 +375,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 {
                     table.PrimaryKey("PK_Consignments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Consignments_Providers_ProviderId",
-                        column: x => x.ProviderId,
-                        principalTable: "Providers",
+                        name: "FK_Consignments_Consignors_ConsignorId",
+                        column: x => x.ConsignorId,
+                        principalTable: "Consignors",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -594,9 +594,15 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Consignments_ProviderId",
+                name: "IX_Consignments_ConsignorId",
                 table: "Consignments",
-                column: "ProviderId");
+                column: "ConsignorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Consignors_PersonId",
+                table: "Consignors",
+                column: "PersonId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_LoanedProducts_LoanNoteId",
@@ -644,12 +650,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 name: "IX_Products_SaleId",
                 table: "Products",
                 column: "SaleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Providers_PersonId",
-                table: "Providers",
-                column: "PersonId",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reservations_ClientId",
@@ -733,7 +733,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 name: "Sales");
 
             migrationBuilder.DropTable(
-                name: "Providers");
+                name: "Consignors");
 
             migrationBuilder.DropTable(
                 name: "Clients");
@@ -749,6 +749,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
             migrationBuilder.DropSequence(
                 name: "ConsignmentSequence");
+
+            migrationBuilder.DropSequence(
+                name: "ConsignorSequence");
 
             migrationBuilder.DropSequence(
                 name: "LoanedProductSequence");
@@ -767,9 +770,6 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
             migrationBuilder.DropSequence(
                 name: "ProductSequence");
-
-            migrationBuilder.DropSequence(
-                name: "ProviderSequence");
 
             migrationBuilder.DropSequence(
                 name: "ReservationSequence");

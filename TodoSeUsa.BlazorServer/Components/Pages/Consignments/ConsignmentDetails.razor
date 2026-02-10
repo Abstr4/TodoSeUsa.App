@@ -102,15 +102,15 @@
                                 </RadzenTableCell>
                             </RadzenTableRow>
 
-                            <RadzenTableRow id="provider-row">
+                            <RadzenTableRow id="consignor-row">
 
                                 <RadzenTableCell>
-                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Proveedor" style="font-weight:bold" />
+                                    <RadzenText TextStyle="TextStyle.Subtitle1" Text="Consignador" style="font-weight:bold" />
                                 </RadzenTableCell>
                                 <RadzenTableCell>
                                 <RadzenText TextStyle="TextStyle.Subtitle1">
-                                    @consignment.ProviderFullName - Código '@consignment.ProviderId.ToString()'
-                                    <RadzenLink Path=@($"/proveedores/{consignment.ProviderId}") style="vertical-align: super">
+                                    @consignment.ConsignorFullName - Código '@consignment.ConsignorId.ToString()'
+                                    <RadzenLink Path=@($"/consignadores/{consignment.ConsignorId}") style="vertical-align: super">
                                         <RadzenIcon Icon="info" IconStyle="IconStyle.Info" />
                                     </RadzenLink>
                                 </RadzenText>

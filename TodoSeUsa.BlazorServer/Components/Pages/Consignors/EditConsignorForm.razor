@@ -1,9 +1,9 @@
-﻿@using TodoSeUsa.Application.Features.Providers.DTOs
-@using TodoSeUsa.Application.Features.Providers.Interfaces
+﻿@using TodoSeUsa.Application.Features.Consignors.DTOs
+@using TodoSeUsa.Application.Features.Consignors.Interfaces
 @using TodoSeUsa.BlazorServer.UI.Notifications
 @using TodoSeUsa.BlazorServer.Validation
 
-@inject IProviderService ProviderService;
+@inject IConsignorService ConsignorService;
 
 @inject DialogService DialogService;
 @inject SimpleNotifications SimpleNotifications;
@@ -11,7 +11,7 @@
 
 @attribute [Authorize]
 
-<RadzenTemplateForm TItem="EditProviderDto" Data=@editProviderDto Submit=@OnSubmit>
+<RadzenTemplateForm TItem="EditConsignorDto" Data=@editConsignorDto Submit=@OnSubmit>
 
     <RadzenStack Gap="1rem">
         
@@ -30,7 +30,7 @@
                             </RadzenLabel>
 
                             <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
-                                <RadzenTextBox MaxLength="50" Name="FirstName" @bind-Value=@editProviderDto.FirstName Style="width: 100%;" Placeholder="Nombre..." />
+                                <RadzenTextBox MaxLength="50" Name="FirstName" @bind-Value=@editConsignorDto.FirstName Style="width: 100%;" Placeholder="Nombre..." />
                             </RadzenStack>
 
                             <RadzenRequiredValidator Component="FirstName" Text="El nombre es requerido." />
@@ -46,7 +46,7 @@
                             </RadzenLabel>
 
                             <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
-                                <RadzenTextBox MaxLength="100" Name="LastName" @bind-Value=@editProviderDto.LastName Style="width: 100%;" Placeholder="Apellido..." />
+                                <RadzenTextBox MaxLength="100" Name="LastName" @bind-Value=@editConsignorDto.LastName Style="width: 100%;" Placeholder="Apellido..." />
                             </RadzenStack>
 
                             <RadzenRequiredValidator Component="LastName" Text="El apellido es requerido." />
@@ -63,7 +63,7 @@
                             </RadzenLabel>
 
                             <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
-                                <RadzenNumeric Min="0" Max="100" Name="CommissionPercent" @bind-Value=@editProviderDto.CommissionPercent Style="width: 100%;" Placeholder="Porcentaje de comisión..." />
+                                <RadzenNumeric Min="0" Max="100" Name="CommissionPercent" @bind-Value=@editConsignorDto.CommissionPercent Style="width: 100%;" Placeholder="Porcentaje de comisión..." />
                             </RadzenStack>
 
                             <RadzenRequiredValidator Component="CommissionPercent" Text="El porcentaje de comisión es requerido." />
@@ -93,9 +93,9 @@
 
                                 <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
-                                    <RadzenTextBox Name="EmailAddress" MaxLength="250" @bind-Value=@editProviderDto.EmailAddress Style="width: 100%;" Change="@OnEmailAddressChanged" Placeholder="Email..." />
+                                    <RadzenTextBox Name="EmailAddress" MaxLength="250" @bind-Value=@editConsignorDto.EmailAddress Style="width: 100%;" Change="@OnEmailAddressChanged" Placeholder="Email..." />
 
-                                    <RadzenCustomValidator Component="EmailAddress" Validator="@(() => InputValidators.IsValidEmailAddress(editProviderDto.EmailAddress))" Text="El email es inválido. Ejemplo: 'ejemplo@dominio.com'." />
+                                    <RadzenCustomValidator Component="EmailAddress" Validator="@(() => InputValidators.IsValidEmailAddress(editConsignorDto.EmailAddress))" Text="El email es inválido. Ejemplo: 'ejemplo@dominio.com'." />
                                 </RadzenStack>
                             </RadzenStack>
                         </RadzenColumn>
@@ -108,8 +108,8 @@
                                 </RadzenLabel>
 
                                 <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
-                                    <RadzenTextBox MaxLength=20 Name="PhoneNumber" @bind-Value=@editProviderDto.PhoneNumber Style="width: 100%;" Change="@OnPhoneNumberChanged" Placeholder="Número de teléfono..." />
-                                    <RadzenCustomValidator Component="PhoneNumber" Validator="@(() => InputValidators.IsValidPhoneNumber(editProviderDto.PhoneNumber))" Text="El número de teléfono es inválido. Ingrese uno como '1234 567 890'." />
+                                    <RadzenTextBox MaxLength=20 Name="PhoneNumber" @bind-Value=@editConsignorDto.PhoneNumber Style="width: 100%;" Change="@OnPhoneNumberChanged" Placeholder="Número de teléfono..." />
+                                    <RadzenCustomValidator Component="PhoneNumber" Validator="@(() => InputValidators.IsValidPhoneNumber(editConsignorDto.PhoneNumber))" Text="El número de teléfono es inválido. Ingrese uno como '1234 567 890'." />
                                 </RadzenStack>
                             </RadzenStack>
                         </RadzenColumn>
@@ -119,7 +119,7 @@
                                            Style="display:none"
                                            @bind-Value="contactGhost" />
 
-                            <RadzenCustomValidator Component="ContactGhost" Text="Debes ingresar al menos un dato de contacto (Email o Número de teléfono)." Validator="@(() => InputValidators.IsValidContactInformation(editProviderDto.EmailAddress, editProviderDto.PhoneNumber))" />
+                            <RadzenCustomValidator Component="ContactGhost" Text="Debes ingresar al menos un dato de contacto (Email o Número de teléfono)." Validator="@(() => InputValidators.IsValidContactInformation(editConsignorDto.EmailAddress, editConsignorDto.PhoneNumber))" />
                         </RadzenColumn>
                         <RadzenColumn Size="6" id="address-column">
 
@@ -131,9 +131,9 @@
 
                                 <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
-                                    <RadzenTextBox Name="Address" @bind-Value=@editProviderDto.Address Style="width: 100%;" Change="@OnAddressChanged" Placeholder="Dirección..." />
+                                    <RadzenTextBox Name="Address" @bind-Value=@editConsignorDto.Address Style="width: 100%;" Change="@OnAddressChanged" Placeholder="Dirección..." />
 
-                                    <RadzenCustomValidator Component="Address" Validator="@(() => InputValidators.IsNullOrEmptyOrMatchesAlphanumericPattern(editProviderDto.Address))" 
+                                    <RadzenCustomValidator Component="Address" Validator="@(() => InputValidators.IsNullOrEmptyOrMatchesAlphanumericPattern(editConsignorDto.Address))" 
                                         Text="Debe ingresar un texto válido, no sólo símbolos o espacios en blanco." />
                                 </RadzenStack>
                             </RadzenStack>
@@ -162,9 +162,9 @@
 {
     private bool busy;
 
-    [Parameter] public required ProviderDto ProviderDto { get; set; }
+    [Parameter] public required ConsignorDto ConsignorDto { get; set; }
 
-    private EditProviderDto editProviderDto = new();
+    private EditConsignorDto editConsignorDto = new();
 
     private string contactGhost = "";
 
@@ -173,29 +173,29 @@
         SetEditDtoToOriginal();
     }
 
-    async Task OnSubmit(EditProviderDto editProviderDto)
+    async Task OnSubmit(EditConsignorDto editConsignorDto)
     {
         busy = true;
-        var result = await ProviderService.EditByIdAsync(ProviderDto.Id, editProviderDto, CancellationToken.None);
+        var result = await ConsignorService.EditByIdAsync(ConsignorDto.Id, editConsignorDto, CancellationToken.None);
         busy = false;
         DialogService.Close(result);
     }
 
     private void OnEmailAddressChanged(string? value)
     {
-        editProviderDto.EmailAddress = value == "" ? null : value;
+        editConsignorDto.EmailAddress = value == "" ? null : value;
         StateHasChanged();
     }
 
     private void OnAddressChanged(string? value)
     {
-        editProviderDto.Address = value == "" ? null : value;
+        editConsignorDto.Address = value == "" ? null : value;
         StateHasChanged();
     }
 
     private void OnPhoneNumberChanged(string? value)
     {
-        editProviderDto.PhoneNumber = value == "" ? null : value;
+        editConsignorDto.PhoneNumber = value == "" ? null : value;
         StateHasChanged();
     }
 
@@ -207,26 +207,26 @@
 
     private void SetEditDtoToOriginal()
     {
-        editProviderDto = new EditProviderDto
+        editConsignorDto = new EditConsignorDto
         {
-            FirstName = ProviderDto.FirstName,
-            LastName = ProviderDto.LastName,
-            EmailAddress = ProviderDto.EmailAddress,
-            PhoneNumber = ProviderDto.PhoneNumber,
-            Address = ProviderDto.Address,
-            CommissionPercent = ProviderDto.CommissionPercent
+            FirstName = ConsignorDto.FirstName,
+            LastName = ConsignorDto.LastName,
+            EmailAddress = ConsignorDto.EmailAddress,
+            PhoneNumber = ConsignorDto.PhoneNumber,
+            Address = ConsignorDto.Address,
+            CommissionPercent = ConsignorDto.CommissionPercent
         };
     }
 
     private bool HasChanges()
     {
         return 
-            editProviderDto.FirstName != ProviderDto.FirstName ||
-            editProviderDto.LastName != ProviderDto.LastName ||
-            editProviderDto.EmailAddress != ProviderDto.EmailAddress ||
-            editProviderDto.PhoneNumber != ProviderDto.PhoneNumber ||
-            editProviderDto.Address != ProviderDto.Address ||
-            editProviderDto.CommissionPercent != ProviderDto.CommissionPercent;
+            editConsignorDto.FirstName != ConsignorDto.FirstName ||
+            editConsignorDto.LastName != ConsignorDto.LastName ||
+            editConsignorDto.EmailAddress != ConsignorDto.EmailAddress ||
+            editConsignorDto.PhoneNumber != ConsignorDto.PhoneNumber ||
+            editConsignorDto.Address != ConsignorDto.Address ||
+            editConsignorDto.CommissionPercent != ConsignorDto.CommissionPercent;
     }
 
     void ShowTooltip(ElementReference elementReference)

@@ -14,7 +14,7 @@ public interface IProductService
 
     Task<Result<PagedItems<ProductDto>>> GetByConsignmentIdAsync(QueryRequest request, int consignmentId, CancellationToken ct);
 
-    Task<Result<PagedItems<ProductDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken ct);
+    Task<Result<PagedItems<ProductDto>>> GetByConsignorIdAsync(QueryRequest request, int consignorId, CancellationToken ct);
 
     Task<Result<ProductDto>> GetByIdAsync(int productId, CancellationToken ct);
 

@@ -2,7 +2,7 @@
 @using TodoSeUsa.Application.Features.Consignments.Interfaces
 @using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
-@using TodoSeUsa.Application.Features.Providers.DTOs
+@using TodoSeUsa.Application.Features.Consignors.DTOs
 @using TodoSeUsa.BlazorServer.Components.Pages.Consignments
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
 
@@ -49,7 +49,7 @@
 
 @code {
 
-    [Parameter] public int ProviderId { get; set; }
+    [Parameter] public int ConsignorId { get; set; }
 
     private RadzenDataGrid<ConsignmentDto> grid = null!;
     private IEnumerable<ConsignmentDto>? consignments;
@@ -69,7 +69,7 @@
 
         QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
 
-        var result = await ConsignmentService.GetByProviderIdAsync(request, ProviderId, CancellationToken.None);
+        var result = await ConsignmentService.GetByConsignorIdAsync(request, ConsignorId, CancellationToken.None);
         if (result.IsSuccess)
         {
             consignments = result.Value.Items;

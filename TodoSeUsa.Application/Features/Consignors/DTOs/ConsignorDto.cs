@@ -1,6 +1,6 @@
-﻿namespace TodoSeUsa.Application.Features.Providers.DTOs;
+﻿namespace TodoSeUsa.Application.Features.Consignors.DTOs;
 
-public record ProviderDto
+public record ConsignorDto
 {
     public int Id { get; init; }
 

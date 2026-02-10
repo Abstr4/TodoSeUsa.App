@@ -25,7 +25,7 @@ public sealed class ConsignmentService : IConsignmentService
         var _context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
         var query = _context.Consignments
-            .Include(c => c.Provider)
+            .Include(c => c.Consignor)
                 .ThenInclude(p => p.Person)
             .AsQueryable();
 
@@ -43,11 +43,11 @@ public sealed class ConsignmentService : IConsignmentService
                 Id = c.Id,
                 Code = c.Code,
                 TotalProducts = c.Products.Count,
-                ProviderFirstName = c.Provider.Person.FirstName,
-                ProviderLastName = c.Provider.Person.LastName,
+                ConsignorFirstName = c.Consignor.Person.FirstName,
+                ConsignorLastName = c.Consignor.Person.LastName,
                 DateIssued = c.DateIssued,
                 Notes = c.Notes,
-                ProviderId = c.ProviderId,
+                ConsignorId = c.ConsignorId,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
             })
@@ -60,14 +60,14 @@ public sealed class ConsignmentService : IConsignmentService
         });
     }
 
-    public async Task<Result<PagedItems<ConsignmentDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken cancellationToken)
+    public async Task<Result<PagedItems<ConsignmentDto>>> GetByConsignorIdAsync(QueryRequest request, int consignorId, CancellationToken cancellationToken)
     {
         var _context = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
         var query = _context.Consignments
-            .Include(c => c.Provider)
+            .Include(c => c.Consignor)
                 .ThenInclude(p => p.Person)
-            .Where(c => c.ProviderId == providerId);
+            .Where(c => c.ConsignorId == consignorId);
 
         query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ConsignmentFilters);
 
@@ -83,11 +83,11 @@ public sealed class ConsignmentService : IConsignmentService
                 Id = c.Id,
                 Code = c.Code,
                 TotalProducts = c.Products.Count,
-                ProviderFirstName = c.Provider.Person.FirstName,
-                ProviderLastName = c.Provider.Person.LastName,
+                ConsignorFirstName = c.Consignor.Person.FirstName,
+                ConsignorLastName = c.Consignor.Person.LastName,
                 DateIssued = c.DateIssued,
                 Notes = c.Notes,
-                ProviderId = providerId,
+                ConsignorId = consignorId,
                 CreatedAt = c.CreatedAt,
                 UpdatedAt = c.UpdatedAt,
             })
@@ -116,9 +116,9 @@ public sealed class ConsignmentService : IConsignmentService
                     Id = c.Id,
                     Code = c.Code,
                     TotalProducts = c.Products.Count,
-                    ProviderId = c.ProviderId,
-                    ProviderFirstName = c.Provider.Person.FirstName,
-                    ProviderLastName = c.Provider.Person.LastName,
+                    ConsignorId = c.ConsignorId,
+                    ConsignorFirstName = c.Consignor.Person.FirstName,
+                    ConsignorLastName = c.Consignor.Person.LastName,
                     DateIssued = c.DateIssued,
                     Notes = c.Notes,
                     CreatedAt = c.CreatedAt,
@@ -154,7 +154,7 @@ public sealed class ConsignmentService : IConsignmentService
             Code = code,
             DateIssued = createConsignmentDto.DateIssued ?? DateTime.Now,
             Notes = createConsignmentDto.Notes,
-            ProviderId = createConsignmentDto.ProviderId,
+            ConsignorId = createConsignmentDto.ConsignorId,
             CreatedAt = DateTime.Now
         };
 
@@ -230,7 +230,7 @@ public sealed class ConsignmentService : IConsignmentService
 
             consignment.DateIssued = editConsignmentDto.DateIssued;
             consignment.Notes = editConsignmentDto.Notes;
-            consignment.ProviderId = editConsignmentDto.ProviderId;
+            consignment.ConsignorId = editConsignmentDto.ConsignorId;
 
             await _context.SaveChangesAsync(cancellationToken);
             return Result.Success(true);

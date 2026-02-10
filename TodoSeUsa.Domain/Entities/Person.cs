@@ -18,5 +18,5 @@ public class Person : BaseAuditableEntity
 
     public Client? Client { get; set; }
 
-    public Provider? Provider { get; set; }
+    public Consignor? Consignor { get; set; }
 }

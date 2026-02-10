@@ -9,8 +9,8 @@ using TodoSeUsa.Application.Features.Consignments.Interfaces;
 using TodoSeUsa.Application.Features.Consignments.Services;
 using TodoSeUsa.Application.Features.Products.Interfaces;
 using TodoSeUsa.Application.Features.Products.Services;
-using TodoSeUsa.Application.Features.Providers.Interfaces;
-using TodoSeUsa.Application.Features.Providers.Services;
+using TodoSeUsa.Application.Features.Consignors.Interfaces;
+using TodoSeUsa.Application.Features.Consignors.Services;
 using TodoSeUsa.Application.Features.Sales.Interfaces;
 using TodoSeUsa.Application.Features.Sales.Services;
 using TodoSeUsa.Application.Security;
@@ -26,7 +26,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<IBoxService, BoxService>();
         builder.Services.AddScoped<IProductService, ProductService>();
         builder.Services.AddScoped<IConsignmentService, ConsignmentService>();
-        builder.Services.AddScoped<IProviderService, ProviderService>();
+        builder.Services.AddScoped<IConsignorService, ConsignorService>();
         builder.Services.AddScoped<IPersonService, PersonService>();
         builder.Services.AddScoped<ISaleService, SaleService>();
 

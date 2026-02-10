@@ -1,7 +1,7 @@
 ﻿using TodoSeUsa.Application.Features.Boxes.DTOs;
 using TodoSeUsa.Application.Features.Consignments.DTOs;
 using TodoSeUsa.Application.Features.Products.DTOs;
-using TodoSeUsa.Application.Features.Providers.DTOs;
+using TodoSeUsa.Application.Features.Consignors.DTOs;
 
 namespace TodoSeUsa.Application.Common.Querying.CustomCases;
 
@@ -28,12 +28,12 @@ public static class QuerySortingCases
                     : q.OrderBy(c => c.Products.Count)
             },
             {
-                nameof(ConsignmentDto.ProviderFullName),
+                nameof(ConsignmentDto.ConsignorFullName),
                 (q, desc) => desc
-                    ? q.OrderByDescending(c => c.Provider.Person.FirstName)
-                           .ThenByDescending(c => c.Provider.Person.LastName)
-                    : q.OrderBy(c => c.Provider.Person.FirstName)
-                           .ThenBy(c => c.Provider.Person.LastName)
+                    ? q.OrderByDescending(c => c.Consignor.Person.FirstName)
+                           .ThenByDescending(c => c.Consignor.Person.LastName)
+                    : q.OrderBy(c => c.Consignor.Person.FirstName)
+                           .ThenBy(c => c.Consignor.Person.LastName)
             }
             };
 
@@ -41,32 +41,32 @@ public static class QuerySortingCases
         new()
         {
             {
-                nameof(ProductDto.ProviderInfo),
+                nameof(ProductDto.ConsignorInfo),
                 (q, desc) => desc
-                    ? q.OrderByDescending(p => p.Consignment.Provider.Person.FirstName)
-                           .ThenByDescending(p => p.Consignment.Provider.Person.LastName)
-                    : q.OrderBy(p => p.Consignment.Provider.Person.FirstName)
-                           .ThenBy(p => p.Consignment.Provider.Person.LastName)
+                    ? q.OrderByDescending(p => p.Consignment.Consignor.Person.FirstName)
+                           .ThenByDescending(p => p.Consignment.Consignor.Person.LastName)
+                    : q.OrderBy(p => p.Consignment.Consignor.Person.FirstName)
+                           .ThenBy(p => p.Consignment.Consignor.Person.LastName)
             }
         };
 
-    public static readonly Dictionary<string, Func<IQueryable<Provider>, bool, IQueryable<Provider>>> ProviderSorts =
+    public static readonly Dictionary<string, Func<IQueryable<Consignor>, bool, IQueryable<Consignor>>> ConsignorSorts =
         new()
         {
             {
-                nameof(ProviderDto.TotalProducts),
+                nameof(ConsignorDto.TotalProducts),
                 (q, desc) => desc
                     ? q.OrderByDescending(p => p.Consignments.Sum(cg => cg.Products.Count))
                     : q.OrderBy(p => p.Consignments.Sum(cg => cg.Products.Count))
             },
             {
-                nameof(ProviderDto.TotalConsignments),
+                nameof(ConsignorDto.TotalConsignments),
                 (q, desc) => desc
                     ? q.OrderByDescending(p => p.Consignments.Count)
                     : q.OrderBy(p => p.Consignments.Count)
             },
             {
-                nameof(ProviderDto.FullName),
+                nameof(ConsignorDto.FullName),
                 (q, desc) => desc
                     ? q.OrderByDescending(p => p.Person.FirstName)
                            .ThenByDescending(p => p.Person.LastName)
@@ -74,7 +74,7 @@ public static class QuerySortingCases
                            .ThenBy(p => p.Person.LastName)
             },
             {
-                nameof(ProviderDto.ContactInfo),
+                nameof(ConsignorDto.ContactInfo),
                 (q, desc) => desc
                     ? q.OrderByDescending(p => p.Person.EmailAddress)
                            .ThenByDescending(p => p.Person.PhoneNumber)

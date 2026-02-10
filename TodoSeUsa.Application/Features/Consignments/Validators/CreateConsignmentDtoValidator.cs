@@ -6,8 +6,8 @@ public class CreateConsignmentDtoValidator : AbstractValidator<CreateConsignment
 {
     public CreateConsignmentDtoValidator()
     {
-        RuleFor(x => x.ProviderId).NotEmpty().WithMessage("El proveedor es obligatorio.")
-            .GreaterThan(0).WithMessage("El código del proveedor debe ser mayor a cero.");
+        RuleFor(x => x.ConsignorId).NotEmpty().WithMessage("El consignador es obligatorio.")
+            .GreaterThan(0).WithMessage("El código del consignador debe ser mayor a cero.");
 
         RuleFor(x => x.Notes)
             .MaximumLength(250).WithMessage("Las notas deben tener menos que 250 carácteres.");

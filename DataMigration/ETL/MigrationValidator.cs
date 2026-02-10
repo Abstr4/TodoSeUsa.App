@@ -25,7 +25,7 @@ public class MigrationValidator
         await ValidateBillCountsAsync();
         await ValidateProductCountsAsync();
 
-        await ValidateProviderLinksAsync();
+        await ValidateConsignorLinksAsync();
         await ValidateConsignmentLinksAsync();
         await ValidateProductLinksAsync();
 
@@ -73,29 +73,29 @@ public class MigrationValidator
         _logger.LogInformation("Product count validation passed.\n");
     }
 
-    private async Task ValidateProviderLinksAsync()
+    private async Task ValidateConsignorLinksAsync()
     {
-        _logger.LogInformation("Starting provider link validation...");
-        var broken = await _new.Providers
+        _logger.LogInformation("Starting consignor link validation...");
+        var broken = await _new.Consignors
             .Where(p => !_new.Persons.Any(pe => pe.Id == p.PersonId))
             .AnyAsync();
 
-        AssertFalse(broken, "Providers without Person");
+        AssertFalse(broken, "Consignors without Person");
 
-        _logger.LogInformation("There are no providers without associated persons.");
-        _logger.LogInformation("Provider link validation passed.\n");
+        _logger.LogInformation("There are no consignors without associated persons.");
+        _logger.LogInformation("Consignor link validation passed.\n");
     }
 
     private async Task ValidateConsignmentLinksAsync()
     {
         _logger.LogInformation("Starting consignment link validation...");
         var broken = await _new.Consignments
-            .Where(c => !_new.Providers.Any(p => p.Id == c.ProviderId))
+            .Where(c => !_new.Consignors.Any(p => p.Id == c.ConsignorId))
             .AnyAsync();
 
-        AssertFalse(broken, "Consignments without Provider");
+        AssertFalse(broken, "Consignments without Consignor");
 
-        _logger.LogInformation("There are no consignments without associated provider.");
+        _logger.LogInformation("There are no consignments without associated consignor.");
         _logger.LogInformation("Consignment link validation passed.\n");
     }
 

@@ -32,13 +32,13 @@ public record ProductDto
 
     public int? BoxId { get; init; }
 
-    public int ProviderId { get; init; }
+    public int ConsignorId { get; init; }
 
-    public string ProviderFirstName { get; init; } = string.Empty;
+    public string ConsignorFirstName { get; init; } = string.Empty;
 
-    public string ProviderLastName { get; init; } = string.Empty;
+    public string ConsignorLastName { get; init; } = string.Empty;
 
-    public string ProviderInfo => ProviderFirstName + ' ' + ProviderLastName + " - ID: " + ProviderId.ToString();
+    public string ConsignorInfo => ConsignorFirstName + ' ' + ConsignorLastName + " - ID: " + ConsignorId.ToString();
 
     public DateTime CreatedAt { get; init; }
 

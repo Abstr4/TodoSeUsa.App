@@ -18,7 +18,7 @@ public sealed class DbSeeder
     {
         await SeedBoxesAsync(context);
         await SeedPeopleAsync(context);
-        await SeedProvidersAsync(context);
+        await SeedConsignorsAsync(context);
         await SeedConsignmentsAsync(context);
         await SeedProductsAsync(context);
     }
@@ -54,19 +54,19 @@ public sealed class DbSeeder
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedProvidersAsync(ApplicationDbContext context)
+    private static async Task SeedConsignorsAsync(ApplicationDbContext context)
     {
-        if (await context.Providers.AnyAsync())
+        if (await context.Consignors.AnyAsync())
             return;
 
         var person = await context.Persons.FirstAsync();
-        var provider = new Provider
+        var consignor = new Consignor
         {
             PersonId = person.Id,
             CommissionPercent = 10m
         };
 
-        await context.Providers.AddAsync(provider);
+        await context.Consignors.AddAsync(consignor);
         await context.SaveChangesAsync();
     }
 
@@ -75,19 +75,19 @@ public sealed class DbSeeder
         if (await context.Consignments.AnyAsync(ct))
             return;
 
-        var provider = await context.Providers.FirstAsync(ct);
+        var consignor = await context.Consignors.FirstAsync(ct);
 
         var consignments = new List<Consignment>
         {
             new()
             {
-                ProviderId = provider.Id,
+                ConsignorId = consignor.Id,
                 Code = await _codeService.GenerateAsync(ct),
                 Notes = "First consignment"
             },
             new()
             {
-                ProviderId = provider.Id,
+                ConsignorId = consignor.Id,
                 Code = await _codeService.GenerateAsync(ct),
                 Notes = "Second consignment"
             }

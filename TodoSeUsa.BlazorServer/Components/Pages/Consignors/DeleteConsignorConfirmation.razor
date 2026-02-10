@@ -1,7 +1,7 @@
-﻿@using TodoSeUsa.Application.Features.Providers.DTOs
-@using TodoSeUsa.Application.Features.Providers.Interfaces
+﻿@using TodoSeUsa.Application.Features.Consignors.DTOs
+@using TodoSeUsa.Application.Features.Consignors.Interfaces
 
-@inject IProviderService ProviderService;
+@inject IConsignorService ConsignorService;
 
 @inject DialogService DialogService;
 
@@ -10,7 +10,7 @@
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-mb-4">
 
     <RadzenText TextStyle="TextStyle.H6">
-        ¿Estás seguro que deseas al proveedor '<b>@ProviderDto.FullName </b>' <b>ID: @ProviderDto.Id </b>?
+        ¿Estás seguro que deseas al consignador '<b>@ConsignorDto.FullName </b>' <b>ID: @ConsignorDto.Id </b>?
     </RadzenText>
 </RadzenStack>
 
@@ -20,19 +20,19 @@
 </RadzenCard>
 
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="3rem" Wrap="FlexWrap.Wrap">
-    <RadzenButton IsBusy="saveButtonBusy" Icon="delete" Text="Borrar" BusyText="Borrando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@(async () => await Delete(ProviderDto.Id))" />
+    <RadzenButton IsBusy="saveButtonBusy" Icon="delete" Text="Borrar" BusyText="Borrando..." ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Click="@(async () => await Delete(ConsignorDto.Id))" />
 </RadzenStack>
 
 @code
 {
-    [Parameter] public required ProviderDto ProviderDto { get; set; }
+    [Parameter] public required ConsignorDto ConsignorDto { get; set; }
 
     bool saveButtonBusy;
 
     async Task Delete(int consignmentId)
     {
         saveButtonBusy = true;
-        var result = await ProviderService.DeleteByIdAsync(consignmentId, CancellationToken.None);
+        var result = await ConsignorService.DeleteByIdAsync(consignmentId, CancellationToken.None);
         saveButtonBusy = false;
         DialogService.Close(result);
     }

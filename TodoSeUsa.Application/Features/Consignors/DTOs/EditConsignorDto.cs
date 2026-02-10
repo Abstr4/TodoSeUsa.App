@@ -1,6 +1,6 @@
-﻿namespace TodoSeUsa.Application.Features.Providers.DTOs;
+﻿namespace TodoSeUsa.Application.Features.Consignors.DTOs;
 
-public record EditProviderDto
+public record EditConsignorDto
 {
     public decimal CommissionPercent { get; set; }
 

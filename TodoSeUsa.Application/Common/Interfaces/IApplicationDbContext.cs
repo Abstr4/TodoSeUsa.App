@@ -14,7 +14,7 @@ public interface IApplicationDbContext
 
     DbSet<Consignment> Consignments { get; }
 
-    DbSet<Provider> Providers { get; }
+    DbSet<Consignor> Consignors { get; }
 
     DbSet<Sale> Sales { get; }
 

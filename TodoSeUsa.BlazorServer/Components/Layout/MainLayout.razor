@@ -3,7 +3,7 @@
 @using TodoSeUsa.BlazorServer.Components.Pages.Boxes
 @using TodoSeUsa.BlazorServer.Components.Pages.Consignments
 @using TodoSeUsa.BlazorServer.Components.Pages.Products
-@using TodoSeUsa.BlazorServer.Components.Pages.Providers
+@using TodoSeUsa.BlazorServer.Components.Pages.Consignors
 @using TodoSeUsa.BlazorServer.UI.Notifications
 
 @inherits LayoutComponentBase;
@@ -62,7 +62,7 @@
                 <RadzenFabMenuItem Text="Venta" Icon="sell" Click="@HandleCreateSale" />
                 <RadzenFabMenuItem Text="Producto" Icon="apparel" Click="@HandleCreateProduct" />
                 <RadzenFabMenuItem Text="Consignación" Icon="add_notes" Click="@HandleCreateConsignment" />
-                <RadzenFabMenuItem Text="Proveedor" Icon="person" Click="@HandleCreateProvider" />
+                <RadzenFabMenuItem Text="Consignador" Icon="person" Click="@HandleCreateConsignor" />
                 <RadzenFabMenuItem Text="Caja" Icon="box" Click="@HandleCreateBox" />
             </RadzenFabMenu>
 
@@ -141,9 +141,9 @@
         NavigationManager.NavigateTo($"/productos/registrar");
     }
 
-    private async Task HandleCreateProvider()
+    private async Task HandleCreateConsignor()
     {
-        var result = await DialogService.OpenAsync<CreateProviderForm>("Registrar nuevo proveedor",
+        var result = await DialogService.OpenAsync<CreateConsignorForm>("Registrar nuevo consignador",
                new Dictionary<string, object>(),
                new DialogOptions()
                {
@@ -155,8 +155,8 @@
         {
             if (createResult.IsSuccess)
             {
-                SimpleNotifications.Success($"Proveedor creado con éxito!");
-                NavigationManager.NavigateTo($"/proveedores/{createResult.Value}");
+                SimpleNotifications.Success($"Consignador creado con éxito!");
+                NavigationManager.NavigateTo($"/consignadores/{createResult.Value}");
             }
             else
             {

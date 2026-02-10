@@ -37,9 +37,9 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
             .HasForeignKey<Client>(c => c.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(p => p.Provider)
+        builder.HasOne(p => p.Consignor)
             .WithOne(pr => pr.Person)
-            .HasForeignKey<Provider>(pr => pr.PersonId)
+            .HasForeignKey<Consignor>(pr => pr.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

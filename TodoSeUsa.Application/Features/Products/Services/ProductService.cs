@@ -78,7 +78,7 @@ public partial class ProductService : IProductService
 
             var query = _context.Products
                 .Include(p => p.Consignment)
-                        .ThenInclude(c => c.Provider)
+                        .ThenInclude(c => c.Consignor)
                             .ThenInclude(pr => pr.Person)
                 .Where(p => p.BoxId == boxId);
 
@@ -106,9 +106,9 @@ public partial class ProductService : IProductService
                     ConsignmentId = p.ConsignmentId,
                     SaleId = p.SaleId,
                     BoxId = boxId,
-                    ProviderId = p.Consignment.ProviderId,
-                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    ConsignorId = p.Consignment.ConsignorId,
+                    ConsignorFirstName = p.Consignment.Consignor.Person.FirstName,
+                    ConsignorLastName = p.Consignment.Consignor.Person.LastName,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt
                 })
@@ -139,7 +139,7 @@ public partial class ProductService : IProductService
 
             var query = _context.Products
                 .Include(p => p.Consignment)
-                    .ThenInclude(c => c.Provider)
+                    .ThenInclude(c => c.Consignor)
                         .ThenInclude(pr => pr.Person)
                 .Where(p => p.ConsignmentId == consignmentId);
 
@@ -167,9 +167,9 @@ public partial class ProductService : IProductService
                     ConsignmentId = p.ConsignmentId,
                     SaleId = p.SaleId,
                     BoxId = p.BoxId,
-                    ProviderId = p.Consignment.ProviderId,
-                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    ConsignorId = p.Consignment.ConsignorId,
+                    ConsignorFirstName = p.Consignment.Consignor.Person.FirstName,
+                    ConsignorLastName = p.Consignment.Consignor.Person.LastName,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt
                 })
@@ -188,11 +188,11 @@ public partial class ProductService : IProductService
         }
     }
 
-    public async Task<Result<PagedItems<ProductDto>>> GetByProviderIdAsync(QueryRequest request, int providerId, CancellationToken ct)
+    public async Task<Result<PagedItems<ProductDto>>> GetByConsignorIdAsync(QueryRequest request, int consignorId, CancellationToken ct)
     {
-        if (providerId < 1)
+        if (consignorId < 1)
         {
-            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("El Id del proveedor debe ser mayor que cero."));
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("El Id del consignador debe ser mayor que cero."));
         }
         try
         {
@@ -200,9 +200,9 @@ public partial class ProductService : IProductService
 
             var query = _context.Products
                 .Include(p => p.Consignment)
-                    .ThenInclude(c => c.Provider)
+                    .ThenInclude(c => c.Consignor)
                         .ThenInclude(pr => pr.Person)
-                .Where(p => p.Consignment.ProviderId == providerId);
+                .Where(p => p.Consignment.ConsignorId == consignorId);
 
             query = QueryableExtensions.ApplyCustomFiltering(query, request.Filters, request.LogicalFilterOperator, QueryFilteringCases.ProductFilters);
 
@@ -226,9 +226,9 @@ public partial class ProductService : IProductService
                     RefurbishmentCost = p.RefurbishmentCost,
                     Season = p.Season,
                     ConsignmentId = p.ConsignmentId,
-                    ProviderId = p.Consignment.ProviderId,
-                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    ConsignorId = p.Consignment.ConsignorId,
+                    ConsignorFirstName = p.Consignment.Consignor.Person.FirstName,
+                    ConsignorLastName = p.Consignment.Consignor.Person.LastName,
                     SaleId = p.SaleId,
                     BoxId = p.BoxId,
                     CreatedAt = p.CreatedAt,
@@ -240,8 +240,8 @@ public partial class ProductService : IProductService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while retrieving products for provider ID {boxId}.", providerId);
-            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos del proveedor."));
+            _logger.LogError(ex, "An error occurred while retrieving products for consignor ID {boxId}.", consignorId);
+            return Result.Failure<PagedItems<ProductDto>>(ProductErrors.Failure("Ocurrió un error inesperado al intentar recuperar los productos del consignador."));
         }
     }
 
@@ -253,7 +253,7 @@ public partial class ProductService : IProductService
 
             var query = _context.Products
                 .Include(p => p.Consignment)
-                    .ThenInclude(c => c.Provider)
+                    .ThenInclude(c => c.Consignor)
                         .ThenInclude(pr => pr.Person)
                 .AsQueryable();
 
@@ -281,9 +281,9 @@ public partial class ProductService : IProductService
                     ConsignmentId = p.ConsignmentId,
                     SaleId = p.SaleId,
                     BoxId = p.BoxId,
-                    ProviderId = p.Consignment.ProviderId,
-                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    ConsignorId = p.Consignment.ConsignorId,
+                    ConsignorFirstName = p.Consignment.Consignor.Person.FirstName,
+                    ConsignorLastName = p.Consignment.Consignor.Person.LastName,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt
                 })
@@ -330,9 +330,9 @@ public partial class ProductService : IProductService
                     ConsignmentId = p.ConsignmentId,
                     SaleId = p.SaleId,
                     BoxId = p.BoxId,
-                    ProviderId = p.Consignment.ProviderId,
-                    ProviderFirstName = p.Consignment.Provider.Person.FirstName,
-                    ProviderLastName = p.Consignment.Provider.Person.LastName,
+                    ConsignorId = p.Consignment.ConsignorId,
+                    ConsignorFirstName = p.Consignment.Consignor.Person.FirstName,
+                    ConsignorLastName = p.Consignment.Consignor.Person.LastName,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt
                 })

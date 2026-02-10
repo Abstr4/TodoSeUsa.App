@@ -1,16 +1,16 @@
-﻿namespace TodoSeUsa.Application.Features.Providers;
+﻿namespace TodoSeUsa.Application.Features.Consignors;
 
-public static class ProviderErrors
+public static class ConsignorErrors
 {
     public static Error NotFound(int Id) => Error.NotFound(
-    "Providers.NotFound",
+    "Consignors.NotFound",
     $"El cliente con el Id = '{Id}' no se encontró.");
 
     public static Error Failure() => Error.Failure(
-    "Providers.Failure",
+    "Consignors.Failure",
     "Ocurrió un error inesperado.");
 
     public static Error Failure(string message) => Error.Failure(
-    "Providers.Failure",
+    "Consignors.Failure",
     message);
 }

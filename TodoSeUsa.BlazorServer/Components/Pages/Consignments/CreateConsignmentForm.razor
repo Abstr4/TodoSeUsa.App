@@ -15,17 +15,17 @@
             <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
                 <RadzenRow>
 
-                    <RadzenColumn Size="6" id="ProviderId-column">
+                    <RadzenColumn Size="6" id="ConsignorId-column">
 
                         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
 
-                            <RadzenLabel Component="ProviderId">
-                                Código del proveedor <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            <RadzenLabel Component="ConsignorId">
+                                Código del consignador <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                             </RadzenLabel>
 
-                            <RadzenNumeric Name="ProviderId" @bind-Value=@createConsignmentDto.ProviderId Style="width: 100%;" TValue="int" Min="0" Disabled="@(ProviderId != null)" />
-                            <RadzenRequiredValidator Component="ProviderId" Text="El código del proveedor es requerido." />
-                            <RadzenNumericRangeValidator Component="ProviderId" Min="1" Text="El código del proveedor debe ser mayor a cero." />
+                            <RadzenNumeric Name="ConsignorId" @bind-Value=@createConsignmentDto.ConsignorId Style="width: 100%;" TValue="int" Min="0" Disabled="@(ConsignorId != null)" />
+                            <RadzenRequiredValidator Component="ConsignorId" Text="El código del consignador es requerido." />
+                            <RadzenNumericRangeValidator Component="ConsignorId" Min="1" Text="El código del consignador debe ser mayor a cero." />
 
                         </RadzenStack>
                     </RadzenColumn>
@@ -70,7 +70,7 @@
 
 @code
 {
-    [Parameter] public int? ProviderId { get; set; }
+    [Parameter] public int? ConsignorId { get; set; }
 
     private bool isCreating;
 
@@ -78,9 +78,9 @@
 
     protected override void OnInitialized()
     {
-        if (ProviderId != null && ProviderId > 0)
+        if (ConsignorId != null && ConsignorId > 0)
         {
-            createConsignmentDto.ProviderId = ProviderId.Value;
+            createConsignmentDto.ConsignorId = ConsignorId.Value;
         }
     }
 

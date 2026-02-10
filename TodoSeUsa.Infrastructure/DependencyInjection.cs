@@ -38,10 +38,10 @@ public static class DependencyInjection
 
     private static void ConfigureDbContext(
         DbContextOptionsBuilder options,
-        IServiceProvider serviceProvider,
+        IServiceProvider serviceConsignor,
         string connectionString)
     {
-        var interceptor = serviceProvider.GetRequiredService<SoftDeleteInterceptor>();
+        var interceptor = serviceConsignor.GetRequiredService<SoftDeleteInterceptor>();
 
         options.UseSqlServer(connectionString);
         options.AddInterceptors(interceptor);
