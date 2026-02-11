@@ -1,6 +1,6 @@
 ﻿using TodoSeUsa.Application.Utilities;
 
-namespace TodoSeUsa.Application.Common.Services;
+namespace TodoSeUsa.Application.Features.Sales.Services;
 
 public class UniqueSaleCodeService
 {

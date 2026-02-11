@@ -1,7 +1,7 @@
 ﻿namespace TodoSeUsa.Infrastructure.Persistance.Seed;
 
 using Microsoft.EntityFrameworkCore;
-using TodoSeUsa.Application.Common.Services;
+using TodoSeUsa.Application.Features.Consignments.Services;
 using TodoSeUsa.Domain.Entities;
 using TodoSeUsa.Domain.Enums;
 

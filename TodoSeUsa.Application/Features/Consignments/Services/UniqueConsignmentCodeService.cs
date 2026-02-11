@@ -1,6 +1,6 @@
 ﻿using TodoSeUsa.Application.Utilities;
 
-namespace TodoSeUsa.Application.Common.Services;
+namespace TodoSeUsa.Application.Features.Consignments.Services;
 
 public class UniqueConsignmentCodeService
 {

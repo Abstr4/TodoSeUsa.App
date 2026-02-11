@@ -5,67 +5,6 @@ namespace TodoSeUsa.Application.Common.Services;
 
 public static class PredicateBuilder
 {
-    public static Expression<Func<T, bool>> BuildPredicate<T>(QueryRequest request)
-    {
-        try
-        {
-            if (request.Filters == null || request.Filters.Count == 0)
-                return x => true;
-
-            var param = Expression.Parameter(typeof(T), "x");
-            Expression? finalExpr = null;
-
-            foreach (var f in request.Filters)
-            {
-                var member = Expression.Property(param, f.Property);
-                var memberType = member.Type;
-                var underlyingType = Nullable.GetUnderlyingType(memberType) ?? memberType;
-                var filterValue = f.FilterValue;
-
-                Expression filterExpr;
-
-                if (f.FilterOperator == FilterOperator.IsNull || f.FilterOperator == FilterOperator.IsNotNull)
-                {
-                    if (!memberType.IsClass && Nullable.GetUnderlyingType(memberType) == null)
-                    {
-                        filterExpr = Expression.Constant(f.FilterOperator == FilterOperator.IsNotNull);
-                    }
-                    else
-                    {
-                        filterExpr = f.FilterOperator == FilterOperator.IsNull
-                            ? Expression.Equal(member, Expression.Constant(null, memberType))
-                            : Expression.NotEqual(member, Expression.Constant(null, memberType));
-                    }
-                }
-                else
-                {
-                    if (filterValue != null)
-                    {
-                        if (underlyingType.IsEnum && filterValue is int intValue)
-                            filterValue = Enum.ToObject(underlyingType, intValue);
-                        else if (filterValue.GetType() != underlyingType)
-                            filterValue = Convert.ChangeType(filterValue, underlyingType);
-                    }
-
-                    var constant = Expression.Constant(filterValue, memberType);
-                    filterExpr = BuildFilterExpression(member, constant, f.FilterOperator);
-                }
-
-                finalExpr = finalExpr == null
-                    ? filterExpr
-                    : request.LogicalFilterOperator == LogicalFilterOperator.And
-                        ? Expression.AndAlso(finalExpr, filterExpr)
-                        : Expression.OrElse(finalExpr, filterExpr);
-            }
-
-            return Expression.Lambda<Func<T, bool>>(finalExpr!, param);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Exception raised while trying to build the predicate: {ex}");
-        }
-    }
-
     public static Expression<Func<T, bool>> BuildPredicate<T>(
     List<FilterDescriptor>? filters,
     LogicalFilterOperator logicalOperator,
