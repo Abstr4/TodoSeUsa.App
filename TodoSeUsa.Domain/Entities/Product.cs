@@ -15,6 +15,8 @@ public class Product : BaseAuditableEntity
 
     public ICollection<ProductImage> Images { get; set; } = [];
 
+    public DateTime? PayoutDate { get; set; }
+
     public int ConsignmentId { get; set; }
     public Consignment Consignment { get; set; } = null!;
 

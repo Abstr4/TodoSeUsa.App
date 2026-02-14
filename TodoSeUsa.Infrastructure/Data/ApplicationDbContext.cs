@@ -19,6 +19,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SaleItem> SaleItems => Set<SaleItem>();
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+    public DbSet<Payout> Payouts => Set<Payout>();
+    public DbSet<PayoutLine> PayoutLines => Set<PayoutLine>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     { }

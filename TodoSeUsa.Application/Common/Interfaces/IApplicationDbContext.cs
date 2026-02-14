@@ -28,6 +28,10 @@ public interface IApplicationDbContext
 
     DbSet<ProductImage> ProductImages { get; }
 
+    DbSet<Payout> Payouts { get; }
+
+    DbSet<PayoutLine> PayoutLines { get; }
+
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
 
     Task<int> SaveChangesAsync(CancellationToken ct);
