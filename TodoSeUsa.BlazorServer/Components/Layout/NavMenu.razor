@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using TodoSeUsa.Application.Common.Events
+@using TodoSeUsa.Application.Features.Payouts.Interfaces
 @using TodoSeUsa.Infrastructure.Data
 
 @implements IDisposable
@@ -8,6 +10,9 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IDbContextFactory<ApplicationDbContext> DbContextFactory
 @inject NavigationManager NavigationManager
+
+@inject IPayoutService PayoutService
+@inject AppEvents AppEvents
 
 <div class="top-row ps-3 navbar navbar-dark">
     <a class="navbar-brand" href="">
@@ -60,6 +65,21 @@
                     </NavLink>
                 </div>
 
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="liquidaciones">
+                        <span class="bi bi-receipt nav-icon" aria-hidden="true"></span> 
+                        <span style="margin-right: 6px">Liquidaciones</span>
+                        @if (pendingNotStartedPayoutsCount > 0)
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@pendingNotStartedPayoutsCount.ToString()" IsPill="true" class="rz-ms-2"/>
+                        }
+                        @if (pendingStartedPayoutsCount > 0)
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="@pendingStartedPayoutsCount.ToString()" IsPill="true" class="rz-ms-1"/>
+                        }
+                    </NavLink>
+                </div>
+
             </Authorized>
 
         </AuthorizeView>
@@ -75,6 +95,8 @@
 @code {
 
     private bool anyUserExists = false;
+    private int pendingNotStartedPayoutsCount = 0;
+    private int pendingStartedPayoutsCount = 0;
 
     private string? currentUrl;
 
@@ -85,6 +107,8 @@
 
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+        AppEvents.LiquidationsChanged += async () => await OnLiquidationChanged();
+        await OnLiquidationChanged();
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -93,9 +117,17 @@
         StateHasChanged();
     }
 
+    private async Task OnLiquidationChanged()
+    {
+        pendingNotStartedPayoutsCount = await PayoutService.CountPendingNotStartedAsync(CancellationToken.None);
+        pendingStartedPayoutsCount = await PayoutService.CountPendingStartedAsync(CancellationToken.None);
+        await InvokeAsync(StateHasChanged);
+    }
+
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+        AppEvents.LiquidationsChanged -= async () => await OnLiquidationChanged();
     }
 }
 

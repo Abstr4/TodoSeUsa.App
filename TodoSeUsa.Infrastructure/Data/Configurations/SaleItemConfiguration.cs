@@ -7,7 +7,12 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
 {
     public void Configure(EntityTypeBuilder<SaleItem> builder)
     {
-        builder.ToTable("SaleItems");
+        builder.ToTable(
+            name: "SaleItems",
+            t => t.HasCheckConstraint(
+                    "CK_SaleItem_ConsignorPercent",
+                    "[ConsignorPercent] BETWEEN 0 AND 100")
+            );
 
         builder.HasKey(c => c.Id);
 
@@ -22,6 +27,12 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
         builder.Property(p => p.Price)
             .IsRequired()
             .HasPrecision(18, 2);
+
+        builder.Property(x => x.AmountPaidOut)
+            .HasPrecision(18, 2);
+
+        builder.Property(x => x.ConsignorPercent)
+            .HasPrecision(3, 0);
 
         builder.Property(x => x.Size)
             .HasMaxLength(50);

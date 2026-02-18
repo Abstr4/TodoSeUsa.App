@@ -63,7 +63,7 @@ public sealed class DbSeeder
         var consignor = new Consignor
         {
             PersonId = person.Id,
-            CommissionPercent = 10m
+            CommissionPercent = 25
         };
 
         await context.Consignors.AddAsync(consignor);

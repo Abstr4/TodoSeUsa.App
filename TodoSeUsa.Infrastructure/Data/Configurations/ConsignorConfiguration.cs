@@ -8,8 +8,16 @@ public class ConsignorConfiguration : IEntityTypeConfiguration<Consignor>
     {
         builder.UseTpcMappingStrategy();
 
-        builder.ToTable("Consignors")
-            .HasQueryFilter(b => !b.DeletedAt.HasValue);
+        builder.ToTable(
+            "Consignors",
+            t => t.HasCheckConstraint(
+            "CK_Consignor_CommissionPercentPercent",
+            "[CommissionPercent] BETWEEN 0 AND 100"));
+
+        builder.Property(x => x.CommissionPercent)
+            .HasPrecision(3, 0);
+
+        builder.HasQueryFilter(b => b.DeletedAt == null);
 
         builder.HasKey(c => c.Id);
 
@@ -24,7 +32,5 @@ public class ConsignorConfiguration : IEntityTypeConfiguration<Consignor>
            .HasForeignKey<Consignor>(p => p.PersonId)
            .IsRequired()
            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Property(p => p.CommissionPercent).HasPrecision(18, 4);
     }
 }

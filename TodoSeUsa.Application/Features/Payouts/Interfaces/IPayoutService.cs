@@ -4,6 +4,12 @@ namespace TodoSeUsa.Application.Features.Payouts.Interfaces;
 
 public interface IPayoutService
 {
+    Task<int> CountPendingStartedAsync(CancellationToken ct);
+
+    Task<int> CountPendingNotStartedAsync(CancellationToken ct);
+
+    Task<Result<List<PendingLiquidationGroupDto>>> GetPendingGroupedAsync(CancellationToken ct);
+
     Task<Result<PagedItems<PayoutDto>>> GetAllAsync(QueryRequest request, CancellationToken ct);
 
     Task<Result<int>> CreateAsync(CreatePayoutDto dto, CancellationToken ct);

@@ -2,6 +2,10 @@
 
 public static class PayoutErrors
 {
+    public static Error NothingToPay() => Error.Failure(
+        "Payouts.NothingToPay",
+        "No hay productos vendidos para liquidar.");
+
     public static Error NotFound(int Id) => Error.NotFound(
     "Payouts.NotFound",
     $"La liquidación código '{Id}' no se encontró.");

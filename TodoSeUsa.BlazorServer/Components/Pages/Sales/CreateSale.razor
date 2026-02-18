@@ -1,5 +1,6 @@
 ﻿@page "/ventas/registrar"
 
+@using TodoSeUsa.Application.Common.Events
 @using TodoSeUsa.Application.Features.Payments.DTOs
 @using TodoSeUsa.Application.Features.Products.DTOs
 @using TodoSeUsa.Application.Features.Products.Interfaces
@@ -15,6 +16,8 @@
 @inject TooltipService TooltipService;
 @inject SimpleNotifications SimpleNotifications;
 @inject NavigationManager NavigationManager;
+
+@inject AppEvents AppEvents;
 
 @attribute [Authorize]
 

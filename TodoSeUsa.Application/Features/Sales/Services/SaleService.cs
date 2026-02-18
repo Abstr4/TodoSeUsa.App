@@ -1,4 +1,5 @@
 ﻿using System.Linq.Dynamic.Core;
+using TodoSeUsa.Application.Common.Events;
 using TodoSeUsa.Application.Features.Payments.DTOs;
 using TodoSeUsa.Application.Features.Products;
 using TodoSeUsa.Application.Features.Sales.DTOs;
@@ -13,12 +14,14 @@ public sealed class SaleService : ISaleService
     private readonly ILogger<SaleService> _logger;
     private readonly IApplicationDbContextFactory _contextFactory;
     private readonly UniqueSaleCodeService _uniqueSaleCodeService;
+    private readonly AppEvents _events;
 
-    public SaleService(ILogger<SaleService> logger, IApplicationDbContextFactory contextFactory, UniqueSaleCodeService uniqueSaleCodeService)
+    public SaleService(ILogger<SaleService> logger, IApplicationDbContextFactory contextFactory, UniqueSaleCodeService uniqueSaleCodeService, AppEvents events)
     {
         _logger = logger;
         _contextFactory = contextFactory;
         _uniqueSaleCodeService = uniqueSaleCodeService;
+        _events = events;
     }
 
     public async Task<Result<int>> GetYearlyTotalCountAsync(int year, CancellationToken ct)
@@ -421,6 +424,8 @@ public sealed class SaleService : ISaleService
             var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var existingProducts = await context.Products
+                .Include(p => p.Consignment)
+                    .ThenInclude(c => c.Consignor)
                 .Where(p => createSaleDto.ProductsIds.Contains(p.Id))
                 .ToListAsync(ct);
 
@@ -492,6 +497,7 @@ public sealed class SaleService : ISaleService
 
             if (saved > 0)
             {
+                _events.RaiseLiquidationsChanged();
                 return Result.Success(entry.Entity.Id);
             }
 
@@ -831,17 +837,7 @@ public sealed class SaleService : ISaleService
         if (sale.Items.Any(i => i.ProductId == product.Id && !i.ReturnedAt.HasValue))
             return Result.Failure(SaleErrors.Failure("El producto ya está incluido en la venta."));
 
-        var saleItem = new SaleItem
-        {
-            ProductId = product.Id,
-            Price = product.Price,
-            Size = product.Size,
-            Category = product.Category,
-            Description = product.Description,
-            Quality = product.Quality,
-            Body = product.Body,
-            CreatedAt = DateTime.Now
-        };
+        var saleItem = CreateSaleItemSnapshot(product);
 
         sale.Items.Add(saleItem);
 
@@ -852,12 +848,45 @@ public sealed class SaleService : ISaleService
             return Result.Failure(result.Error);
         }
 
+        MarkProductAsSold(product, sale);
+
+        return Result.Success();
+    }
+
+    private static SaleItem CreateSaleItemSnapshot(Product product)
+    {
+        var consignment = product.Consignment
+            ?? throw new InvalidOperationException("Product must belong to a consignment.");
+
+        var consignor = consignment.Consignor
+            ?? throw new InvalidOperationException("Consignment must have a consignor.");
+
+        return new SaleItem
+        {
+            ProductId = product.Id,
+            Price = product.Price,
+            Size = product.Size,
+            Category = product.Category,
+            Description = product.Description,
+            Quality = product.Quality,
+            Body = product.Body,
+            Brand = product.Brand,
+            Season = product.Season,
+
+            ConsignorId = consignor.Id,
+            ConsignorPercent = consignor.CommissionPercent,
+
+            AmountPaidOut = 0,
+            CreatedAt = DateTime.Now
+        };
+    }
+
+    private static void MarkProductAsSold(Product product, Sale sale)
+    {
         product.Box = null;
         product.BoxId = null;
         product.Status = ProductStatus.Sold;
         product.Sale = sale;
-
-        return Result.Success();
     }
 
     private static Result ReturnProduct(Sale sale, SaleItem item)

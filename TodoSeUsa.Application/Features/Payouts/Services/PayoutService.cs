@@ -1,5 +1,7 @@
-﻿using TodoSeUsa.Application.Features.Payouts.DTOs;
+﻿using System.Linq.Expressions;
+using TodoSeUsa.Application.Features.Payouts.DTOs;
 using TodoSeUsa.Application.Features.Payouts.Interfaces;
+using TodoSeUsa.Domain.Enums;
 
 namespace TodoSeUsa.Application.Features.Payouts.Services;
 
@@ -12,6 +14,87 @@ public class PayoutService : IPayoutService
     {
         _logger = logger;
         _contextFactory = contextFactory;
+    }
+
+    public async Task<int> CountPendingNotStartedAsync(CancellationToken ct)
+    {
+        var context = await _contextFactory.CreateDbContextAsync(ct);
+
+        return await PendingQuery(context)
+            .Where(x => x.AmountPaidOut == 0)
+            .CountAsync(ct);
+    }
+
+    public async Task<int> CountPendingStartedAsync(CancellationToken ct)
+    {
+        var context = await _contextFactory.CreateDbContextAsync(ct);
+
+        return await PendingQuery(context)
+            .Where(x => x.AmountPaidOut > 0)
+            .CountAsync(ct);
+    }
+
+    public async Task<Result<List<PendingLiquidationGroupDto>>> GetPendingGroupedAsync(CancellationToken ct)
+    {
+        var context = await _contextFactory.CreateDbContextAsync(ct);
+
+        var data = await context.SaleItems
+            .AsNoTracking()
+            .Where(p => p.Product != null &&
+                        p.Product.PayoutDate == null &&
+                        p.ReturnedAt == null &&
+                        p.Sale.Status != SaleStatus.Cancelled &&
+                        (p.Price * p.ConsignorPercent) > p.AmountPaidOut)
+            .Select(x => new
+            {
+                x.Id,
+                x.ProductId,
+                x.Description,
+                Remaining = (x.Price * x.ConsignorPercent) - x.AmountPaidOut,
+                x.CreatedAt,
+                ConsignorId = x.Product!.Consignment.ConsignorId,
+                ConsignorName = x.Product.Consignment.Consignor.Person.FullName,
+                HasPartialPayments =
+                    x.Sale.AmountPaid > 0 &&
+                    x.Sale.AmountPaid < x.Sale.TotalAmount
+            })
+            .ToListAsync(ct);
+
+        var result = data
+            .GroupBy(x => new { x.ConsignorId, x.ConsignorName })
+            .Select(g => new PendingLiquidationGroupDto
+            {
+                ConsignorId = g.Key.ConsignorId,
+                ConsignorName = g.Key.ConsignorName,
+                TotalPending = g.Sum(x => x.Remaining),
+                ItemsCount = g.Count(),
+                Items = g.Select(x => new PendingLiquidationItemDto
+                {
+                    SaleItemId = x.Id,
+                    ProductId = x.ProductId!.Value,
+                    Description = x.Description,
+                    Remaining = x.Remaining,
+                    SoldAt = x.CreatedAt,
+                    HasPartialPayments = x.HasPartialPayments
+                }).ToList()
+            })
+            .OrderByDescending(x => x.TotalPending)
+            .ToList();
+
+        return Result.Success(result);
+    }
+
+    private static IQueryable<SaleItem> PendingQuery(IApplicationDbContext context)
+    {
+        return context.SaleItems
+            .AsNoTracking()
+            .Where(si =>
+                si.ProductId != null &&
+                si.Product != null &&
+                si.Product.PayoutDate == null &&
+                si.ReturnedAt == null &&
+                si.Sale.Status != SaleStatus.Cancelled &&
+                (si.Price * si.ConsignorPercent / 100m) > si.AmountPaidOut);
     }
 
     public async Task<Result<PagedItems<PayoutDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
@@ -66,6 +149,10 @@ public class PayoutService : IPayoutService
         var saleItems = await context.SaleItems
             .Where(si => dto.SaleItemIds.Contains(si.Id))
             .Include(si => si.Product)
+            .Include(si => si.Sale)
+                .ThenInclude(s => s.Items)
+            .Include(si => si.Sale)
+                .ThenInclude(s => s.Payments)
             .ToListAsync(ct);
 
         if (saleItems.Count == 0)
@@ -76,6 +163,9 @@ public class PayoutService : IPayoutService
         }
 
         var payout = BuildPayout(dto.ConsignorId, saleItems);
+
+        if (payout.Lines.Count == 0)
+            return Result.Failure<int>(PayoutErrors.NothingToPay());
 
         context.Payouts.Add(payout);
 
@@ -129,26 +219,38 @@ public class PayoutService : IPayoutService
 
     private static Payout BuildPayout(int consignorId, List<SaleItem> items)
     {
+        var lines = items
+            .Select(CreateLine)
+            .Where(l => l.AmountPaid > 0)
+            .ToList();
+
         var payout = new Payout
         {
             ConsignorId = consignorId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Lines = lines,
+            TotalAmount = lines.Sum(x => x.AmountPaid)
         };
 
-        var lines = items.Select(CreateLine).ToList();
+        ApplyStateChanges(items, lines);
 
-        payout.Lines = lines;
-        payout.TotalAmount = lines.Sum(x => x.AmountPaid);
+        return payout;
+    }
+
+    private static void ApplyStateChanges(List<SaleItem> items, List<PayoutLine> lines)
+    {
+        var map = lines.ToDictionary(x => x.SaleItemId, x => x.AmountPaid);
 
         foreach (var item in items)
         {
-            item.AmountPaidOut += CalculateAmount(item);
+            if (!map.TryGetValue(item.Id, out var amount))
+                continue;
 
-            if (item.Product is not null && item.Product.PayoutDate == null)
+            item.AmountPaidOut += amount;
+
+            if (item.Product is { PayoutDate: null })
                 item.Product.PayoutDate = DateTime.UtcNow;
         }
-
-        return payout;
     }
 
     private static PayoutLine CreateLine(SaleItem item)
@@ -162,9 +264,31 @@ public class PayoutService : IPayoutService
 
     private static decimal CalculateAmount(SaleItem item)
     {
-        var totalDue = item.Price * item.ConsignorPercent;
-        var remaining = totalDue - item.AmountPaidOut;
-        return remaining < 0 ? 0 : remaining;
+        var ratio = CalculateRatio(item.Sale);
+
+        if (ratio <= 0)
+            return 0;
+
+        var payable = item.Price * ratio * item.ConsignorPercent;
+
+        var remaining = payable - item.AmountPaidOut;
+
+        return remaining <= 0 ? 0 : remaining;
+    }
+
+    private static decimal CalculateRatio(Sale sale)
+    {
+        var total = sale.Items.Sum(i => i.Price);
+        if (total <= 0)
+            return 0;
+
+        var paid = sale.Payments
+            .Where(p => p.RefundedAt == null)
+            .Sum(p => p.Amount);
+
+        var ratio = paid / total;
+
+        return ratio > 1 ? 1 : ratio;
     }
 
     private static PayoutDto MapToDto(Payout payout)
@@ -182,4 +306,5 @@ public class PayoutService : IPayoutService
             }).ToList()
         };
     }
+
 }

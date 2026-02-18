@@ -13,6 +13,9 @@ using TodoSeUsa.Application.Features.Consignors.Services;
 using TodoSeUsa.Application.Features.Sales.Interfaces;
 using TodoSeUsa.Application.Features.Sales.Services;
 using TodoSeUsa.Application.Security;
+using TodoSeUsa.Application.Common.Events;
+using TodoSeUsa.Application.Features.Payouts.Interfaces;
+using TodoSeUsa.Application.Features.Payouts.Services;
 
 namespace TodoSeUsa.Application;
 
@@ -28,10 +31,13 @@ public static class DependencyInjection
         builder.Services.AddScoped<IConsignorService, ConsignorService>();
         builder.Services.AddScoped<IPersonService, PersonService>();
         builder.Services.AddScoped<ISaleService, SaleService>();
+        builder.Services.AddScoped<IPayoutService, PayoutService>();
 
         builder.Services.AddScoped<IRecoveryCodeHasher, RecoveryCodeHasher>();
         builder.Services.AddScoped<UniqueSaleCodeService>();
         builder.Services.AddScoped<UniqueConsignmentCodeService>();
         builder.Services.AddScoped<IProductImageService, ProductImageService>();
+
+        builder.Services.AddSingleton<AppEvents>();
     }
 }

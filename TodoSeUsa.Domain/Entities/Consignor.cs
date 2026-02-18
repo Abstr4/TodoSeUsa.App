@@ -4,7 +4,7 @@ namespace TodoSeUsa.Domain.Entities;
 
 public class Consignor : BaseAuditableEntity, IPerson
 {
-    public decimal CommissionPercent { get; set; } = 0m;
+    public decimal CommissionPercent { get; set; }
 
     public int PersonId { get; set; }
 

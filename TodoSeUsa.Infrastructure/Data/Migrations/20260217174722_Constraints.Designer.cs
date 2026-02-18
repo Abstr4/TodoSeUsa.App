@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TodoSeUsa.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using TodoSeUsa.Infrastructure.Data;
 namespace TodoSeUsa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260217174722_Constraints")]
+    partial class Constraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -300,8 +303,8 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseSequence(b.Property<int>("Id"));
 
                     b.Property<decimal>("CommissionPercent")
-                        .HasPrecision(3)
-                        .HasColumnType("decimal(3,0)");
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -323,10 +326,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     b.HasIndex("PersonId")
                         .IsUnique();
 
-                    b.ToTable("Consignors", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_Consignor_CommissionPercentPercent", "[CommissionPercent] BETWEEN 0 AND 100");
-                        });
+                    b.ToTable("Consignors", (string)null);
 
                     b.UseTpcMappingStrategy();
                 });
@@ -488,7 +488,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
                     b.HasIndex("ConsignorId");
 
-                    b.ToTable("Payouts", (string)null);
+                    b.ToTable("Payouts");
                 });
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.PayoutLine", b =>
@@ -515,7 +515,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
                     b.HasIndex("SaleItemId");
 
-                    b.ToTable("PayoutLines", (string)null);
+                    b.ToTable("PayoutLines");
                 });
 
             modelBuilder.Entity("TodoSeUsa.Domain.Entities.Person", b =>
