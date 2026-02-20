@@ -16,12 +16,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Components\Account\Pages\Manage\Email.razor" />
-    <Content Remove="Components\Pages\Boxes\ViewBoxProducts.razor" />
-    <Content Remove="Components\Pages\Clients.razor" />
-    <Content Remove="Components\Pages\LoanNotes.razor" />
-    <Content Remove="Components\Pages\Products\ProductCard.razor" />
-    <Content Remove="Components\Pages\Reservations.razor" />
+    <Content Remove="Features\Account\Pages\Manage\Email.razor" />
+    <Content Remove="Features\Boxes\ViewBoxProducts.razor" />
+    <Content Remove="Features\Products\ProductCard.razor" />
   </ItemGroup>
     
   <ItemGroup>

@@ -373,6 +373,7 @@ public partial class ProductService : IProductService
                 Quality = dto.Quality,
                 Status = ProductStatus.Available,
                 Season = dto.Season,
+                Brand = dto.Brand,
                 RefurbishmentCost = dto.RefurbishmentCost,
                 ConsignmentId = dto.ConsignmentId,
                 BoxId = dto.BoxId
@@ -483,6 +484,7 @@ public partial class ProductService : IProductService
                     Quality = dto.Quality,
                     Status = ProductStatus.Available,
                     Season = dto.Season,
+                    Brand = dto.Brand,
                     RefurbishmentCost = dto.RefurbishmentCost,
                     ConsignmentId = dto.ConsignmentId,
                     BoxId = dto.BoxId
@@ -655,11 +657,10 @@ public partial class ProductService : IProductService
         {
             var _context = await _contextFactory.CreateDbContextAsync(ct);
 
-            Product? product = await _context.Products.FirstOrDefaultAsync(b => b.Id == productId, ct);
+            Product? product = await _context.Products.SingleOrDefaultAsync(b => b.Id == productId, ct);
+
             if (product == null)
-            {
                 return Result.Failure<bool>(ProductErrors.NotFound(productId));
-            }
 
             product.Price = editProductDto.Price;
             product.Description = editProductDto.Description;
@@ -668,6 +669,7 @@ public partial class ProductService : IProductService
             product.Size = editProductDto.Size;
             product.Quality = editProductDto.Quality;
             product.Status = editProductDto.Status;
+            product.Brand = editProductDto.Brand;
             product.Season = editProductDto.Season;
             product.RefurbishmentCost = editProductDto.RefurbishmentCost;
             product.ConsignmentId = editProductDto.ConsignmentId;

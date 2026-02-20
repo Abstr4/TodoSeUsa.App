@@ -1,0 +1,333 @@
+﻿@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.BlazorServer.Features.Shared
+
+@inject IJSRuntime JS;
+@inject IProductService ProductService;
+
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
+@inject NavigationManager NavigationManager;
+
+<RadzenDataGrid @ref="productsGrid" TItem="ProductDto" Data="@products" LoadData="@LoadData"
+                IsLoading="@isLoading" Count="@count" EmptyText="@GridMessage"
+                FilterMode="FilterMode.Simple" AllowSorting="true" AllowFiltering="true" AllowPaging="true"
+                AllowColumnResize=true GridLines=DataGridGridLines.Both PageSize="5"
+                PagerHorizontalAlign="HorizontalAlign.Center"  ClearFilterText="Limpiar"
+                ApplyFilterText="Aplicar" FilterText="Filtro" ContainsText="Contiene" EqualsText="Equivale"
+                AndOperatorText="Y" OrOperatorText="O">
+
+    <HeaderTemplate>
+
+        <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
+
+            <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar nuevo producto" Click="@HandleCreateProduct" Visible="IsMainPage" />
+
+            <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@productsGrid.Reload" ResetButtonClicked="@ResetAsync" />
+
+        </RadzenStack>
+    </HeaderTemplate>
+
+    <Columns>
+
+        @if (IsMainPage)
+        {
+            <RadzenDataGridColumn TItem="ProductDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+                <Template Context="product">
+                    <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, product)) Icon="visibility">
+                        <ChildContent>
+                            <RadzenSplitButtonItem Text="Ver producto" Value="view" Icon="read_more" />
+                            <RadzenSplitButtonItem Text="Editar producto" Value="edit" Icon="edit" />
+                            <RadzenSplitButtonItem Text="Eliminar producto" Value="delete" Icon="delete" Visible="IsMainPage" />
+                        </ChildContent>
+                    </RadzenSplitButton>
+                </Template>
+            </RadzenDataGridColumn>
+        }
+
+        <RadzenDataGridColumn Property="Id" Title="Código" MinWidth="120px" Width="120px" >
+            <Template Context="product" >
+                TSU-@product.Id.ToString()
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="160px" Width="160px">
+            <Template Context="product">
+                @EnumTranslate.TranslateProductStatus(product.Status)
+            </Template>
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@selectedStatus"
+                                Placeholder="Seleccionar..."
+                                Data="@EnumFilterLists.productStatuses"
+                                TextProperty="Text"
+                                ValueProperty="Value"
+                                AllowClear="true"
+                                Style="width:100%;" >
+                </RadzenDropDown>
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn Property="Price" Title="Precio" MinWidth="100px" Width="100px" />
+
+        <RadzenDataGridColumn Property="Category" Title="Categoría" MinWidth="200px" Width="200px" />
+
+        <RadzenDataGridColumn Property="Description" Title="Descripción" MinWidth="200px" Width="200px" />
+
+        <RadzenDataGridColumn Property="Size" Title="Talle" MinWidth="120px" Width="140px" />
+
+        <RadzenDataGridColumn Property="Body" Title="Cuerpo" FilterValue="@selectedBody" MinWidth="160px" Width="160px">
+            <Template Context="product">
+                @EnumTranslate.TranslateBody(product.Body)
+            </Template>
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@selectedBody"
+                                Placeholder="Seleccionar..."
+                                Data="@EnumFilterLists.bodies"
+                                TextProperty="Text"
+                                ValueProperty="Value"
+                                AllowClear="true"
+                                Style="width:100%;" >
+                </RadzenDropDown>
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn Property="Quality" Title="Calidad" FilterValue="@selectedQuality" MinWidth="160px" Width="160px">
+            <Template Context="p">
+                @EnumTranslate.TranslateQuality(p.Quality)
+            </Template>
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@selectedQuality"
+                                Placeholder="Seleccionar..."
+                                Data="@EnumFilterLists.qualities"
+                                TextProperty="Text"
+                                ValueProperty="Value"
+                                AllowClear="true"
+                                Style="width:100%;" >
+                </RadzenDropDown>
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn Property="Season" Title="Temporada" MinWidth="200px" Width="200px" />
+
+        <RadzenDataGridColumn Property="RefurbishmentCost" Title="Costo del arreglo" MinWidth="100px" Width="160px" />
+
+        <RadzenDataGridColumn Property="CreatedAt" Title="Creado el" FormatString="{0:dd/MM/yyyy HH:mm}" MinWidth="140px" Width="140px" />
+
+        @if (IsMainPage)
+        {
+            <RadzenDataGridColumn Sortable="false" TItem="ProductDto" Title="Acciones" MinWidth="160px" Width="160px">
+                <Template Context="product">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleEditProduct(product))" />
+
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(async () => await HandleDeleteProduct(product))" />
+
+                    <RadzenButton Icon="read_more" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewProduct(product.Id))" />
+                </Template>
+            </RadzenDataGridColumn>
+        }
+    </Columns>
+</RadzenDataGrid>
+
+@code
+{
+    [Parameter]
+    public required Func<LoadDataArgs, Task<Result<PagedItems<ProductDto>>>>? OnLoad { get; set; }
+
+    [Parameter]
+    public required bool IsMainPage { get; set; }
+
+    private RadzenDataGrid<ProductDto> productsGrid = null!;
+
+    private IEnumerable<ProductDto>? products;
+    private int count;
+    private bool isLoading = false;
+    private string GridMessage = "No hay productos para mostrar.";
+
+    private ProductQuality? selectedQuality = null;
+    private ProductStatus? selectedStatus = null;
+    private Body? selectedBody = null;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    private async Task LoadData(LoadDataArgs args)
+    {
+        if (isLoading) return;
+        isLoading = true;
+
+        try
+        {
+            if (OnLoad != null)
+            {
+                var result = await OnLoad.Invoke(args);
+
+                if (result.IsSuccess)
+                {
+                    products = result.Value.Items;
+                    count = result.Value.Count;
+                }
+                else
+                {
+                    products = [];
+                    count = 0;
+                }
+            }
+            else
+            {
+                await LoadDefault(args);
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadDefault(LoadDataArgs args)
+    {
+        var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+        var result = await ProductService.GetAllAsync(request, CancellationToken.None);
+
+        if (result.IsSuccess)
+        {
+            products = result.Value.Items;
+            count = result.Value.Count;
+        }
+        else
+        {
+            products = [];
+            count = 0;
+            GridMessage = result.Error.Description;
+        }
+    }
+
+    private async Task HandleEditProduct(ProductDto product)
+    {
+        if (!IsMainPage) return;
+        try
+        {
+            var result = await DialogService.OpenAsync<EditProductForm>($"Editar producto '{product.Category} - {product.Description}' código '{product.Id}'",
+                   new Dictionary<string, object>() { { "ProductDto", product } },
+                   new DialogOptions()
+                   {
+                       Width = "50%",
+                       CloseDialogOnOverlayClick = true
+                   }
+            );
+            if (result is Result deleteResult)
+            {
+                if (deleteResult.IsSuccess)
+                {
+                    SimpleNotifications.Success($"Producto código '{product.Id}' editado con éxito.");
+                    await productsGrid.Reload();
+                }
+                else
+                {
+                    SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+
+            throw ex;
+        }
+    }
+
+    private async Task HandleDeleteProduct(ProductDto product)
+    {
+        if (!IsMainPage) return;
+
+        try
+        {
+            var result = await DialogService.OpenAsync<DeleteProductConfirmation>($"Confirmar eliminación",
+            new Dictionary<string, object>() { { "ProductDto", product } },
+            new DialogOptions()
+            {
+                CloseDialogOnOverlayClick = true
+            }
+            );
+            if (result is Result deleteResult)
+            {
+                if (deleteResult.IsSuccess)
+                {
+                    SimpleNotifications.Success($"Producto código '{product.Id}' eliminado con éxito.");
+                    await productsGrid.Reload();
+                }
+                else
+                {
+                    SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+
+            throw ex;
+        }
+    }
+
+    private void HandleCreateProduct()
+    {
+        NavigationManager.NavigateTo($"/productos/registrar");
+    }
+
+    private void ViewProduct(int productId)
+    {
+        if (!IsMainPage) return;
+
+        NavigationManager.NavigateTo($"/productos/{productId}");
+    }
+
+    private async Task OnSplitButtonClick(RadzenSplitButtonItem item, ProductDto product)
+    {
+        if (!IsMainPage) return;
+
+        if (product == null)
+        {
+            return;
+        }
+
+        if (item == null)
+        {
+            await PeekProduct(product);
+            return;
+        }
+
+        switch (item.Value)
+        {
+            case "view":
+                ViewProduct(product.Id);
+                break;
+            case "edit":
+                await HandleEditProduct(product);
+                break;
+            case "delete":
+                await HandleDeleteProduct(product);
+                break;
+        }
+    }
+
+    private async Task PeekProduct(ProductDto product)
+    {
+        if (!IsMainPage) return;
+
+        await DialogService.OpenAsync<ProductDetails>("",
+           new Dictionary<string, object>() { { "ProductId", product.Id }, { "IsDialog", true } },
+           new DialogOptions()
+           {
+               WrapperCssClass = "",
+               Width = "80%",
+               Height = "90%",
+               CloseDialogOnOverlayClick = true
+           }
+        );
+    }
+
+    public async Task ResetAsync()
+    {
+        productsGrid.Reset(true);
+        await productsGrid.FirstPage(true);
+    }
+}
+

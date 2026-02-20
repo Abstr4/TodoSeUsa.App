@@ -1,0 +1,284 @@
+﻿@page "/cajas/{Id:int}"
+
+@using TodoSeUsa.Application.Features.Boxes.DTOs
+@using TodoSeUsa.Application.Features.Boxes.Interfaces
+@using TodoSeUsa.Application.Features.Products.DTOs
+@using TodoSeUsa.Application.Features.Products.Interfaces
+@using TodoSeUsa.BlazorServer.Features.Shared
+@using TodoSeUsa.BlazorServer.Features.Products
+
+@inject IBoxService BoxService;
+@inject IProductService ProductService;
+
+@inject NavigationManager NavigationManager;
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
+@inject IJSRuntime JS;
+
+@attribute [Authorize]
+
+<style>
+    .rz-fieldset-toggler {
+        font-weight: 800;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid;
+        border-radius: 25%;
+    }
+
+    table h6, .subtitle1 {
+        margin: 0 !important;
+    }
+</style>
+
+@if (isLoading)
+{
+    <ScreenLoading />
+}
+else if (originalBox != null)
+{
+    <RadzenCard class="rz-shadow-5" Style="width: 100%; min-width: calc(250px + 2*(2rem));">
+
+        <RadzenStack Gap="1rem">
+
+            <RadzenStack id="top-action-buttons" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Wrap="FlexWrap.Wrap">
+
+                <RadzenButton Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" Icon="arrow_back" Text="Volver" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+
+                <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                    <RadzenButton Icon="add" Text="Agregar productos a la caja" ButtonStyle="ButtonStyle.Success"
+                                  Click="@AddProductsToBox" Style="flex-grow: 1;" />
+
+                    <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
+                                  Click=@HandleEditBox Style="flex-grow: 1;" />
+
+                    <RadzenButton Icon="delete" Text="Borrar" ButtonStyle="ButtonStyle.Danger"
+                                  Click=@HandleDeleteBox Style="flex-grow: 1;" />
+                </RadzenStack>
+            </RadzenStack>
+
+            <RadzenText TextStyle="TextStyle.H4" Style="margin: 1rem 0; text-align: center !important" Text="Detalles de caja" />
+
+            <RadzenTable id="box-details-t" Style="border:1px solid #ddd; border-radius:8px; width:100%; margin-top:1rem;">
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell style="width: 40%; font-weight:bold;" >
+                            <RadzenText TextStyle="TextStyle.H6" Text="Propiedad" />
+                        </RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell style="width: 60%; font-weight:bold;">
+                            <RadzenText TextStyle="TextStyle.H6" Text="Valor" />
+                        </RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+
+                <RadzenTableBody>
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Código" style="font-weight:bold" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1">@DisplayBoxCode.IdToBoxCode(originalBox.Id)</RadzenText>
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Ubicación" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.Location" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Productos en la caja" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.TotalProducts.ToString()" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Creada el" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="@originalBox.CreatedAt.ToString("f")" />
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+
+                    <RadzenTableRow>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1" Text="Actualizada el" style="font-weight:bold;" />
+                        </RadzenTableCell>
+                        <RadzenTableCell>
+                            <RadzenText TextStyle="TextStyle.Subtitle1"> 
+                                @(originalBox.UpdatedAt == null ? "N/A" : originalBox.UpdatedAt.Value.ToString("f"))
+                            </RadzenText>
+                        </RadzenTableCell>
+                    </RadzenTableRow>
+                </RadzenTableBody>
+            </RadzenTable>
+
+            <RadzenFieldset id="box-products-fs" AllowCollapse="true" Collapsed="false" class="w-100 rz-mt-4">
+
+                <HeaderTemplate>
+
+                    <RadzenText TextStyle="TextStyle.H6" class="rz-display-flex rz-align-items-center rz-m-0">
+                        <RadzenIcon Style="font-size: 20px" Icon="account_box" class="rz-me-1" /><b>Productos en la caja</b>
+                    </RadzenText>
+                </HeaderTemplate>
+
+                <ChildContent>
+
+                    <ProductsDataGrid @ref="_productsGrid" OnLoad="@LoadProductsByBox" IsMainPage=false></ProductsDataGrid>
+
+                </ChildContent>
+
+                <SummaryTemplate>
+
+                    <RadzenCard Variant="Variant.Outlined" class="rz-mt-4">
+                        <b>@originalBox.TotalProducts Productos</b>
+                    </RadzenCard>
+                </SummaryTemplate>
+            </RadzenFieldset>
+
+        </RadzenStack>
+    </RadzenCard>
+}
+else
+{
+    <RadzenAlert Text="@errorMessage" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" />
+    <RadzenButton Icon="arrow_back" Text="Volver" Click="@(() => JS.GoBackOrHomeAsync(NavigationManager, "/"))" />
+}
+
+
+
+@code
+{
+    [Parameter] public int Id { get; set; }
+
+    private BoxDto? originalBox;
+
+    private EditBoxDto editBox = new();
+
+    private bool isLoading = false;
+
+    private string? errorMessage;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    private ProductsDataGrid _productsGrid = null!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+
+        var result = await BoxService.GetByIdAsync(Id, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            originalBox = result.Value;
+        }
+        else
+        {
+            errorMessage = result.Error.ToString();
+        }
+        isLoading = false;
+    }
+
+    private async Task<Result<PagedItems<ProductDto>>> LoadProductsByBox(LoadDataArgs args)
+    {
+        var request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
+        return await ProductService.GetByBoxIdAsync(request, Id, CancellationToken.None);
+    }
+
+    private async Task HandleEditBox()
+    {
+        if (originalBox is null) return;
+
+        var result = await DialogService.OpenAsync<EditBoxForm>($"Editar caja código '{originalBox.Id.ToString("D3")}'",
+               new Dictionary<string, object>() { { "BoxDto", originalBox } },
+               new DialogOptions()
+               {
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
+        if (result is Result editResult)
+        {
+            if (editResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Caja editada con éxito.");
+
+                var refreshed = await BoxService.GetByIdAsync(originalBox.Id, CancellationToken.None);
+                if (refreshed.IsSuccess)
+                {
+                    originalBox = refreshed.Value;
+                }
+                StateHasChanged();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+            }
+        }
+    }
+
+    private async Task HandleDeleteBox()
+    {
+        if (originalBox is null) return;
+
+        var result = await DialogService.OpenAsync<DeleteBoxConfirmation>($"Confirmar eliminación",
+        new Dictionary<string, object>() { { "BoxDto", originalBox } },
+        new DialogOptions()
+        {
+            CloseDialogOnOverlayClick = true
+        }
+        );
+        if (result is Result deleteResult)
+        {
+            if (deleteResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Caja eliminada con éxito.");
+                await NavigationHelpers.GoBackOrHomeAsync(JS, NavigationManager, "/boxes");
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {deleteResult.Error.Description}");
+            }
+        }
+    }
+
+    public async Task AddProductsToBox()
+    {
+        if (originalBox is null) return;
+
+        var result = await DialogService.OpenAsync<AddProductsToBox>($"Agregar productos a la caja código 'BOX-{originalBox.Id.ToString("D3")}'",
+            new Dictionary<string, object>() { { "BoxDto", originalBox } },
+            new DialogOptions()
+            {
+                CloseDialogOnOverlayClick = true
+            }
+        );
+
+        if (result is Result addResult)
+        {
+            if (addResult.IsSuccess)
+            {
+                await _productsGrid.ResetAsync();
+            }
+            else
+            {
+                SimpleNotifications.Error(addResult.Error.Description);
+            }
+        }
+    }
+}

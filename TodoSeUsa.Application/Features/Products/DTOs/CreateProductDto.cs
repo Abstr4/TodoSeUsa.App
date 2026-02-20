@@ -20,6 +20,8 @@ public record CreateProductDto
 
     public int Quantity { get; set; } = 1;
 
+    public string? Brand { get; set; }
+
     public string? Season { get; set; }
 
     public decimal? RefurbishmentCost { get; set; }

@@ -16,6 +16,7 @@ using TodoSeUsa.Application.Security;
 using TodoSeUsa.Application.Common.Events;
 using TodoSeUsa.Application.Features.Payouts.Interfaces;
 using TodoSeUsa.Application.Features.Payouts.Services;
+using TodoSeUsa.Application.Features.Overview;
 
 namespace TodoSeUsa.Application;
 
@@ -25,6 +26,7 @@ public static class DependencyInjection
     {
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+        builder.Services.AddScoped<IOverviewService, OverviewService>();
         builder.Services.AddScoped<IBoxService, BoxService>();
         builder.Services.AddScoped<IProductService, ProductService>();
         builder.Services.AddScoped<IConsignmentService, ConsignmentService>();
@@ -37,6 +39,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<UniqueSaleCodeService>();
         builder.Services.AddScoped<UniqueConsignmentCodeService>();
         builder.Services.AddScoped<IProductImageService, ProductImageService>();
+
 
         builder.Services.AddSingleton<AppEvents>();
     }

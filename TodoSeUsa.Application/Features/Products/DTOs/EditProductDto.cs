@@ -6,8 +6,6 @@ public record EditProductDto
 {
     public decimal Price { get; set; }
 
-    public int Quantity { get; set; }
-
     public string Category { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
@@ -19,6 +17,8 @@ public record EditProductDto
     public ProductStatus Status { get; set; }
 
     public ProductQuality Quality { get; set; }
+
+    public string? Brand { get; set; }
 
     public string? Season { get; set; }
 

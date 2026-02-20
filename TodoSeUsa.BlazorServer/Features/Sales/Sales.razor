@@ -1,0 +1,235 @@
+﻿@page "/ventas"
+
+@using TodoSeUsa.Application.Features.Sales.DTOs
+@using TodoSeUsa.Application.Features.Sales.Interfaces
+@using TodoSeUsa.BlazorServer.Features.Shared
+
+@inject IJSRuntime JS;
+
+@inject ISaleService SaleService;
+
+@inject DialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+
+@attribute [Authorize]
+
+<style>
+    .rz-custom-header {
+        width: 100%;
+    }
+</style>
+
+<RadzenCard Style="max-width: 100%">
+
+    <PageTitleWithBackButton Title="Ventas" />
+
+    <RadzenDataGrid @ref="grid" IsLoading="@isLoading" TItem="SaleDto" Data="@sales" 
+        @bind-Value="@selectedSales" LoadData="@LoadSales" 
+        Count="@count" EmptyText="@GridMessage" LogicalFilterOperator="@logicalFilterOperator" 
+        SelectionMode="DataGridSelectionMode.Single" PageSize="5" 
+        AllowSorting="true" AllowFiltering="true" AllowPaging="true" AllowColumnResize=true 
+        FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
+        GridLines="DataGridGridLines.Both" PagerHorizontalAlign="HorizontalAlign.Center" 
+        ClearFilterText="Limpiar" ApplyFilterText="Aplicar" FilterText="Filtro" 
+        ContainsText="Contiene" EqualsText="Equivale" AndOperatorText="Y" 
+        OrOperatorText="O" LessThanOrEqualsText="Menor o igual que" LessThanText="Menor que" 
+        GreaterThanOrEqualsText="Mayor o igual que" GreaterThanText="Mayor que" NotEqualsText="No es igual a" 
+        IsNullText="Es nulo" IsNotNullText="No es nulo" ColumnWidth="200px">
+
+        <HeaderTemplate>
+
+            <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
+
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar nueva venta" Click=@HandleCreateSale />
+
+                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
+
+            </RadzenStack>
+
+        </HeaderTemplate>
+
+        <Columns>
+            <RadzenDataGridColumn TItem="SaleDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+
+                <Template Context="sale">
+                    <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, sale)) Icon="read_more">
+
+                        <ChildContent>
+                            <RadzenSplitButtonItem Text="Ver venta" Value="view" Icon="read_more" />
+                            <RadzenSplitButtonItem Text="Editar venta" Value="edit" Icon="edit" />
+                        </ChildContent>
+
+                    </RadzenSplitButton>
+                </Template>
+
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn Property="Id" Title="Código interno" Width="200px" MinWidth="120px" />
+
+            <RadzenDataGridColumn Property="Code" Title="Código público" Width="200px" MinWidth="120px" />
+
+            <RadzenDataGridColumn @ref="statusColumn" Property="Status" Title="Estado" FilterValue="@selectedStatus" MinWidth="200px" Width="200px">
+                <Template Context="sale">
+                    @EnumTranslate.TranslateSaleStatus(sale.Status)
+                </Template>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value="@selectedStatus"
+                                    Placeholder="Todos"
+                                    Data="@EnumFilterLists.saleStatuses"
+                                    TextProperty="Text"
+                                    ValueProperty="Value"
+                                    AllowClear="true"
+                                    Style="width:100%;" >
+                    </RadzenDropDown>
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn Property="TotalAmount" Title="Monto total" />
+
+            <RadzenDataGridColumn Property="AmountPaid" Title="Monto abonado" />
+
+            <RadzenDataGridColumn Property="DateIssued" Title="Fecha de emisión" FormatString="{0:dd/MM/yyyy HH:mm}" />
+
+            <RadzenDataGridColumn Property="CreatedAt" Title="Creada el" FormatString="{0:dd/MM/yyyy HH:mm}" />
+
+            <RadzenDataGridColumn Filterable="false" Sortable="false" TItem="SaleDto" Title="Acciones" MinWidth="200px" Width="160px">
+
+                <Template Context="sale">
+
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(async() => await HandleEditSale(sale))" />
+
+                    <RadzenButton Icon="read_more" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(() => ViewSale(sale.Id))" />
+
+                </Template>
+            </RadzenDataGridColumn>
+
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code
+{
+    private RadzenDataGridColumn<SaleDto> statusColumn = default!;
+
+
+    private RadzenDataGrid<SaleDto> grid = null!;
+
+    private IEnumerable<SaleDto>? sales;
+    private IList<SaleDto>? selectedSales;
+    private int count;
+    private bool isLoading = false;
+    private string GridMessage = "No hay ventas para mostrar.";
+
+    private SaleStatus? selectedStatus;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    async Task LoadSales(LoadDataArgs args)
+    {
+        if (isLoading) return;
+        isLoading = true;
+
+        QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+        var result = await SaleService.GetAllAsync(request, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            sales = result.Value.Items;
+            count = result.Value.Count;
+            selectedSales = sales.Take(1).ToList();
+        }
+        else
+        {
+            sales = [];
+            selectedSales = [];
+            count = 0;
+            GridMessage = result.Error.Description;
+        }
+        isLoading = false;
+    }
+
+    private void ViewSale(int saleId)
+    {
+        NavigationManager.NavigateTo($"/ventas/{saleId}");
+    }
+
+    private async Task HandleEditSale(SaleDto sale)
+    {
+        EditSaleDto editSaleDto = new()
+        {
+            Id = sale.Id,
+            Notes = sale.Notes
+        };
+
+        var result = await DialogService.OpenAsync<EditSaleForm>($"Editar venta",
+               new Dictionary<string, object>() { { "SaleDto", editSaleDto } },
+               new DialogOptions()
+               {
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
+        if (result is Result editResult)
+        {
+            if (editResult.IsSuccess)
+            {
+                SimpleNotifications.Success($"Consignación editada con éxito.");
+                await grid.Reload();
+            }
+            else
+            {
+                SimpleNotifications.Error($"Error: {editResult.Error.Description}");
+            }
+        }
+    }
+
+    private void HandleCreateSale()
+    {
+        NavigationManager.NavigateTo($"/ventas/registrar");
+    }
+
+    public async Task ShowSaleProducts(int saleId)
+    {
+        await DialogService.OpenAsync<SaleProducts>($"Productos en la venta código '{saleId}'",
+               new Dictionary<string, object>() { { "SaleId", saleId } },
+               new DialogOptions()
+               {
+                   Width = "75%",
+                   Height = "90%",
+                   CloseDialogOnOverlayClick = true
+               }
+        );
+
+    }
+
+    private async Task OnSplitButtonClick(RadzenSplitButtonItem item, SaleDto sale)
+    {
+        if (sale == null)
+        {
+            return;
+        }
+
+        if (item == null)
+        {
+            ViewSale(sale.Id);
+            return;
+        }
+
+        switch (item.Value)
+        {
+            case "view":
+                ViewSale(sale.Id);
+                break;
+            case "edit":
+                await HandleEditSale(sale);
+                break;
+        }
+    }
+
+    async Task ResetAsync()
+    {
+        grid.Reset(true);
+        await grid.FirstPage(true);
+    }
+}

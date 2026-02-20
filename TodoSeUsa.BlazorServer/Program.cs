@@ -2,7 +2,7 @@ using System.Diagnostics;
 using TodoSeUsa.Application;
 using TodoSeUsa.BlazorServer;
 using TodoSeUsa.BlazorServer.Components;
-using TodoSeUsa.BlazorServer.Components.Account;
+using TodoSeUsa.BlazorServer.Features.Account;
 using TodoSeUsa.BlazorServer.UI.Services;
 using TodoSeUsa.Infrastructure;
 using TodoSeUsa.Infrastructure.Hosting;

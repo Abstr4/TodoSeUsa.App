@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Radzen;
-using TodoSeUsa.BlazorServer.Components.Account;
+using TodoSeUsa.BlazorServer.Features.Account;
 using TodoSeUsa.BlazorServer.UI.Notifications;
 using TodoSeUsa.Infrastructure.Data;
 
