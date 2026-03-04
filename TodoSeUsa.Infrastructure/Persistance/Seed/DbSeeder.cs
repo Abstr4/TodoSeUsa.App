@@ -82,13 +82,13 @@ public sealed class DbSeeder
             new()
             {
                 ConsignorId = consignor.Id,
-                Code = await _codeService.GenerateAsync(ct),
+                PublicId = await _codeService.GenerateAsync(ct),
                 Notes = "First consignment"
             },
             new()
             {
                 ConsignorId = consignor.Id,
-                Code = await _codeService.GenerateAsync(ct),
+                PublicId = await _codeService.GenerateAsync(ct),
                 Notes = "Second consignment"
             }
         };
