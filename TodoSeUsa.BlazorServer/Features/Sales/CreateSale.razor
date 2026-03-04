@@ -99,7 +99,7 @@
                                             Monto <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
                                         </RadzenLabel>
 
-                                        <RadzenStack Orientation="Orientation.Horizontal">
+                                        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
                                             <RadzenNumeric Name="Amount" @bind-Value=@paymentUiModel.Amount TValue="decimal" Min="0" />
                                             <RadzenButton Click="@PayDifference" Icon="add" Text="Monto restante" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
