@@ -1,8 +1,10 @@
-﻿namespace TodoSeUsa.Domain.Entities;
+﻿using TodoSeUsa.Domain.Interfaces;
 
-public class Sale : BaseAuditableEntity
+namespace TodoSeUsa.Domain.Entities;
+
+public class Sale : BaseAuditableEntity, IHasPublicId
 {
-    public string Code { get; set; } = string.Empty;
+    public string PublicId { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
     public decimal AmountPaid { get; set; }
     public SaleStatus Status { get; set; }

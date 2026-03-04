@@ -1,8 +1,13 @@
-﻿namespace TodoSeUsa.Domain.Entities;
+﻿using TodoSeUsa.Domain.Interfaces;
 
-public class Payout
+namespace TodoSeUsa.Domain.Entities;
+
+public class Payout : IHasPublicId
 {
+
     public int Id { get; set; }
+
+    public string PublicId { get; set; } = string.Empty;
 
     public int ConsignorId { get; set; }
     public Consignor Consignor { get; set; } = null!;

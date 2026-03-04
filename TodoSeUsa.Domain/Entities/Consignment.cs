@@ -1,8 +1,10 @@
-﻿namespace TodoSeUsa.Domain.Entities;
+﻿using TodoSeUsa.Domain.Interfaces;
 
-public class Consignment : BaseAuditableEntity
+namespace TodoSeUsa.Domain.Entities;
+
+public class Consignment : BaseAuditableEntity, IHasPublicId
 {
-    public string Code { get; set; } = string.Empty;
+    public string PublicId { get; set; } = string.Empty;
 
     public DateTime DateIssued { get; set; } = DateTime.Now;
 
