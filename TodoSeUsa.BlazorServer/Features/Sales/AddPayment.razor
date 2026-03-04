@@ -29,8 +29,8 @@
                             </RadzenStack>
 
                             <RadzenRequiredValidator Component="Amount" Text="El monto es requerido." />
-                            <RadzenNumericRangeValidator Component="Amount" Min="1" Text="el monto del pago debe ser mayor a cero" />
-                            <RadzenNumericRangeValidator Component="Amount" Max="@(Sale.TotalAmount - Sale.AmountPaid)" Text="el monto del pago debe ser menor al restante." />
+                            <RadzenNumericRangeValidator Component="Amount" Min="1" Text="El monto del pago debe ser mayor a cero" />
+                            <RadzenNumericRangeValidator Component="Amount" Max="@(Sale.TotalAmount - Sale.AmountPaid)" Text="El monto del pago debe ser menor al monto restante a pagar" />
                         </RadzenStack>
                     </RadzenColumn>
 
@@ -75,9 +75,10 @@
 
                 </RadzenRow>
 
-                <RadzenStack JustifyContent="JustifyContent.Center" Style="display: flex">
-                        <RadzenButton ButtonType="ButtonType.Submit" Icon="add" Text="Registrar pago" Style="margin-top: 1rem"/>
+                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 1rem;">
+                    <RadzenButton ButtonType="ButtonType.Submit" Icon="add" Text="Registrar pago" Style="margin-top: 1rem"/>
                 </RadzenStack>
+
 
             </ChildContent>
 
