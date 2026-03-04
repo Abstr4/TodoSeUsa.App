@@ -17,7 +17,7 @@ internal class PersonService : IPersonService
         if (email == null && phoneNumber == null)
             return null;
 
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
         return await _context.Persons
             .Include(p => p.Client)
@@ -36,7 +36,7 @@ internal class PersonService : IPersonService
         if (!validation.IsValid)
             throw new ValidationException(validation.ToString());
 
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
         _context.Persons.Add(person);
         await _context.SaveChangesAsync(ct);
@@ -48,7 +48,7 @@ internal class PersonService : IPersonService
     {
         ArgumentOutOfRangeException.ThrowIfNegative(personId);
 
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
         var person = await _context.Persons
             .Include(p => p.Client)
@@ -73,7 +73,7 @@ internal class PersonService : IPersonService
         if (!result.IsValid)
             throw new ValidationException(result.ToString());
 
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
         if (!string.IsNullOrEmpty(person.EmailAddress))
         {

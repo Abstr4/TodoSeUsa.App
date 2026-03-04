@@ -23,7 +23,7 @@ public class UniqueConsignmentCodeService
             code = CrockfordBase32CodeGenerator.CreateHyphenated(blockLength: 4);
 
             exists = await context.Consignments
-                .AnyAsync(s => s.Code == code, ct);
+                .AnyAsync(s => s.PublicId == code, ct);
         } while (exists);
 
         return code;

@@ -18,7 +18,7 @@ public class PayoutService : IPayoutService
 
     public async Task<int> CountPendingNotStartedAsync(CancellationToken ct)
     {
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         return await PendingQuery(context)
             .Where(x => x.AmountPaidOut == 0)
@@ -27,7 +27,7 @@ public class PayoutService : IPayoutService
 
     public async Task<int> CountPendingStartedAsync(CancellationToken ct)
     {
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         return await PendingQuery(context)
             .Where(x => x.AmountPaidOut > 0)
@@ -36,7 +36,7 @@ public class PayoutService : IPayoutService
 
     public async Task<Result<List<PendingLiquidationGroupDto>>> GetPendingGroupedAsync(CancellationToken ct)
     {
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         var data = await context.SaleItems
             .AsNoTracking()
@@ -99,7 +99,7 @@ public class PayoutService : IPayoutService
 
     public async Task<Result<PagedItems<PayoutDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
     {
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         var query = context.Payouts
             .Include(p => p.Consignor)
@@ -144,7 +144,7 @@ public class PayoutService : IPayoutService
 
     public async Task<Result<int>> CreateAsync(CreatePayoutDto dto, CancellationToken ct)
     {
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         var saleItems = await context.SaleItems
             .Where(si => dto.SaleItemIds.Contains(si.Id))
@@ -176,7 +176,7 @@ public class PayoutService : IPayoutService
 
     public async Task<Result<PayoutDto>> GetByIdAsync(int payoutId, CancellationToken ct)
     {
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         var payout = await context.Payouts
             .Include(p => p.Consignor)
@@ -197,7 +197,7 @@ public class PayoutService : IPayoutService
 
     public async Task<Result> DeleteByIdAsync(int payoutId, CancellationToken ct)
     {
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         var payout = await context.Payouts
             .Include(p => p.Lines)

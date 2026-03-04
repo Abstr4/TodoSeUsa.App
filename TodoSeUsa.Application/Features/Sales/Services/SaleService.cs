@@ -26,7 +26,7 @@ public sealed class SaleService : ISaleService
 
     public async Task<Result<PagedItems<SaleDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
         var query = _context.Sales
             .Include(s => s.Items)
@@ -45,7 +45,7 @@ public sealed class SaleService : ISaleService
             .Select(s => new SaleDto
             {
                 Id = s.Id,
-                Code = s.Code,
+                Code = s.PublicId,
                 TotalAmount = s.TotalAmount,
                 AmountPaid = s.AmountPaid,
                 Status = s.Status,
@@ -69,14 +69,14 @@ public sealed class SaleService : ISaleService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var saleDto = await _context.Sales
                 .Where(c => c.Id == saleId)
                 .Select(c => new DetailedSaleDto
                 {
                     Id = c.Id,
-                    Code = c.Code,
+                    Code = c.PublicId,
                     TotalAmount = c.TotalAmount,
                     AmountPaid = c.AmountPaid,
                     Status = c.Status,
@@ -110,7 +110,7 @@ public sealed class SaleService : ISaleService
         }
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var query = context.SaleItems
                 .Where(si => si.SaleId == saleId)
@@ -159,7 +159,7 @@ public sealed class SaleService : ISaleService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var query = context.Payments
                 .Where(p => p.SaleId == saleId)
@@ -211,7 +211,7 @@ public sealed class SaleService : ISaleService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var existingProducts = await context.Products
                 .Include(p => p.Consignment)
@@ -246,7 +246,7 @@ public sealed class SaleService : ISaleService
 
             var sale = new Sale
             {
-                Code = code,
+                PublicId = code,
                 DateIssued = createSaleDto.DateIssued ?? DateTime.Now,
                 Notes = createSaleDto.Notes
             };
@@ -313,7 +313,7 @@ public sealed class SaleService : ISaleService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             Sale? sale = await _context.Sales.FirstOrDefaultAsync(b => b.Id == editSaleDto.Id, ct);
 
@@ -351,10 +351,10 @@ public sealed class SaleService : ISaleService
         if (!validationResult.IsValid)
             return Result.Failure(SaleErrors.Failure(validationResult.ToString()));
 
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         var saleId = await context.Sales
-            .Where(s => s.Code == code)
+            .Where(s => s.PublicId == code)
             .Select(s => s.Id)
             .SingleOrDefaultAsync(ct);
 
@@ -373,7 +373,7 @@ public sealed class SaleService : ISaleService
     {
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var sale = await context.Sales
                 .Include(s => s.Items)
@@ -439,7 +439,7 @@ public sealed class SaleService : ISaleService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var sale = await context.Sales
                 .Include(s => s.Items)
@@ -492,7 +492,7 @@ public sealed class SaleService : ISaleService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var sale = await context.Sales
                 .Include(s => s.Items)
@@ -533,9 +533,10 @@ public sealed class SaleService : ISaleService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var sale = await context.Sales
+                .Include(s => s.Items)
                 .Include(s => s.Payments)
                 .FirstOrDefaultAsync(s => s.Id == saleId, ct);
 
@@ -588,7 +589,7 @@ public sealed class SaleService : ISaleService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var payment = await context.Payments.FirstOrDefaultAsync(p => p.Id == refundPayment.PaymentId && p.SaleId == saleId, ct);
 
@@ -705,9 +706,6 @@ public sealed class SaleService : ISaleService
 
     private static Result AddPaymentToSale(Sale sale, Payment payment)
     {
-        if (sale.AmountPaid + payment.Amount > sale.TotalAmount)
-            return Result.Failure(SaleErrors.Failure("El monto total abonado no puede exceder el total a pagar."));
-
         sale.Payments.Add(payment);
 
         var result = RecalculateSale(sale);
@@ -716,8 +714,6 @@ public sealed class SaleService : ISaleService
             sale.Payments.Remove(payment);
             return Result.Failure(result.Error);
         }
-
-        payment.Sale = sale;
 
         return Result.Success();
     }

@@ -22,7 +22,7 @@ public class BoxService : IBoxService
         QueryRequest request,
         CancellationToken ct)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
         var query = _context.Boxes.AsQueryable();
 
@@ -59,7 +59,7 @@ public class BoxService : IBoxService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var boxDto = await _context.Boxes
                 .AsNoTracking()
@@ -102,7 +102,7 @@ public class BoxService : IBoxService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var box = await context.Boxes
                 .SingleOrDefaultAsync(b => b.Id == boxId, ct);
@@ -152,7 +152,7 @@ public class BoxService : IBoxService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var entity = await _context.Boxes.AddAsync(box, ct);
             var saved = await _context.SaveChangesAsync(ct);
@@ -183,7 +183,7 @@ public class BoxService : IBoxService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             Box? box = await _context.Boxes.FirstOrDefaultAsync(b => b.Id == boxId, ct);
 
@@ -211,7 +211,7 @@ public class BoxService : IBoxService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var box = await _context.Boxes
                 .Include(b => b.Products)

@@ -26,7 +26,7 @@ public partial class ProductService : IProductService
     {
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var count = await context.Products
                 .Where(p => p.Status == ProductStatus.Available)
@@ -48,7 +48,7 @@ public partial class ProductService : IProductService
     {
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var totalValue = await context.Products
                 .Where(p => p.Status == ProductStatus.Available)
@@ -74,7 +74,7 @@ public partial class ProductService : IProductService
         }
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var query = _context.Products
                 .Include(p => p.Consignment)
@@ -135,7 +135,7 @@ public partial class ProductService : IProductService
         }
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var query = _context.Products
                 .Include(p => p.Consignment)
@@ -196,7 +196,7 @@ public partial class ProductService : IProductService
         }
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var query = _context.Products
                 .Include(p => p.Consignment)
@@ -249,7 +249,7 @@ public partial class ProductService : IProductService
     {
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var query = _context.Products
                 .Include(p => p.Consignment)
@@ -310,7 +310,7 @@ public partial class ProductService : IProductService
         }
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var productDto = await _context.Products
                 .AsNoTracking()
@@ -358,7 +358,7 @@ public partial class ProductService : IProductService
         if (!validationResult.IsValid)
             return Result.Failure<int>(ProductErrors.Failure(validationResult.ToString()));
 
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
         await using var transaction = await context.BeginTransactionAsync(ct);
 
         try
@@ -420,7 +420,7 @@ public partial class ProductService : IProductService
         if (!validationResult.IsValid)
             return Result.Failure<int>(ProductErrors.Failure(validationResult.ToString()));
 
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
         try
         {
@@ -465,7 +465,7 @@ public partial class ProductService : IProductService
         if (!validationResult.IsValid)
             return Result.Failure<IReadOnlyList<int>>(ProductErrors.Failure(validationResult.ToString()));
 
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
         await using var transaction = await context.BeginTransactionAsync(ct);
 
         try
@@ -531,7 +531,7 @@ public partial class ProductService : IProductService
         if (!validationResult.IsValid)
             return Result.Failure<IReadOnlyList<int>>(ProductErrors.Failure(validationResult.ToString()));
 
-        var context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var context = await _contextFactory.CreateDbContextAsync(ct);
         await using var transaction = await context.BeginTransactionAsync(ct);
 
         try
@@ -623,7 +623,7 @@ public partial class ProductService : IProductService
             return Result.Failure<bool>(ProductErrors.Failure("El Id debe ser mayor que cero."));
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var product = await _context.Products
                 .FirstOrDefaultAsync(b => b.Id == productId, ct);
@@ -655,7 +655,7 @@ public partial class ProductService : IProductService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             Product? product = await _context.Products.SingleOrDefaultAsync(b => b.Id == productId, ct);
 

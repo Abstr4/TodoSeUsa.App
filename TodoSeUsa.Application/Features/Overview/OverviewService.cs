@@ -25,7 +25,7 @@ public class OverviewService : IOverviewService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+                await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var data = await context.Sales
                 .Where(s => s.DateIssued.Year == year && s.DateIssued.Month == month)
@@ -57,7 +57,7 @@ public class OverviewService : IOverviewService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+                await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var count = await context.Sales
                 .CountAsync(s => s.DateIssued.Year == year, ct);
@@ -81,7 +81,7 @@ public class OverviewService : IOverviewService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+                await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var revenue = await context.Sales
                 .Where(s => s.DateIssued.Year == year)
@@ -108,7 +108,7 @@ public class OverviewService : IOverviewService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+                await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var data = await context.Sales
                 .Where(s => s.DateIssued.Year == year)
@@ -142,7 +142,7 @@ public class OverviewService : IOverviewService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+                await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var data = await context.Sales
                 .Where(s => s.DateIssued.Year == year)
@@ -178,7 +178,7 @@ public class OverviewService : IOverviewService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+                await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var count = await context.Sales
                 .CountAsync(s => s.DateIssued.Year == year && s.DateIssued.Month == month, ct);
@@ -206,7 +206,7 @@ public class OverviewService : IOverviewService
 
         try
         {
-            var context = await _contextFactory.CreateDbContextAsync(ct);
+                await using var context = await _contextFactory.CreateDbContextAsync(ct);
 
             var revenue = await context.Sales
                 .Where(s => s.DateIssued.Year == year && s.DateIssued.Month == month)

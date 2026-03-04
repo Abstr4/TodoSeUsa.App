@@ -22,7 +22,7 @@ public class ConsignorService : IConsignorService
 
     public async Task<Result<PagedItems<ConsignorDto>>> GetAllAsync(QueryRequest request, CancellationToken ct)
     {
-        var _context = await _contextFactory.CreateDbContextAsync(ct);
+        await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
         var query = _context.Consignors
             .Include(p => p.Person)
@@ -73,7 +73,7 @@ public class ConsignorService : IConsignorService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var person = await _personService.GetByContactInfoAsync(
                 createConsignorDto.EmailAddress,
@@ -132,7 +132,7 @@ public class ConsignorService : IConsignorService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var consignorDto = await _context.Consignors
                 .Where(p => p.Id == consignorId)
@@ -172,7 +172,7 @@ public class ConsignorService : IConsignorService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var consignor = await _context.Consignors
                 .Include(p => p.Consignments)
@@ -222,7 +222,7 @@ public class ConsignorService : IConsignorService
 
         try
         {
-            var _context = await _contextFactory.CreateDbContextAsync(ct);
+            await using var _context = await _contextFactory.CreateDbContextAsync(ct);
 
             var consignor = await _context.Consignors
                 .Include(p => p.Person)
