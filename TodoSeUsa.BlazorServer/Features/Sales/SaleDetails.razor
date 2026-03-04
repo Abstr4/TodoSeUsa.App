@@ -49,6 +49,12 @@
 
                         <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
+                        @if(_sale.Status != SaleStatus.Paid)
+                        {
+                            <RadzenButton Icon="add_circle" Text="Agregar pago" ButtonStyle="ButtonStyle.Success"
+                                            Click=@HandleAddPayment Style="flex-grow: 1;" />
+
+                        }
                             <RadzenButton Icon="edit" Text="Editar" ButtonStyle="ButtonStyle.Warning"
                                         Click=@HandleEditSale Style="flex-grow: 1;" />
 
@@ -273,7 +279,7 @@
 
 
 @code 
-{
+    {
     [Parameter] public int Id { get; set; }
 
     private DetailedSaleDto? _sale;
@@ -364,6 +370,32 @@
             paymentsEmptyGridMessage = result.Error.Description;
         }
         isLoadingPayments = false;
+    }
+
+    private async Task HandleAddPayment()
+    {
+        if (_sale is null) return;
+
+
+        var result = await DialogService.OpenAsync<AddPayment>($"Agregar pago a la venta",
+            new Dictionary<string, object>() { { "Sale", _sale } },
+            new DialogOptions()
+            {
+                CloseDialogOnOverlayClick = true
+            }
+        );
+
+        if (result is true)
+        {
+            SimpleNotifications.Success($"Pago agregado con éxito.");
+
+            var refreshed = await SaleService.GetByIdAsync(_sale.Id, CancellationToken.None);
+            if (refreshed.IsSuccess)
+            {
+                _sale = refreshed.Value;
+            }
+            await paymentsGrid.Reload();
+        }
     }
 
     private async Task HandleEditSale()

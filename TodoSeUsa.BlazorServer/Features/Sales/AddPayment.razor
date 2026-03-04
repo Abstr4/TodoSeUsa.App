@@ -1,0 +1,122 @@
+﻿@using TodoSeUsa.Application.Features.Payments.DTOs
+@using TodoSeUsa.Application.Features.Sales.DTOs
+@using TodoSeUsa.Application.Features.Sales.Interfaces
+
+@inject DialogService DialogService;
+@inject SimpleNotifications SimpleNotifications;
+@inject ISaleService SaleService;
+
+<RadzenColumn SizeSM="4" Size="12" id="add-payment-form">
+    <RadzenTemplateForm TItem="CreatePaymentDto" Data="@_createPaymentDto" Submit="@OnCreateClick">
+
+        <RadzenFieldset class="mb-4">
+
+            <ChildContent>
+
+                <RadzenRow Gap="1rem">
+                    <RadzenColumn Size=12 id="amount-column">
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                            <RadzenLabel Component="Amount">
+                                Monto <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                                <RadzenNumeric Name="Amount" @bind-Value=@_createPaymentDto.Amount TValue="decimal" Min="0" />
+                                <RadzenText>(@(Sale.TotalAmount - Sale.AmountPaid) restante)</RadzenText>
+                                <RadzenButton Click="@PayDifference" Icon="add" Text="Monto restante" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
+                            </RadzenStack>
+
+                            <RadzenRequiredValidator Component="Amount" Text="El monto es requerido." />
+                            <RadzenNumericRangeValidator Component="Amount" Min="1" Text="El monto del pago debe ser mayor a cero" />
+                            <RadzenNumericRangeValidator Component="Amount" Max="@(Sale.TotalAmount - Sale.AmountPaid)" Text="El monto del pago debe ser menor al monto restante a pagar" />
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                    <RadzenColumn SizeMD="6" Size="12" id="paymentMethod-column">
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                            <RadzenLabel Component="PaymentMethod">
+                                Método de pago
+                                <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Requerido" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+
+                            <RadzenDropDown @bind-Value="@_createPaymentDto.Method"
+                                            Placeholder="Método de pago..."
+                                            Data="@EnumOptionLists.paymentMethods"
+                                            TextProperty="Text"
+                                            ValueProperty="Value"
+                                            Style="width:100%;"
+                                            Name="PaymentMethod">
+                            </RadzenDropDown>
+                            <RadzenRequiredValidator Component="PaymentMethod" Text="El método de pago es requerido." />
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                    <RadzenColumn SizeMD="6" Size="12" id="dateIssued-column">
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                            <RadzenLabel Component="Date">
+                                Fecha del pago <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Opcional" Variant="Variant.Outlined" IsPill="true" class="rz-ml-1" />
+                            </RadzenLabel>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
+
+                                <RadzenDatePicker Max="DateTime.Now" Name="Date" @bind-Value=@_createPaymentDto.Date Style="flex-grow: 1;" Placeholder="Fecha del pago..." />
+                            </RadzenStack>
+
+                            <RadzenCustomValidator Validator="@(() => _createPaymentDto.Date == null || _createPaymentDto.Date < DateTime.Now)" Text="La fecha debe estar en el pasado."></RadzenCustomValidator>
+
+                        </RadzenStack>
+                    </RadzenColumn>
+
+                </RadzenRow>
+
+                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 1rem;">
+                    <RadzenButton ButtonType="ButtonType.Submit" Icon="add" Text="Registrar pago" Style="margin-top: 1rem"/>
+                </RadzenStack>
+
+
+            </ChildContent>
+
+        </RadzenFieldset>
+
+    </RadzenTemplateForm>
+</RadzenColumn>
+
+
+@code {
+
+    [Parameter]
+    [EditorRequired]
+    public DetailedSaleDto Sale { get; set; }
+
+    private CreatePaymentDto _createPaymentDto = new();
+
+    void PayDifference()
+    {
+        if (Sale.TotalAmount - Sale.AmountPaid <= 0)
+        {
+            SimpleNotifications.Warning($"Datos inválidos.");
+            return;
+        }
+        _createPaymentDto.Amount = Sale.TotalAmount - Sale.AmountPaid;
+        StateHasChanged();
+    }
+
+    async Task OnCreateClick()
+    {
+        var result = await SaleService.RegisterPaymentAsync(Sale.Id, _createPaymentDto, CancellationToken.None);
+
+        if (!result.IsSuccess)
+        {
+            SimpleNotifications.Error($"Error al agregar el pago: {result.Error.Description}");
+            return;
+        }
+
+        DialogService.Close(true);
+    }
+}
