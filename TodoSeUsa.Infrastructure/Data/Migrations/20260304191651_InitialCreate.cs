@@ -260,7 +260,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [ConsignorSequence]"),
-                    CommissionPercent = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    CommissionPercent = table.Column<decimal>(type: "decimal(3,0)", precision: 3, scale: 0, nullable: false),
                     PersonId = table.Column<int>(type: "int", nullable: false),
                     PublicIdentifier = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -270,6 +270,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Consignors", x => x.Id);
+                    table.CheckConstraint("CK_Consignor_CommissionPercentPercent", "[CommissionPercent] BETWEEN 0 AND 100");
                     table.ForeignKey(
                         name: "FK_Consignors_People_PersonId",
                         column: x => x.PersonId,
@@ -333,7 +334,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [SaleSequence]"),
-                    Code = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PublicId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     AmountPaid = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -362,7 +363,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false, defaultValueSql: "NEXT VALUE FOR [ConsignmentSequence]"),
-                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PublicId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     DateIssued = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     ConsignorId = table.Column<int>(type: "int", nullable: false),
@@ -376,6 +377,28 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     table.PrimaryKey("PK_Consignments", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Consignments_Consignors_ConsignorId",
+                        column: x => x.ConsignorId,
+                        principalTable: "Consignors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payouts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PublicId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ConsignorId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payouts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Payouts_Consignors_ConsignorId",
                         column: x => x.ConsignorId,
                         principalTable: "Consignors",
                         principalColumn: "Id",
@@ -424,6 +447,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     Brand = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Season = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     RefurbishmentCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    PayoutDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ConsignmentId = table.Column<int>(type: "int", nullable: false),
                     SaleId = table.Column<int>(type: "int", nullable: true),
                     BoxId = table.Column<int>(type: "int", nullable: true),
@@ -528,6 +552,11 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                     Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     Quality = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Brand = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Season = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConsignorId = table.Column<int>(type: "int", nullable: false),
+                    ConsignorPercent = table.Column<decimal>(type: "decimal(3,0)", precision: 3, scale: 0, nullable: false),
+                    AmountPaidOut = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReturnedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ReturnReason = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -535,6 +564,7 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SaleItems", x => x.Id);
+                    table.CheckConstraint("CK_SaleItem_ConsignorPercent", "[ConsignorPercent] BETWEEN 0 AND 100");
                     table.ForeignKey(
                         name: "FK_SaleItems_Products_ProductId",
                         column: x => x.ProductId,
@@ -544,6 +574,33 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                         name: "FK_SaleItems_Sales_SaleId",
                         column: x => x.SaleId,
                         principalTable: "Sales",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PayoutLines",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PayoutId = table.Column<int>(type: "int", nullable: false),
+                    SaleItemId = table.Column<int>(type: "int", nullable: false),
+                    AmountPaid = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PayoutLines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PayoutLines_Payouts_PayoutId",
+                        column: x => x.PayoutId,
+                        principalTable: "Payouts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PayoutLines_SaleItems_SaleItemId",
+                        column: x => x.SaleItemId,
+                        principalTable: "SaleItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -599,6 +656,12 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 column: "ConsignorId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Consignments_PublicId",
+                table: "Consignments",
+                column: "PublicId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Consignors_PersonId",
                 table: "Consignors",
                 column: "PersonId",
@@ -623,6 +686,27 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 name: "IX_Payments_SaleId",
                 table: "Payments",
                 column: "SaleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayoutLines_PayoutId",
+                table: "PayoutLines",
+                column: "PayoutId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PayoutLines_SaleItemId",
+                table: "PayoutLines",
+                column: "SaleItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payouts_ConsignorId",
+                table: "Payouts",
+                column: "ConsignorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payouts_PublicId",
+                table: "Payouts",
+                column: "PublicId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductImages_ProductId_IsMain",
@@ -672,9 +756,9 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 column: "ClientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sales_Code",
+                name: "IX_Sales_PublicId",
                 table: "Sales",
-                column: "Code",
+                column: "PublicId",
                 unique: true);
         }
 
@@ -703,10 +787,10 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
                 name: "Payments");
 
             migrationBuilder.DropTable(
-                name: "ProductImages");
+                name: "PayoutLines");
 
             migrationBuilder.DropTable(
-                name: "SaleItems");
+                name: "ProductImages");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -716,6 +800,12 @@ namespace TodoSeUsa.Infrastructure.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "LoanNotes");
+
+            migrationBuilder.DropTable(
+                name: "Payouts");
+
+            migrationBuilder.DropTable(
+                name: "SaleItems");
 
             migrationBuilder.DropTable(
                 name: "Products");

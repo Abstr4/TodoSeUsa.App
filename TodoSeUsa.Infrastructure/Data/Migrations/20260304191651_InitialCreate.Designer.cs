@@ -12,8 +12,8 @@ using TodoSeUsa.Infrastructure.Data;
 namespace TodoSeUsa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260223153552_QueryFilters")]
-    partial class QueryFilters
+    [Migration("20260304191651_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
