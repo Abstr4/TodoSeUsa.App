@@ -16,7 +16,7 @@ public class TrayIconService : IHostedService
         _url = url;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken ct)
     {
         _trayThread = new Thread(RunTrayIconThread);
 
@@ -65,7 +65,7 @@ public class TrayIconService : IHostedService
         return contextMenu;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken ct)
     {
         ExitApp();
         return Task.CompletedTask;
