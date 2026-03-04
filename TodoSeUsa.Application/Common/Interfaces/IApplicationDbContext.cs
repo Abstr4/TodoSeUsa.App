@@ -2,37 +2,23 @@
 
 namespace TodoSeUsa.Application.Common.Interfaces;
 
-public interface IApplicationDbContext
+public interface IApplicationDbContext : IAsyncDisposable
 {
     DbSet<Box> Boxes { get; }
-
     DbSet<Client> Clients { get; }
-
     DbSet<Product> Products { get; }
-
     DbSet<Payment> Payments { get; }
-
     DbSet<Consignment> Consignments { get; }
-
     DbSet<Consignor> Consignors { get; }
-
     DbSet<Sale> Sales { get; }
-
     DbSet<SaleItem> SaleItems { get; }
-
     DbSet<LoanNote> LoanNotes { get; }
-
     DbSet<Reservation> Reservations { get; }
-
     DbSet<Person> Persons { get; }
-
     DbSet<ProductImage> ProductImages { get; }
-
     DbSet<Payout> Payouts { get; }
-
     DbSet<PayoutLine> PayoutLines { get; }
 
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
-
     Task<int> SaveChangesAsync(CancellationToken ct);
 }
