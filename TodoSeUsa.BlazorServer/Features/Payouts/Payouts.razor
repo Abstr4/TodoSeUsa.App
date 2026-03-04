@@ -1,0 +1,149 @@
+﻿@page "/liquidaciones"
+
+@using TodoSeUsa.Application.Features.Payouts.DTOs
+@using TodoSeUsa.Application.Features.Payouts.Interfaces
+@using TodoSeUsa.BlazorServer.Features.Shared
+
+@inject IJSRuntime JS;
+
+@inject IPayoutService PayoutService;
+
+@inject DialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject SimpleNotifications SimpleNotifications;
+
+@attribute [Authorize]
+
+<style>
+    .rz-custom-header {
+        width: 100%;
+    }
+</style>
+
+<RadzenCard Style="max-width: 100%">
+
+    <PageTitleWithBackButton Title="Liquidaciones" />
+
+    <RadzenDataGrid @ref="grid" IsLoading="@isLoading" TItem="PayoutDto" Data="@payouts" 
+        @bind-Value="@selectedPayouts" LoadData="@LoadPayouts" 
+        Count="@count" EmptyText="@emptyGridMessage" LogicalFilterOperator="@logicalFilterOperator" 
+        SelectionMode="DataGridSelectionMode.Single" PageSize="5" 
+        AllowSorting="true" AllowFiltering="true" AllowPaging="true" AllowColumnResize=true 
+        FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
+        GridLines="DataGridGridLines.Both" PagerHorizontalAlign="HorizontalAlign.Center" 
+        ClearFilterText="Limpiar" ApplyFilterText="Aplicar" FilterText="Filtro" 
+        ContainsText="Contiene" EqualsText="Equivale" AndOperatorText="Y" 
+        OrOperatorText="O" LessThanOrEqualsText="Menor o igual que" LessThanText="Menor que" 
+        GreaterThanOrEqualsText="Mayor o igual que" GreaterThanText="Mayor que" NotEqualsText="No es igual a" 
+        IsNullText="Es nulo" IsNotNullText="No es nulo" ColumnWidth="200px">
+
+        <HeaderTemplate>
+
+            <RadzenStack Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" class="w-100 p-3">
+
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Registrar nueva liquidación" Click=@HandleCreatePayout />
+
+                <FilterControls LogicalFilterValue="@logicalFilterOperator" LogicalFilterValueChanged="@(v => logicalFilterOperator = v)" LogicalFilterOnChanged="@grid.Reload" ResetButtonClicked="@ResetAsync" />
+
+            </RadzenStack>
+
+        </HeaderTemplate>
+
+        <Columns>
+            <RadzenDataGridColumn TItem="PayoutDto" Sortable="false" Filterable="false" Width="100px" MinWidth="100px">
+
+                <Template Context="payout">
+                    <RadzenSplitButton Click=@(async (args) => await OnSplitButtonClick(args, payout)) Icon="read_more">
+
+                        <ChildContent>
+                            <RadzenSplitButtonItem Text="Ver liquidación" Value="view" Icon="read_more" />
+                            <RadzenSplitButtonItem Text="Editar liquidación" Value="edit" Icon="edit" />
+                        </ChildContent>
+
+                    </RadzenSplitButton>
+                </Template>
+
+            </RadzenDataGridColumn>
+
+
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code
+{
+    private RadzenDataGridColumn<PayoutDto> statusColumn = default!;
+
+
+    private RadzenDataGrid<PayoutDto> grid = null!;
+
+    private IEnumerable<PayoutDto>? payouts;
+    private IList<PayoutDto>? selectedPayouts;
+    private int count;
+    private bool isLoading = false;
+    private string emptyGridMessage = "No hay liquidaciones para mostrar.";
+    private string? errorMessage = null;
+
+    private LogicalFilterOperator logicalFilterOperator = RadzenDataGridDefaults.FilterOperator;
+
+    async Task LoadPayouts(LoadDataArgs args)
+    {
+        if (isLoading) return;
+        isLoading = true;
+
+        QueryRequest request = RadzenQueryRequestMapper.ConvertToQueryRequest(args, logicalFilterOperator);
+
+        var result = await PayoutService.GetAllAsync(request, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            payouts = result.Value.Items;
+            count = result.Value.Count;
+            selectedPayouts = payouts.Take(1).ToList();
+        }
+        else
+        {
+            payouts = [];
+            selectedPayouts = [];
+            count = 0;
+            errorMessage = result.Error.Description;
+        }
+        isLoading = false;
+    }
+
+    private void ViewPayout(int payoutId)
+    {
+        NavigationManager.NavigateTo($"/liquidaciones/{payoutId}");
+    }
+
+    private void HandleCreatePayout()
+    {
+        NavigationManager.NavigateTo($"/liquidaciones/registrar");
+    }
+
+    private async Task OnSplitButtonClick(RadzenSplitButtonItem item, PayoutDto payout)
+    {
+        if (payout == null)
+        {
+            return;
+        }
+
+        if (item == null)
+        {
+            ViewPayout(payout.Id);
+            return;
+        }
+
+        switch (item.Value)
+        {
+            case "view":
+                ViewPayout(payout.Id);
+                break;
+        }
+    }
+
+    async Task ResetAsync()
+    {
+        grid.Reset(true);
+        await grid.FirstPage(true);
+    }
+}
