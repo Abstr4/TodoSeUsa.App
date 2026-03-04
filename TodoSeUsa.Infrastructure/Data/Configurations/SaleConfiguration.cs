@@ -13,7 +13,9 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
 
         builder.HasKey(s => s.Id);
 
-        builder.HasIndex(s => s.Code).IsUnique();
+        builder.Property(s => s.PublicId).IsRequired();
+
+        builder.HasIndex(s => s.PublicId).IsUnique();
 
         builder.HasMany(s => s.Items)
             .WithOne(si => si.Sale)

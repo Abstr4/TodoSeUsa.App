@@ -8,20 +8,24 @@ public sealed class PayoutConfiguration : IEntityTypeConfiguration<Payout>
     {
         builder.HasQueryFilter(p => p.Consignor.DeletedAt == null);
 
-        builder.HasKey(x => x.Id);
+        builder.HasKey(p => p.Id);
 
-        builder.Property(x => x.TotalAmount)
+        builder.Property(p => p.TotalAmount)
             .HasPrecision(18, 2);
 
-        builder.HasOne(x => x.Consignor)
+        builder.Property(p => p.PublicId).IsRequired();
+
+        builder.HasIndex(p => p.PublicId).IsUnique();
+
+        builder.HasOne(p => p.Consignor)
             .WithMany()
-            .HasForeignKey(x => x.ConsignorId)
+            .HasForeignKey(p => p.ConsignorId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
 
-        builder.HasMany(x => x.Lines)
-            .WithOne(x => x.Payout)
-            .HasForeignKey(x => x.PayoutId)
+        builder.HasMany(p => p.Lines)
+            .WithOne(p => p.Payout)
+            .HasForeignKey(p => p.PayoutId)
             .OnDelete(DeleteBehavior.Cascade);
 
     }

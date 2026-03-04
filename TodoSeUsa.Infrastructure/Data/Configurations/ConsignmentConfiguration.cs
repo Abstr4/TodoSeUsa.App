@@ -9,13 +9,17 @@ public class ConsignmentConfiguration : IEntityTypeConfiguration<Consignment>
         builder.UseTpcMappingStrategy();
 
         builder.ToTable("Consignments")
-            .HasQueryFilter(b => !b.DeletedAt.HasValue);
+            .HasQueryFilter(c => !c.DeletedAt.HasValue);
+
+        builder.Property(c => c.PublicId).IsRequired();
+
+        builder.HasIndex(c => c.PublicId).IsUnique();
 
         builder.HasKey(c => c.Id);
 
         builder.HasMany(c => c.Products)
-            .WithOne(p => p.Consignment)
-            .HasForeignKey(p => p.ConsignmentId)
+            .WithOne(c => c.Consignment)
+            .HasForeignKey(c => c.ConsignmentId)
             .IsRequired()
         .OnDelete(DeleteBehavior.Restrict);
 
