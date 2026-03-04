@@ -23,7 +23,7 @@ public static class Transforms
 
     public static Consignment ToConsignment(OldBillRow bill, int consignorId) => new()
     {
-        Code = $"LEGACY-{bill.BillId}",
+        PublicId = $"LEGACY-{bill.BillId}",
         DateIssued = bill.DateCreated,
         ConsignorId = consignorId
     };
