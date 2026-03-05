@@ -101,12 +101,13 @@
 
                                         <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap">
 
-                                            <RadzenNumeric Name="Amount" @bind-Value=@paymentUiModel.Amount TValue="decimal" Min="0" />
+                                            <RadzenNumeric Name="Amount" @bind-Value=@paymentUiModel.Amount TValue="decimal" Min="0"/>
                                             <RadzenButton Click="@PayDifference" Icon="add" Text="Monto restante" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Medium" />
                                         </RadzenStack>
 
                                         <RadzenRequiredValidator Component="Amount" Text="El monto es requerido." />
                                         <RadzenNumericRangeValidator Component="Amount" Min="1" Text="El monto debe ser mayor a cero." />
+                                        <RadzenNumericRangeValidator Component="Amount" Max="@(totalAmount - amountPaid)" Text="El monto no puede exceder el total a pagar." />
                                     </RadzenStack>
                                 </RadzenColumn>
 
@@ -183,11 +184,11 @@
                                 </RadzenColumn>
 
                                 <RadzenColumn Size="6">
-                                    <RadzenLabel>Abonado: @AmountPaid.ToString("C")</RadzenLabel>
+                                    <RadzenLabel>Abonado: @amountPaid.ToString("C")</RadzenLabel>
                                 </RadzenColumn>
 
                                 <RadzenColumn Size="12">
-                                    <RadzenLabel>Resto a pagar: @((totalAmount - AmountPaid).ToString("C"))</RadzenLabel>
+                                    <RadzenLabel>Resto a pagar: @((totalAmount - amountPaid).ToString("C"))</RadzenLabel>
                                 </RadzenColumn>
 
                                 <RadzenColumn Size="12" id="notes-column">
@@ -350,7 +351,7 @@
     CreateSaleDto createSaleDto = new();
 
     decimal totalAmount;
-    decimal AmountPaid;
+    decimal amountPaid;
 
     List<ProductDto> addedProducts = new();
     int productId;
@@ -413,13 +414,13 @@
             SimpleNotifications.Warning($"Monto de pago inválido.");
             return;
         }
-        if (paymentUiModel.Amount + AmountPaid > totalAmount)
+        if (paymentUiModel.Amount + amountPaid > totalAmount)
         {
             SimpleNotifications.Warning($"El monto del pago no puede exceder el total a pagar.");
             return;
         }
 
-        AmountPaid += paymentUiModel.Amount;
+        amountPaid += paymentUiModel.Amount;
         addedPayments.Add(paymentUiModel);
 
         CreatePaymentDto createPaymentDto = new()
@@ -455,19 +456,19 @@
             return;
         }
 
-        AmountPaid -= payment.Amount;
+        amountPaid -= payment.Amount;
         addedPayments.Remove(payment);
         createSaleDto.Payments.Remove(dto);
     }
 
     void PayDifference()
     {
-        if (totalAmount - AmountPaid < 0)
+        if (totalAmount - amountPaid < 0)
         {
             SimpleNotifications.Warning($"Datos inválidos.");
             return;
         }
-        paymentUiModel.Amount = totalAmount - AmountPaid;
+        paymentUiModel.Amount = totalAmount - amountPaid;
         StateHasChanged();
     }
 
