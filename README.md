@@ -32,6 +32,9 @@ It runs locally on a single machine, uses a **local SQL Server database**, and *
 This video provides a quick overview of the core workflow: creating a provider, adding a consignment, registering products and sales.
 [![Quick view video](https://img.youtube.com/vi/TrAAc3k2Blg/maxresdefault.jpg)](https://www.youtube.com/watch?v=TrAAc3k2Blg)
 
+Register & login flow:
+[![Login and register video](https://img.youtube.com/vi/sZef1EB47fg/maxresdefault.jpg)](https://www.youtube.com/watch?v=sZef1EB47fg)
+
 ## Contribution
 
 Your contributions are always welcome and appreciated. If you think you have encountered a bug or want to request a feature, feel free to do it directly to me via email or twitter in the [Contact](#contact) section down below.
