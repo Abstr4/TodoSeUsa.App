@@ -103,6 +103,6 @@ Register & login flow:
 
 Built by [Matias Margaritini](https://www.linkedin.com/in/matiasmargaritini/)
 
-- Email: [contact.abstr4@gmail.com](mailto:contact.abstr4@gmail.com)
+- Email: [matiasmargaritini@gmail.com](mailto:matiasmargaritini@gmail.com)
 - LinkedIn: [matiasmargaritini](https://www.linkedin.com/in/matiasmargaritini)
 - Twitter: [@Abstr4_](https://x.com/Abstr4_)
